@@ -1,0 +1,50 @@
+.header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  max-width: 1728px;
+  height: 73px;
+  padding: 24px 64px;
+  position: relative;
+  box-sizing: border-box;
+}
+
+.header-button {
+  background: none;
+  border: none;
+  border-top: 1px solid #ffffe1;
+  padding: 0 8px;
+  cursor: pointer;
+  font-family: 'Manrope', sans-serif;
+  font-weight: 500;
+  font-size: 18px;
+  line-height: normal;
+  color: #ffffe1;
+  white-space: nowrap;
+  transition: all 0.2s ease;
+}
+
+.header-button.active {
+  color: rgba(255, 255, 225, 0.5);
+}
+
+.header-button:not(.active) {
+  color: #ffffe1;
+}
+
+.header-button.hovered {
+  color: rgba(255, 255, 225, 0.5);
+  border-top-color: rgba(255, 255, 225, 0.5);
+}
+
+.header-button.active.hovered {
+  color: #ffffe1;
+  border-top-color: #ffffe1;
+}
+
+.header-button p {
+  margin: 0;
+  padding: 0;
+}
+

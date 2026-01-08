@@ -1,0 +1,70 @@
+:root {
+  /* Quick configuration vars - edit these to change sizes */
+  --scroll-reel-width: 296px;   /* container width */
+  --scroll-height: 22px;        /* overall height of the control */
+  --scroll-rect-width: 46px;    /* width of draggable rectangle */
+  --scroll-line-height: 22px;   /* vertical line height */
+}
+
+.scroll-reel-container {
+  position: relative;
+  width: var(--scroll-reel-width);
+  height: var(--scroll-height);
+}
+
+.scroll-reel-rectangle {
+  position: absolute;
+  width: var(--scroll-rect-width);
+  height: var(--scroll-height);
+  background-color: transparent;
+  border: 1px solid #ffffe1;
+  cursor: grab;
+  z-index: 2;
+  pointer-events: auto;
+  box-sizing: border-box;
+}
+
+.scroll-reel-rectangle:active {
+  cursor: grabbing;
+}
+
+.scroll-reel-line {
+  position: absolute;
+  width: 0;
+  height: var(--scroll-line-height);
+  border-left: 1px solid #ffffe1;
+  z-index: 1;
+  transition: opacity 0.1s ease;
+}
+
+.scroll-reel-lines {
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none; /* lines should not intercept pointer events */
+}
+
+/* Fixed placement to keep control on-screen without scrolling */
+.fixed-bottom-scroll-reel {
+  position: fixed;
+  bottom: 40px; /* 10px from bottom of user's screen */
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 9999;
+  pointer-events: auto; /* allow interaction */
+}
+
+
+
+
+.scroll-reel-lines {
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none; /* lines should not intercept pointer events */
+}
+
