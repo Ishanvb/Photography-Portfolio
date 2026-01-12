@@ -46,6 +46,10 @@ const Reel = forwardRef(function Reel({ onScrollUpdate, isManualScrolling, manua
   const touchStartXRef = useRef(null);
   const touchTimeoutRef = useRef(null);
   const isAutoScrollingRef = useRef(false);
+  const startTimeRef = useRef(null);
+  const transitionDuration = 3000; // 3 seconds
+  const initialSpeed = 40; // Very fast initial speed
+  const normalSpeed = 1.0; // Normal scrolling speed
 
   // Calculate cycle length: sum of widths from image 1 to image 8
   // Initialize reel to start with Image 1 flush on the left
@@ -253,11 +257,15 @@ const Reel = forwardRef(function Reel({ onScrollUpdate, isManualScrolling, manua
       return;
     }
 
-    const scrollSpeed = 1.5; // pixels per frame
     const reel = reelRef.current;
     if (!reel) return;
 
-      isAutoScrollingRef.current = true;
+    isAutoScrollingRef.current = true;
+
+    // Initialize start time if not set
+    if (startTimeRef.current === null) {
+      startTimeRef.current = Date.now();
+    }
 
     const animate = () => {
       // Double check manual scrolling state
@@ -269,25 +277,39 @@ const Reel = forwardRef(function Reel({ onScrollUpdate, isManualScrolling, manua
         }
         return;
       }
-      
+
       isAutoScrollingRef.current = true;
-      scrollPositionRef.current += scrollSpeed;
+
+      // Calculate current speed based on elapsed time
+      const elapsed = Date.now() - startTimeRef.current;
+      let currentSpeed;
+
+      if (elapsed < transitionDuration) {
+        // Gradually slow down using easing function (ease-out)
+        const progress = elapsed / transitionDuration;
+        const easedProgress = 1 - Math.pow(1 - progress, 3); // ease-out cubic
+        currentSpeed = initialSpeed - (initialSpeed - normalSpeed) * easedProgress;
+      } else {
+        currentSpeed = normalSpeed;
+      }
+
+      scrollPositionRef.current += currentSpeed;
       const cycleLength = cycleLengthRef.current;
-      
+
       // For infinite seamless loop: when we reach near the end, reset to beginning
       // We use duplicated content so the transition is seamless
       if (scrollPositionRef.current >= cycleLength * 2) {
         // Reset to beginning of second set (which looks identical to first)
         scrollPositionRef.current = scrollPositionRef.current - cycleLength;
       }
-      
+
       reel.scrollLeft = scrollPositionRef.current;
-      
+
       // Calculate cycle progress (0 to 1) - position within one cycle
       const cyclePosition = scrollPositionRef.current % cycleLength;
       const cycleProgress = cycleLength > 0 ? (cyclePosition / cycleLength) : 0;
       onScrollUpdate(cycleProgress, cycleLength);
-      
+
       animationRef.current = requestAnimationFrame(animate);
     };
 
@@ -304,7 +326,7 @@ const Reel = forwardRef(function Reel({ onScrollUpdate, isManualScrolling, manua
   }, [isManualScrolling, onScrollUpdate]);
 
   // Duplicate images multiple times for seamless infinite loop
-  const duplicatedImages = [...images, ...images, ...images, ...images];
+  const duplicatedImages = [...images, ...images, ...images, ...images, ...images, ...images];
 
   const handleImageError = (e) => {
     const img = e.target;

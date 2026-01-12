@@ -15,8 +15,8 @@
   width: 100%;
   position: relative;
   overflow: hidden;
-  padding: 0;
   margin: 0;
+  margin-bottom: 20px;
   box-sizing: border-box;
   padding-left: var(--reel-side-gutter);
   padding-right: var(--reel-side-gutter);
@@ -109,7 +109,7 @@
 .caption-title p {
   font-family: 'Manrope', sans-serif;
   font-weight: 500;
-  font-size: 18px;
+  font-size: 14px;
   line-height: normal;
   color: #ffbd2f;
   white-space: nowrap;
@@ -127,7 +127,7 @@
 .caption-direction p {
   font-family: 'Manrope', sans-serif;
   font-weight: 500;
-  font-size: 18px;
+  font-size: 14px;
   line-height: normal;
   color: rgba(255, 189, 47, 0.5);
   white-space: nowrap;

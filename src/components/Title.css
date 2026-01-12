@@ -6,7 +6,8 @@
   padding: 0 185px; /* left/right padding as specified */
   position: relative;
   box-sizing: border-box;
-} 
+  height: 72px; /* Fixed height to prevent layout shifts */
+}
 
 .title {
   font-family: 'Manrope', sans-serif;
@@ -19,5 +20,19 @@
   margin: 0;
   padding: 0;
   text-align: left;
+  position: relative;
+  height: 72px; /* Fixed height to prevent layout shifts */
+  display: inline-block;
+}
+
+.title.typing {
+  border-right: 3px solid #ffffe1;
+  animation: blink 0.75s step-end infinite;
+}
+
+@keyframes blink {
+  50% {
+    border-color: transparent;
+  }
 }
 

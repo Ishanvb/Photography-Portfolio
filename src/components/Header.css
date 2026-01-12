@@ -6,8 +6,21 @@
   max-width: 1728px;
   height: 73px;
   padding: 24px 64px;
+  margin-bottom: 20px;
   position: relative;
   box-sizing: border-box;
+  animation: fadeInDown 1s ease-out;
+}
+
+@keyframes fadeInDown {
+  from {
+    opacity: 0;
+    transform: translateY(-30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 .header-button {
