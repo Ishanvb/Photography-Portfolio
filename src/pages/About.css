@@ -1,0 +1,367 @@
+.about {
+  width: 100%;
+  min-height: 100vh;
+  background-color: #0c0c0c;
+  color: #ffffe1;
+}
+
+.about-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 50px;
+  padding-top: 2rem;
+  padding-bottom: 4rem;
+}
+
+/* First major frame - About Me intro */
+.about-intro-frame {
+  width: 100%;
+  display: flex;
+  align-items: flex-start;
+  padding: 0 150px;
+  gap: 395px;
+  opacity: 0;
+  transform: translateY(-50px);
+  transition: opacity 1s ease-out, transform 1s ease-out;
+}
+
+.about-intro-frame.fade-in-top {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.about-title {
+  font-family: 'Luxurious Script', cursive;
+  font-size: 2.5rem;
+  font-weight: 400;
+  color: #ffffe1;
+  margin: 0;
+  white-space: nowrap;
+}
+
+.about-intro-text {
+  flex: 1;
+  color: #ffffe1;
+  font-family: "Manrope Variable";
+  font-size: 24px;
+  font-style: normal;
+  font-weight: 500;
+  line-height: normal;
+  text-decoration-style: solid;
+  text-decoration-skip-ink: auto;
+  text-decoration-thickness: auto;
+  text-underline-offset: auto;
+  text-underline-position: from-font;
+  margin: 0;
+}
+
+/* Second major frame - Photo and Bio/Work */
+.about-details-frame {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 102px;
+  align-self: stretch;
+  padding: 52px 0;
+  opacity: 0;
+  transform: translateY(50px);
+  transition: opacity 1s ease-out, transform 1s ease-out;
+}
+
+.about-details-frame.fade-in-bottom {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.about-image {
+  flex-shrink: 0;
+}
+
+.about-image img {
+  width: 286px;
+  height: 380px;
+  max-width: 100%;
+  display: block;
+}
+
+/* Info section on the right */
+.about-info-section {
+  display: flex;
+  height: 373px;
+  align-items: flex-start;
+  gap: 106px;
+}
+
+.section-title {
+  font-family: 'Luxurious Script', cursive;
+  font-size: 40px;
+  font-weight: 400;
+  color: #ffffe1;
+  margin: 0;
+  align-self: flex-start;
+  margin-top: 0;
+  padding: 0 10px;
+}
+
+.info-text-frame {
+  font-family: 'Manrope Variable', sans-serif;
+  font-size: 24px;
+  font-weight: 600;
+  color: #ffffe1;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  text-align: left;
+  align-self: flex-start;
+  margin-top: 0;
+}
+
+.info-item {
+  color: #ffffe1;
+}
+
+.info-label {
+  text-decoration: underline;
+}
+
+.work-info div {
+  color: #ffffe1;
+}
+
+/* Footer Section */
+.about-contact-section {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 35px;
+  width: 100%;
+  margin-top: 100px;
+}
+
+.about-together {
+  display: flex;
+  justify-content: center;
+  width: 100%;
+  opacity: 0;
+  transform: translateY(30px);
+  transition: opacity 0.6s ease-out, transform 0.6s ease-out;
+}
+
+.about-together.fade-in-up {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.about-heading {
+  font-weight: 400;
+  line-height: 1;
+  color: #ffffe1;
+  margin: 0;
+  text-align: center;
+  white-space: nowrap;
+}
+
+.about-heading .semibold {
+  font-family: 'Manrope', sans-serif;
+  font-weight: 600;
+  font-size: 85px;
+  margin: 0 0.2em;
+  transition: opacity 0.2s ease-in-out, transform 0.2s ease-in-out;
+}
+
+.about-heading .semibold:first-child {
+  margin-left: 0;
+}
+
+.about-heading .semibold:last-child {
+  margin-right: 0;
+}
+
+.about-heading .script {
+  font-family: 'Luxurious Script', cursive;
+  font-weight: 400;
+  font-size: 118px;
+  margin: 0 0.1em;
+  transition: opacity 0.2s ease-in-out, transform 0.2s ease-in-out;
+}
+
+.contact-info {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 0;
+  padding: 10px 0;
+  padding-right: 20px;
+  border: 2px solid #0088ff;
+  border-radius: 0;
+  background-color: transparent;
+  position: relative;
+  opacity: 0;
+  transform: translateY(50px);
+  transition: opacity 0.8s ease-out, transform 0.8s ease-out;
+}
+
+.contact-info.slide-up {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.contact-info .corner {
+  position: absolute;
+  width: 8px;
+  height: 8px;
+  background-color: #ffffe1;
+  pointer-events: none;
+}
+
+.contact-info .corner-tl {
+  top: -4px;
+  left: -4px;
+}
+
+.contact-info .corner-tr {
+  top: -4px;
+  right: -4px;
+}
+
+.contact-info .corner-bl {
+  bottom: -4px;
+  left: -4px;
+}
+
+.contact-info .corner-br {
+  bottom: -4px;
+  right: -4px;
+}
+
+.contact-text {
+  font-family: 'Manrope', sans-serif;
+  font-weight: 400;
+  font-size: 24px;
+  line-height: 2;
+  color: #ffffe1;
+  margin: 0;
+}
+
+.contact-link {
+  color: #ffbd2f;
+  text-decoration: none;
+  transition: opacity 0.2s ease;
+}
+
+.contact-link:hover {
+  opacity: 0.8;
+}
+
+.contact-link-underline {
+  text-decoration: underline;
+}
+
+/* Responsive design */
+@media (max-width: 1400px) {
+  .about-intro-frame {
+    gap: 200px;
+    padding: 0 40px;
+  }
+
+  .about-details-frame {
+    padding: 0 40px;
+  }
+
+  .info-text-frame {
+    font-size: 28px;
+  }
+
+  .section-title {
+    font-size: 36px;
+  }
+}
+
+@media (max-width: 1024px) {
+  .about-intro-frame {
+    flex-direction: column;
+    gap: 2rem;
+    padding: 0 40px;
+  }
+
+  .about-title {
+    font-size: 2rem;
+  }
+
+  .about-intro-text {
+    font-size: 1rem;
+  }
+
+  .about-details-frame {
+    flex-direction: column;
+    align-items: center;
+    gap: 3rem;
+    padding: 0 40px;
+  }
+
+  .info-text-frame {
+    font-size: 24px;
+  }
+
+  .section-title {
+    font-size: 32px;
+  }
+}
+
+@media (max-width: 768px) {
+  .about-container {
+    gap: 60px;
+  }
+
+  .about-intro-frame {
+    padding: 0 20px;
+  }
+
+  .about-details-frame {
+    padding: 0 20px;
+  }
+
+  .about-title {
+    font-size: 1.75rem;
+  }
+
+  .about-intro-text {
+    font-size: 0.95rem;
+  }
+
+  .info-text-frame {
+    font-size: 20px;
+  }
+
+  .section-title {
+    font-size: 28px;
+  }
+
+  .about-info-section {
+    gap: 28px;
+  }
+
+  .about-image img {
+    max-width: 100%;
+    width: 100%;
+  }
+}
+
+@media (max-width: 480px) {
+  .about-intro-frame {
+    padding: 0 16px;
+  }
+
+  .about-details-frame {
+    padding: 0 16px;
+  }
+
+  .info-text-frame {
+    font-size: 18px;
+  }
+
+  .section-title {
+    font-size: 24px;
+  }
+}

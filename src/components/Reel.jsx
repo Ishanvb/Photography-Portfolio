@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState, forwardRef, useImperativeHandle } from 'react';
+import { useNavigate } from 'react-router-dom';
 import './Reel.css';
 
 // Asset hashes from Figma MCP (ordered 1-8)
@@ -26,6 +27,18 @@ const getAssetBase = (hash) => {
 // Prefer common raster formats first so uploaded JPG/PNG are used before SVG placeholders
 const fallbackExts = ['.jpg', '.jpeg', '.png', '.webp', '.svg'];
 
+// Navigation mapping: which project page and photo index each reel image goes to
+const navigationMap = {
+  1: { route: '/work/fashion-project', photoIndex: 4, title: "Heaven's Playground", caption: 'Fashion-Project' },
+  2: { route: '/work/portrait-project', photoIndex: 4, title: 'Red Eyes', caption: 'Portrait-Project' },
+  3: { route: '/work/portrait-project', photoIndex: 5, title: 'Rest Stop', caption: 'Portrait-Project' },
+  4: { route: '/work/fashion-project', photoIndex: 7, title: "Headin' South", caption: 'Fashion-Project' },
+  5: { route: '/work/urbangeometry-project', title: "Nature's Architect", caption: 'Urban-Geometry-Project' },
+  6: { route: '/work/portrait-project', title: 'Misty Blues', caption: 'Portrait-Project' },
+  7: { route: '/work/fashion-project', title: 'Viva las Vegas', caption: 'Fashion-Project' },
+  8: { route: '/work/fashion-project', photoIndex: 3, title: 'Viva las Vegas', caption: 'Fashion-Project' }
+};
+
 const images = [
   { id: 1, srcBase: getAssetBase(assetHashes[0]), width: 875 },
   { id: 2, srcBase: getAssetBase(assetHashes[1]), width: 875 },
@@ -38,6 +51,7 @@ const images = [
 ];
 
 const Reel = forwardRef(function Reel({ onScrollUpdate, isManualScrolling, manualScrollPosition, onWheelScroll }, ref) {
+  const navigate = useNavigate();
   const reelRef = useRef(null);
   const animationRef = useRef(null);
   const scrollPositionRef = useRef(0);
@@ -51,32 +65,35 @@ const Reel = forwardRef(function Reel({ onScrollUpdate, isManualScrolling, manua
   const initialSpeed = 40; // Very fast initial speed
   const normalSpeed = 1.0; // Normal scrolling speed
 
-  // Calculate cycle length: sum of widths from image 1 to image 8
-  // Initialize reel to start with Image 1 flush on the left
+  // Handle image click navigation
+  const handleImageClick = (imageId) => {
+    const navInfo = navigationMap[imageId];
+    if (navInfo) {
+      navigate(navInfo.route, { state: { scrollToPhotoIndex: navInfo.photoIndex } });
+    }
+  };
+
+  // Calculate cycle length from actual rendered DOM elements
+  // Initialize reel to start flush left at position 0
   useEffect(() => {
     const reel = reelRef.current;
     if (reel) {
-      const gap = 32; // gap between frames
-      const cycleLength = images.reduce((sum, img, idx) => {
-        return sum + img.width + (idx < images.length - 1 ? gap : 0);
-      }, 0);
-      cycleLengthRef.current = cycleLength;
-      
-      // Start with the first frame centered (Option C)
+      // Wait for DOM to be fully rendered
       requestAnimationFrame(() => {
-        const firstFrame = reel.querySelector('.reel-frame');
-        if (firstFrame) {
-          const containerWidth = reel.offsetWidth;
-          const frameLeft = firstFrame.offsetLeft;
-          const frameWidth = firstFrame.offsetWidth;
-          const target = Math.max(0, frameLeft - (containerWidth - frameWidth) / 2);
-          reel.scrollLeft = target;
-          scrollPositionRef.current = target;
-        } else {
-          // fallback to left if DOM not ready
-          reel.scrollLeft = 0;
-          scrollPositionRef.current = 0;
+        const frames = reel.querySelectorAll('.reel-frame');
+        const gap = 32; // gap between frames
+
+        // Calculate one complete cycle: first 8 frames + gaps
+        let cycleLength = 0;
+        for (let i = 0; i < 8 && i < frames.length; i++) {
+          cycleLength += frames[i].offsetWidth + gap;
         }
+
+        cycleLengthRef.current = cycleLength;
+
+        // Start at position 0 (first image flush left)
+        reel.scrollLeft = 0;
+        scrollPositionRef.current = 0;
       });
     }
   }, []);
@@ -118,36 +135,46 @@ const Reel = forwardRef(function Reel({ onScrollUpdate, isManualScrolling, manua
     if (!reel) return;
 
     const handleWheel = (e) => {
-      // Only handle horizontal scrolling
+      e.preventDefault();
+      const currentScroll = reel.scrollLeft;
+      let scrollDelta = 0;
+
+      // Handle horizontal scrolling (touchpad left/right)
       if (Math.abs(e.deltaX) > Math.abs(e.deltaY)) {
-        e.preventDefault();
-        const currentScroll = reel.scrollLeft;
-        const newScroll = Math.max(0, currentScroll + e.deltaX);
-        reel.scrollLeft = newScroll;
-        scrollPositionRef.current = newScroll;
-        
-        // Calculate cycle progress
-        const cycleLength = cycleLengthRef.current;
-        const cycleProgress = cycleLength > 0 ? ((newScroll % cycleLength) / cycleLength) : 0;
-        
-        if (onWheelScroll) {
-          onWheelScroll(true, cycleProgress);
-        }
-
-        // Clear existing timeout
-        if (wheelTimeoutRef.current) {
-          clearTimeout(wheelTimeoutRef.current);
-          wheelTimeoutRef.current = null;
-        }
-
-        // Set timeout to resume auto-scroll after user stops scrolling
-        wheelTimeoutRef.current = setTimeout(() => {
-          if (onWheelScroll) {
-            onWheelScroll(false, null);
-          }
-          wheelTimeoutRef.current = null;
-        }, 500); // Resume after 500ms of no wheel activity
+        scrollDelta = e.deltaX;
       }
+      // Handle vertical scrolling (mouse wheel up/down)
+      // Scroll down (positive deltaY) → move reel right (positive delta)
+      // Scroll up (negative deltaY) → move reel left (negative delta)
+      else if (Math.abs(e.deltaY) > 0) {
+        scrollDelta = e.deltaY;
+      }
+
+      const newScroll = Math.max(0, currentScroll + scrollDelta);
+      reel.scrollLeft = newScroll;
+      scrollPositionRef.current = newScroll;
+
+      // Calculate cycle progress
+      const cycleLength = cycleLengthRef.current;
+      const cycleProgress = cycleLength > 0 ? ((newScroll % cycleLength) / cycleLength) : 0;
+
+      if (onWheelScroll) {
+        onWheelScroll(true, cycleProgress);
+      }
+
+      // Clear existing timeout
+      if (wheelTimeoutRef.current) {
+        clearTimeout(wheelTimeoutRef.current);
+        wheelTimeoutRef.current = null;
+      }
+
+      // Set timeout to resume auto-scroll after user stops scrolling
+      wheelTimeoutRef.current = setTimeout(() => {
+        if (onWheelScroll) {
+          onWheelScroll(false, null);
+        }
+        wheelTimeoutRef.current = null;
+      }, 500); // Resume after 500ms of no wheel activity
     };
 
     reel.addEventListener('wheel', handleWheel, { passive: false });
@@ -168,13 +195,13 @@ const Reel = forwardRef(function Reel({ onScrollUpdate, isManualScrolling, manua
 
     const handleTouchStart = (e) => {
       touchStartXRef.current = e.touches[0].clientX;
-      
+
       // Clear any existing timeout
       if (touchTimeoutRef.current) {
         clearTimeout(touchTimeoutRef.current);
         touchTimeoutRef.current = null;
       }
-      
+
       // Pause auto-scroll when touch starts
       if (onWheelScroll) {
         const currentScroll = reel.scrollLeft;
@@ -262,7 +289,7 @@ const Reel = forwardRef(function Reel({ onScrollUpdate, isManualScrolling, manua
 
     isAutoScrollingRef.current = true;
 
-    // Initialize start time if not set
+    // Initialize start time
     if (startTimeRef.current === null) {
       startTimeRef.current = Date.now();
     }
@@ -287,20 +314,19 @@ const Reel = forwardRef(function Reel({ onScrollUpdate, isManualScrolling, manua
       if (elapsed < transitionDuration) {
         // Gradually slow down using easing function (ease-out)
         const progress = elapsed / transitionDuration;
-        const easedProgress = 1 - Math.pow(1 - progress, 3); // ease-out cubic
+        const easedProgress = 1 - Math.pow(1 - progress, 2); // ease-out cubic
         currentSpeed = initialSpeed - (initialSpeed - normalSpeed) * easedProgress;
       } else {
         currentSpeed = normalSpeed;
       }
 
-      scrollPositionRef.current += currentSpeed;
       const cycleLength = cycleLengthRef.current;
+      scrollPositionRef.current += currentSpeed;
 
-      // For infinite seamless loop: when we reach near the end, reset to beginning
-      // We use duplicated content so the transition is seamless
-      if (scrollPositionRef.current >= cycleLength * 2) {
-        // Reset to beginning of second set (which looks identical to first)
-        scrollPositionRef.current = scrollPositionRef.current - cycleLength;
+      // Infinite seamless loop: when we reach the end of one cycle, reset to the start
+      // Using modulo ensures we stay within 0 to cycleLength
+      if (scrollPositionRef.current >= cycleLength) {
+        scrollPositionRef.current = scrollPositionRef.current % cycleLength;
       }
 
       reel.scrollLeft = scrollPositionRef.current;
@@ -371,30 +397,36 @@ const Reel = forwardRef(function Reel({ onScrollUpdate, isManualScrolling, manua
   return (
     <div className="reel-container" data-name="Reel" data-node-id="7:297">
       <div className="reel" ref={reelRef} data-name="Selected Works Reel" data-node-id="7:296">
-        {duplicatedImages.map((image, index) => (
-          <div key={`${image.id}-${index}`} className="reel-frame" data-name="Selected Frame">
-            <div className="reel-image-container">
-              <img 
-                src={`${image.srcBase}${fallbackExts[0]}`} 
-                alt={`Image ${image.id}`} 
-                className="reel-image"
-                data-image-id={image.id}
-                data-base-src={image.srcBase}
-                onError={handleImageError}
-                onLoad={handleImageLoad}
-                loading="lazy"
-              />
-            </div>
-            <div className="reel-caption">
-              <div className="caption-title">
-                <p>Title</p>
+        {duplicatedImages.map((image, index) => {
+          const navInfo = navigationMap[image.id];
+          const titleText = navInfo?.title || `Image ${image.id}`;
+          const captionText = navInfo?.caption || 'Project';
+
+          return (
+            <div key={`${image.id}-${index}`} className="reel-frame" data-name="Selected Frame">
+              <div className="reel-image-container" onClick={() => handleImageClick(image.id)}>
+                <img
+                  src={`${image.srcBase}${fallbackExts[0]}`}
+                  alt={`Image ${image.id}`}
+                  className="reel-image"
+                  data-image-id={image.id}
+                  data-base-src={image.srcBase}
+                  onError={handleImageError}
+                  onLoad={handleImageLoad}
+                  loading="lazy"
+                />
               </div>
-              <div className="caption-direction">
-                <p>Creative Direction (ie Landscape, Portrait, ect.)</p>
+              <div className="reel-caption">
+                <div className="caption-title">
+                  <p>{titleText}</p>
+                </div>
+                <div className="caption-direction">
+                  <p>{captionText}</p>
+                </div>
               </div>
             </div>
-          </div>
-        ))}
+          );
+        })}
       </div>
     </div>
   );

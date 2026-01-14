@@ -1,3 +1,5 @@
+@import url('https://fonts.googleapis.com/css2?family=Luxurious+Script&display=swap');
+
 :root {
   font-family: 'Manrope', system-ui, Avenir, Helvetica, Arial, sans-serif;
   line-height: 1.5;
@@ -24,7 +26,6 @@ html, body {
   padding: 0;
   width: 100%;
   height: 100%;
-  overflow: hidden;
 }
 
 body {
@@ -34,6 +35,5 @@ body {
 
 #root {
   width: 100%;
-  height: 100vh;
-  overflow: hidden;
+  min-height: 100vh;
 }

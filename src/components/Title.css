@@ -25,14 +25,15 @@
   display: inline-block;
 }
 
-.title.typing {
-  border-right: 3px solid #ffffe1;
+.title.typing::after {
+  content: '|';
+  margin-left: 2px;
   animation: blink 0.75s step-end infinite;
 }
 
 @keyframes blink {
   50% {
-    border-color: transparent;
+    opacity: 0;
   }
 }
 

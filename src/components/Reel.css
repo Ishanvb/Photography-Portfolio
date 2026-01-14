@@ -30,7 +30,7 @@
   width: 100%;
   overflow-x: auto;
   overflow-y: hidden;
-  scroll-behavior: auto;
+  scroll-behavior: unset; /* Disable smooth scrolling for programmatic updates */
   -webkit-overflow-scrolling: touch;
   scrollbar-width: none;
   -ms-overflow-style: none;
@@ -63,6 +63,8 @@
   display: flex;
   flex-direction: column;
   align-items: flex-start;
+  cursor: pointer;
+  overflow: hidden;
 }
 
 .reel-frame .reel-image-container {
@@ -81,6 +83,11 @@
   border-radius: 0;
   background-color: #1a1a1a;
   display: block;
+  transition: transform 0.3s ease;
+}
+
+.reel-image-container:hover .reel-image {
+  transform: scale(1.05);
 }
 
 .reel-frame:nth-child(8n) .reel-image {
