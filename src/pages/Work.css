@@ -272,3 +272,55 @@
 .contact-link-underline {
   text-decoration: underline;
 }
+
+/*Base Reveal Animations*/
+.reveal {
+  position: relative;
+  overflow: hidden;
+  display: inline-block;
+}
+
+.reveal span {
+  position: relative;
+  z-index: 1;
+}
+
+/*highlight reveal*/
+.reveal::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background-color: #ffbd2f;
+  transform: translateX(0%);
+  z-index: 2;
+  pointer-events: none;
+}
+
+.reveal-group.is-visible .reveal::after {
+  transform: translateX(101%);
+}
+
+.reveal::after {
+  transition: transform 0.7s cubic-bezier(0.77, 0, 0.175, 1);
+}
+
+.reveal-title::after {
+  transition-delay: 0s;
+}
+
+.reveal-description::after {
+  transition-delay: 0.12s;
+}
+
+.work-title,
+.work-description {
+  line-height: 1.3;
+}
+
+.reveal-group.is-visible .reveal::after {
+  transform: translateX(110%);
+}
+
+
+
+

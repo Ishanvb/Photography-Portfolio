@@ -23,38 +23,38 @@ const workProjects = [
   {
     id: 1,
     image: getAssetPath(assetHashes.mari6),
-    title: 'Portraits',
-    description: 'Collections: 9'
+    title: 'PORTRAITS',
+    description: 'COLLECTIONS: 8'
   },
   {
     id: 2,
     image: getAssetPath(assetHashes.mari7),
-    title: 'Fashion',
-    description: 'Collections: 5'
+    title: 'FASHION',
+    description: 'COLLECTIONS: 4'
   },
   {
     id: 3,
     image: '/photos/Light/Light.jpg',
-    title: 'Light',
-    description: 'Collections: 3'
+    title: 'LIGHT',
+    description: 'COLLECTIONS: 3'
   },
   {
     id: 4,
     image: '/photos/Fineart/Fineart.jpg',
-    title: 'Fine Art',
-    description: 'Collections: 2'
+    title: 'FINE ART',
+    description: 'COLLECTIONS: 2'
   },
   {
     id: 5,
     image: '/photos/Urbangeometry/Urbangeometry.jpg',
-    title: 'Urban Geometry',
-    description: 'Collections: 2'
+    title: 'URBAN GEOMETRY',
+    description: 'COLLECTIONS: 2'
   },
   {
     id: 6,
     image: '/photos/Videography/videography.jpg',
-    title: 'Videography',
-    description: 'Collections: 2'
+    title: 'VIDEOGRAPHY',
+    description: 'COLLECTIONS: 2'
   }
 ];
 
@@ -161,6 +161,26 @@ function Work() {
     setTimeout(() => setShowContactBox(true), 400);
   }, [footerVisible]);
 
+  useEffect(() => {
+  const reveals = document.querySelectorAll('.reveal-group');
+
+  const observer = new IntersectionObserver(
+    (entries) => {
+      entries.forEach((entry) => {
+        if (entry.isIntersecting) {
+          entry.target.classList.add('is-visible');
+        }
+      });
+    },
+    { threshold: 0.4 }
+  );
+
+  reveals.forEach((el) => observer.observe(el));
+
+  return () => observer.disconnect();
+}, []);
+
+
   return (
     <div className="work-page">
       <Header />
@@ -176,10 +196,14 @@ function Work() {
             <div className="work-image-container" onClick={() => handleProjectClick(project.id)}>
               <img src={project.image} alt={project.title} className="work-image" />
             </div>
-            <div className="work-caption">
-              <p className="work-title">{project.title}</p>
-              <p className="work-description">{project.description}</p>
-            </div>
+              <div className="work-caption reveal-group">
+                <p className="work-title reveal reveal-title">
+                  <span>{project.title}</span>
+                </p>
+                <p className="work-description reveal reveal-description">
+                  <span>{project.description}</span>
+                </p>
+              </div>
           </div>
         ))}
 

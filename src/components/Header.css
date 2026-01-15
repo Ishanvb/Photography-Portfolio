@@ -34,7 +34,7 @@
   font-family: 'Manrope', sans-serif;
   font-weight: 500;
   font-size: 18px;
-  line-height: normal;
+  line-height: 1.2;
   color: #ffffe1;
   white-space: nowrap;
   transition: all 0.2s ease;
@@ -62,4 +62,40 @@
   margin: 0;
   padding: 0;
 }
+
+/* header scroll letter animation */
+/* Core animation styles */
+
+.animated-word {
+  display: inline-flex;
+}
+
+.letter {
+  position: relative;
+  overflow: hidden;
+  height: 22px;
+  display: inline-block;
+}
+
+.letter-stack {
+  display: block;
+  height: 200%;
+  transform: translateY(0%);
+  transition: transform 0.45s cubic-bezier(0.76, 0, 0.24, 1);
+}
+
+/* Stack letters vertically */
+.letter-stack span {
+  display: block;
+  height: 50%;
+}
+
+.header-button:hover .letter-stack {
+  transform: translateY(-50%);
+}
+
+.header-button.active .letter-stack {
+  transform: translateY(0%);
+}
+
 

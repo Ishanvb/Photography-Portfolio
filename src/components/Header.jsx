@@ -2,6 +2,26 @@ import { useState } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import './Header.css';
 
+const AnimatedLabel = ({ text }) => {
+  return (
+    <span className="animated-word">
+      {text.split("").map((char, i) => (
+        <span
+          key={i}
+          className="letter"
+          style={{ transitionDelay: `${i * 35}ms` }}
+        >
+          <span className="letter-stack">
+            <span>{char === " " ? "\u00A0" : char}</span>
+            <span>{char === " " ? "\u00A0" : char}</span>
+          </span>
+        </span>
+      ))}
+    </span>
+  );
+};
+
+
 function Header() {
   const [hoveredButton, setHoveredButton] = useState(null);
   const navigate = useNavigate();
@@ -41,7 +61,9 @@ function Header() {
           onClick={() => handleButtonClick(button.path)}
           data-name="Button"
         >
-          <p>{button.label}</p>
+          <p>
+            <AnimatedLabel text={button.label} />
+          </p>
         </button>
       ))}
     </header>

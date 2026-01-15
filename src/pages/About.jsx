@@ -2,6 +2,25 @@ import { useState, useEffect, useRef } from 'react';
 import Header from '../components/Header';
 import './About.css';
 
+function RevealText({ text, className = '' }) {
+  const lines = text.split('\n');
+
+  return (
+    <div className={`reveal-group ${className}`}>
+      {lines.map((line, i) => (
+        <p
+          key={i}
+          className="reveal-line"
+          style={{ '--delay': `${i * 0.08}s` }}
+        >
+          <span>{line}</span>
+        </p>
+      ))}
+    </div>
+  );
+}
+
+
 function About() {
   // Content animation states
   const [showTopFrame, setShowTopFrame] = useState(false);
@@ -11,6 +30,25 @@ function About() {
   const footerRef = useRef(null);
   const [footerVisible, setFooterVisible] = useState(false);
   const [showContactBox, setShowContactBox] = useState(false);
+
+  useEffect(() => {
+  const groups = document.querySelectorAll('.reveal-group');
+
+  const observer = new IntersectionObserver(
+    (entries) => {
+      entries.forEach((entry) => {
+        if (entry.isIntersecting) {
+          entry.target.classList.add('is-visible');
+        }
+      });
+    },
+    { threshold: 0.4 }
+  );
+
+  groups.forEach((el) => observer.observe(el));
+
+  return () => observer.disconnect();
+}, []);
 
   // Trigger content animations on mount
   useEffect(() => {
@@ -50,20 +88,16 @@ function About() {
 
   return (
     <div className="about">
+      <div className="about-bg" /> 
       <Header />
       <div className="about-container">
         {/* First major frame - About Me section */}
         <div className={`about-intro-frame ${showTopFrame ? 'fade-in-top' : ''}`}>
           <h1 className="about-title">About Me</h1>
-          <p className="about-intro-text">
-            I'm a second-year Business Administration student concentrating in
-            Marketing with a minor in Photography and Videography at Cal Poly San Luis Obispo.
-            During my time at school, I've been working as a videographer for Cal Poly Athletics,
-            filming coverage for all Division I ESPN livestreams as well as getting footage for
-            social media and pregame edits. Through courses for my minor, my association in
-            my school's fashion club, and personal interest, I have worked with and photographed
-            many different subjects and activities, using a variety of skills and techniques.
-          </p>
+          <RevealText
+            className="about-intro-text"
+            text={`I'm a second-year Business Administration student concentrating in Marketing with a minor in Photography and Videography at Cal Poly San Luis Obispo. During my time at school, I've been working as a videographer for Cal Poly Athletics, filming coverage for all Division I ESPN livestreams as well as getting footage for social media and pregame edits.Through courses for my minor, my association in my school's fashion club, and personal interest, I have worked with and photographed many different subjects and activities, using a variety of skills and techniques.`}
+          />
         </div>
 
         {/* Second major frame - Photo and Bio/Work section */}
@@ -73,31 +107,35 @@ function About() {
           </div>
           <div className="about-info-section">
             <h2 className="section-title">Bio</h2>
-            <div className="info-text-frame">
-              <div className="info-item">
-                <span className="info-label">Hometown</span> : Austin, TX
+              <div className="info-text-frame reveal-group">
+                {[
+                  'Hometown : Austin, TX',
+                  'School : Cal Poly San Luis Obispo',
+                  'Year : Sophomore',
+                  'Major : Business',
+                  'Minor : Photography and Videography',
+                  'Favorite Camera : Nikon D3500',
+                ].map((text, i) => (
+                  <p
+                    key={i}
+                    className="reveal-line"
+                    style={{ '--delay': `${i * 0.06}s` }}
+                  >
+                    <span>{text}</span>
+                  </p>
+                ))}
               </div>
-              <div className="info-item">
-                <span className="info-label">School</span> : Cal Poly San Luis Obispo
-              </div>
-              <div className="info-item">
-                <span className="info-label">Year</span> : Sophomore
-              </div>
-              <div className="info-item">
-                <span className="info-label">Major</span> : Business
-              </div>
-              <div className="info-item">
-                <span className="info-label">Minor</span> : Photography and Videography
-              </div>
-              <div className="info-item">
-                <span className="info-label">Favorite Camera</span> : Nikon D3500
-              </div>
-            </div>
             <h2 className="section-title">Work</h2>
-            <div className="info-text-frame work-info">
-              <div>Cal Poly FITS</div>
-              <div>MeerMutter Label</div>
-              <div>ART 122</div>
+            <div className="info-text-frame work-info reveal-group">
+              {['Cal Poly FITS', 'MeerMutter Label', 'ART 122'].map((text, i) => (
+                <p
+                  key={i}
+                  className="reveal-line"
+                  style={{ '--delay': `${i * 0.06}s` }}
+                >
+                  <span>{text}</span>
+                </p>
+              ))}
             </div>
           </div>
         </div>
