@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useLayoutEffect } from 'react';
 import Header from '~/components/Header';
 import Footer from '~/components/Footer';
 import OptimizedImage from '~/components/OptimizedImage';
@@ -17,9 +17,9 @@ function FineartProject() {
     '/photos/Fineart/Fineart1.jpg'
   ];
 
-  // Scroll to top immediately on mount
-  useEffect(() => {
-    window.scrollTo(0, 0);
+  // Scroll to top immediately on mount (useLayoutEffect runs before paint)
+  useLayoutEffect(() => {
+    window.scrollTo({ top: 0, left: 0, behavior: 'instant' });
   }, []);
 
   // Handle animations

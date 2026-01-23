@@ -158,25 +158,24 @@
 /* ========== TOUCH DEVICE STYLES ========== */
 /* These styles ONLY apply to touch devices (no hover capability) */
 @media (hover: none) {
-  /* Active page: full opacity (same as desktop) */
-  .header-button.active {
-    color: #ffffe1;
-  }
-
-  /* Non-active pages: half opacity (same as desktop) */
-  .header-button:not(.active) {
-    color: rgba(255, 255, 225, 0.5);
-  }
-
-  /* Add active state for touch feedback */
-  .header-button:active {
-    opacity: 0.6;
-  }
-
   /* Increase touch target size */
   .header-button {
     padding: 12px 16px;
     min-height: 44px;
+  }
+
+  /* Active page: full opacity (same as desktop) - higher specificity */
+  .header-button.active,
+  .header-button.active:active {
+    color: #ffffe1 !important;
+    border-top-color: #ffffe1;
+  }
+
+  /* Non-active pages: half opacity (same as desktop) - higher specificity */
+  .header-button:not(.active),
+  .header-button:not(.active):active {
+    color: rgba(255, 255, 225, 0.5) !important;
+    border-top-color: rgba(255, 255, 225, 0.5);
   }
 
   /* Letter animation triggers via clicking class (handled in JS) */
