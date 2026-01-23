@@ -2,10 +2,12 @@
   background-color: #0c0c0c;
   min-height: 100vh;
   width: 100%;
+  padding: 10px 0;
   gap: 80px;
   display: flex;
   flex-direction: column;
   align-items: center;
+  box-sizing: border-box;
 }
 
 /* Main Container */
@@ -175,11 +177,43 @@
   background-color: #1a1a1a;
 }
 
-.gallery-video {
+/* YouTube Embed Styles */
+.youtube-wrapper {
+  position: relative;
   width: 100%;
-  height: auto;
-  display: block;
-  padding: 10px;
+  padding-bottom: 56.25%; /* 16:9 aspect ratio */
+  background-color: #000;
+  overflow: hidden;
+}
+
+.youtube-player {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+}
+
+.youtube-player iframe {
+  width: 100%;
+  height: 100%;
+}
+
+/* Transparent overlay to capture cursor on YouTube videos */
+.youtube-cursor-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: calc(100% - 60px); /* Leave bottom 60px for YouTube controls */
+  z-index: 10;
+  background: transparent;
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .youtube-cursor-overlay {
+    cursor: none !important;
+  }
 }
 
 /* Footer - Same as Work section */
@@ -458,3 +492,62 @@
     font-size: 42px;
   }
 }
+
+/* ========== ADDITIONAL MOBILE STYLES ========== */
+@media (max-width: 768px) {
+  /* Hide photo collections text on mobile */
+  .date-frame {
+    display: none;
+  }
+
+  /* Remove extra padding since title is no longer absolute */
+  .main-container {
+    padding-bottom: 0;
+  }
+
+  /* Center align content frame */
+  .content-frame {
+    align-items: center;
+    text-align: center;
+  }
+
+  /* Stack image and title vertically */
+  .image-title-frame {
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+  }
+
+  /* Title below image, centered */
+  .videography-title {
+    position: static;
+    transform: none;
+    width: auto;
+    height: auto;
+    text-align: center;
+    font-size: 80px;
+    margin-top: 20px;
+    left: auto;
+  }
+
+  .videography-title.fade-in-up-long {
+    transform: none;
+  }
+
+  .videography-title:not(.fade-in-up-long) {
+    transform: translateY(30px);
+  }
+
+  .body-text {
+    text-align: center;
+  }
+
+  .gallery-section {
+    align-items: center;
+  }
+
+  .gallery-item {
+    align-items: center;
+  }
+}
+

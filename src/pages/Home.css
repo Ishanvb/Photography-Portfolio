@@ -14,6 +14,16 @@
   overflow: hidden;
 }
 
+/* Hide content during loading */
+.home.content-hidden {
+  opacity: 0;
+}
+
+.home.content-ready {
+  opacity: 1;
+  transition: opacity 0.3s ease-out;
+}
+
 .reel-wrapper {
   display: flex;
   flex-direction: column;
@@ -25,5 +35,128 @@
   overflow: hidden;
   min-height: 0;
   padding: 0;
+}
+
+/* Selected Works label - desktop only */
+.selected-works-label {
+  display: flex;
+  justify-content: flex-end;
+  width: 100%;
+  padding: 0 200px;
+  box-sizing: border-box;
+  margin-bottom: 15px;
+}
+
+.selected-works-text {
+  position: relative;
+  overflow: hidden;
+  display: inline-block;
+  background-color: #ffffe1;
+  padding: 4px 10px;
+}
+
+.selected-works-text span {
+  position: relative;
+  z-index: 1;
+  font-family: 'Manrope', sans-serif;
+  font-weight: 500;
+  font-size: 14px;
+  letter-spacing: 0.5px;
+  color: #0c0c0c;
+}
+
+/* Reveal mask - dark color that slides away */
+.selected-works-text::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background-color: #0c0c0c;
+  transform: translateX(0%);
+  z-index: 2;
+  pointer-events: none;
+  transition: transform 0.7s cubic-bezier(0.77, 0, 0.175, 1);
+}
+
+.selected-works-label.is-visible .selected-works-text::after {
+  transform: translateX(101%);
+}
+
+/* Hover fill effect - orange fills from right */
+.selected-works-text::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background-color: #ffbd2f;
+  transform: translateX(100%);
+  z-index: 0;
+  pointer-events: none;
+  transition: transform 0.4s cubic-bezier(0.77, 0, 0.175, 1);
+}
+
+.selected-works-text:hover::before {
+  transform: translateX(0%);
+}
+
+/* Instruction bar - hidden on desktop */
+.home-gallery-instruction {
+  display: none;
+}
+
+/* ========== MOBILE RESPONSIVE STYLES ========== */
+@media (max-width: 768px) {
+  /* Hide Selected Works label on mobile */
+  .selected-works-label {
+    display: none;
+  }
+
+  /* Show instruction bar on mobile */
+  .home-gallery-instruction {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    width: 100%;
+    padding: 6px 20px;
+    box-sizing: border-box;
+    opacity: 0;
+    transform: translateX(30px);
+  }
+
+  .home-gallery-instruction.is-visible {
+    animation: fadeInFromRight 0.8s ease-out forwards;
+  }
+
+  @keyframes fadeInFromRight {
+    from {
+      opacity: 0;
+      transform: translateX(30px);
+    }
+    to {
+      opacity: 1;
+      transform: translateX(0);
+    }
+  }
+
+  .home-instruction-text {
+    font-family: 'Manrope', sans-serif;
+    font-weight: 400;
+    font-size: 9px;
+    color: rgb(255, 255, 255);
+    letter-spacing: 0.5px;
+  }
+
+  /* Increase gap between instruction and reel */
+  .reel-wrapper {
+    gap: 8px;
+  }
+}
+
+@media (max-width: 480px) {
+  .home-gallery-instruction {
+    padding: 4px 16px;
+  }
+
+  .home-instruction-text {
+    font-size: 8px;
+  }
 }
 

@@ -56,15 +56,58 @@
   pointer-events: auto; /* allow interaction */
 }
 
+/* ========== MOBILE RESPONSIVE STYLES ========== */
+@media (max-width: 768px) {
+  .scroll-reel-container {
+    width: 160px;
+    height: 14px;
+  }
 
+  .scroll-reel-rectangle {
+    width: 26px;
+    height: 14px;
+  }
 
+  .scroll-reel-line {
+    height: 14px;
+  }
 
-.scroll-reel-lines {
-  position: absolute;
-  left: 0;
-  top: 0;
-  width: 100%;
-  height: 100%;
-  pointer-events: none; /* lines should not intercept pointer events */
+  /* Hide lines that extend beyond the smaller container */
+  .scroll-reel-lines {
+    width: 160px;
+    overflow: hidden;
+  }
+
+  .fixed-bottom-scroll-reel {
+    bottom: 24px;
+    left: 50%;
+    right: auto;
+    margin-left: 0;
+    margin-right: 0;
+    transform: translateX(-50%);
+  }
 }
 
+@media (max-width: 480px) {
+  .scroll-reel-container {
+    width: 140px;
+    height: 12px;
+  }
+
+  .scroll-reel-rectangle {
+    width: 22px;
+    height: 12px;
+  }
+
+  .scroll-reel-line {
+    height: 12px;
+  }
+
+  .scroll-reel-lines {
+    width: 140px;
+  }
+
+  .fixed-bottom-scroll-reel {
+    bottom: 20px;
+  }
+}

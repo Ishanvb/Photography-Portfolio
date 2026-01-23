@@ -1,0 +1,236 @@
+.custom-cursor {
+  position: fixed;
+  top: 0;
+  left: 0;
+  z-index: 9999;
+  pointer-events: none;
+
+  width: 12px;
+  height: 12px;
+  border-radius: 30px;
+  background: #fff;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  transform: translate(-50%, -50%);
+  transition:
+    width 0.3s cubic-bezier(0.16, 1, 0.3, 1),
+    height 0.3s cubic-bezier(0.16, 1, 0.3, 1),
+    padding 0.3s cubic-bezier(0.16, 1, 0.3, 1),
+    opacity 0.2s ease,
+    background 0.3s ease;
+}
+
+.custom-cursor.hidden {
+  opacity: 0;
+}
+
+.custom-cursor span {
+  font-family: 'Manrope', sans-serif;
+  font-size: 14px;
+  font-weight: 500;
+  letter-spacing: 0.02em;
+  white-space: nowrap;
+  color: #0c0c0c;
+  opacity: 0;
+  transform: scale(0.8);
+  transition: opacity 0.3s ease, transform 0.3s ease;
+}
+
+.custom-cursor.active {
+  width: auto;
+  height: auto;
+  padding: 10px 20px;
+  background: rgba(255, 255, 255, 0.95);
+}
+
+.custom-cursor.active span {
+  opacity: 1;
+  transform: scale(1);
+}
+
+/* Arrow icon inside cursor for magnetic state */
+.cursor-arrow {
+  width: 0;
+  height: 0;
+  border-left: 8px solid transparent;
+  border-right: 8px solid transparent;
+  border-top: 8px solid #0c0c0c;
+  opacity: 0;
+  transform: scale(0);
+  transition: opacity 0.3s ease, transform 0.3s ease;
+  position: absolute;
+}
+
+.cursor-arrow.flipped {
+  transform: scale(1) rotate(180deg);
+}
+
+/* Magnetic cursor state */
+.custom-cursor.magnetic {
+  width: 48px;
+  height: 48px;
+  padding: 0;
+  background: rgba(255, 255, 255, 0.95);
+}
+
+.custom-cursor.magnetic .cursor-arrow {
+  opacity: 1;
+  transform: scale(1);
+}
+
+.custom-cursor.magnetic .cursor-arrow.flipped {
+  transform: scale(1) rotate(180deg);
+}
+
+/* Video cursor state */
+.custom-cursor.video-cursor {
+  width: 64px;
+  height: 64px;
+  padding: 0;
+  background: rgba(255, 255, 255, 0.95);
+}
+
+/* Play icon (triangle pointing right) */
+.cursor-play {
+  width: 0;
+  height: 0;
+  border-top: 10px solid transparent;
+  border-bottom: 10px solid transparent;
+  border-left: 16px solid #0c0c0c;
+  opacity: 0;
+  transform: scale(0);
+  transition: opacity 0.3s ease, transform 0.3s ease;
+  position: absolute;
+  margin-left: 3px;
+}
+
+.cursor-play.visible {
+  opacity: 1;
+  transform: scale(1);
+}
+
+/* Pause icon (two vertical bars) */
+.cursor-pause {
+  display: flex;
+  gap: 6px;
+  opacity: 0;
+  transform: scale(0);
+  transition: opacity 0.3s ease, transform 0.3s ease;
+  position: absolute;
+}
+
+.cursor-pause::before,
+.cursor-pause::after {
+  content: '';
+  width: 6px;
+  height: 20px;
+  background: #0c0c0c;
+  border-radius: 2px;
+}
+
+.cursor-pause.visible {
+  opacity: 1;
+  transform: scale(1);
+}
+
+/* Mute cursor state */
+.custom-cursor.mute-cursor {
+  width: 48px;
+  height: 48px;
+  padding: 0;
+  background: rgba(255, 255, 255, 0.95);
+}
+
+/* SVG mute/unmute icons */
+.cursor-mute,
+.cursor-unmute {
+  position: absolute;
+  opacity: 0;
+  transform: scale(0);
+  transition: opacity 0.3s ease, transform 0.3s ease;
+}
+
+.cursor-mute.visible,
+.cursor-unmute.visible {
+  opacity: 1;
+  transform: scale(1);
+}
+
+/* Progress bar cursor state - just smaller circle */
+.custom-cursor.progress-cursor {
+  width: 14px;
+  height: 14px;
+  padding: 0;
+  background: #ffffe1;
+}
+
+.custom-cursor.progress-cursor.dragging {
+  width: 18px;
+  height: 18px;
+  background: #fff;
+}
+
+/* Me cursor state */
+.custom-cursor.me-cursor {
+  width: 64px;
+  height: 64px;
+  padding: 0;
+  background: rgba(255, 255, 255, 0.95);
+}
+
+.cursor-me {
+  position: absolute;
+  opacity: 0;
+  transform: scale(0);
+  transition: opacity 0.3s ease, transform 0.3s ease;
+}
+
+.cursor-me.visible {
+  opacity: 1;
+  transform: scale(1);
+}
+
+/* Header cursor state - inflated circle */
+.custom-cursor.header-cursor {
+  width: 32px;
+  height: 32px;
+  padding: 0;
+}
+
+/* YouTube cursor state - slightly bigger circle */
+.custom-cursor.youtube-cursor {
+  width: 20px;
+  height: 20px;
+  padding: 0;
+}
+
+/* Icon container for cursor icons (left of text) */
+.cursor-icon-container {
+  display: none;
+  margin-right: 8px;
+}
+
+.cursor-icon-container.visible {
+  display: flex;
+  align-items: center;
+}
+
+.cursor-icon {
+  display: none;
+  width: 18px;
+  height: 18px;
+}
+
+.cursor-icon.visible {
+  display: block;
+}
+
+/* Hide default cursor everywhere */
+@media (hover: hover) and (pointer: fine) {
+  * {
+    cursor: none !important;
+  }
+}

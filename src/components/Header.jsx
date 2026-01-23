@@ -1,6 +1,6 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
-import './Header.css';
+import '~/components/Header.css';
 
 const AnimatedLabel = ({ text }) => {
   return (
@@ -24,6 +24,9 @@ const AnimatedLabel = ({ text }) => {
 
 function Header() {
   const [hoveredButton, setHoveredButton] = useState(null);
+  const [clickingButton, setClickingButton] = useState(null);
+  const [enterReady, setEnterReady] = useState(null);
+  const [entering, setEntering] = useState(null);
   const navigate = useNavigate();
   const location = useLocation();
 
@@ -34,12 +37,19 @@ function Header() {
     { id: 'contact', label: '04 Contact', path: '/contact' }
   ];
 
-  const handleButtonClick = (path) => {
-    if (location.pathname === path) {
-      window.location.reload();
-    } else {
-      navigate(path);
-    }
+  const handleButtonClick = (buttonId, path) => {
+    // Trigger the exit animation (letters scroll up)
+    setClickingButton(buttonId);
+
+    // Wait for exit animation to complete, then navigate
+    setTimeout(() => {
+      setClickingButton(null);
+      if (location.pathname === path) {
+        window.location.reload();
+      } else {
+        navigate(path);
+      }
+    }, 450);
   };
 
   const isActive = (path) => {
@@ -50,16 +60,39 @@ function Header() {
     return location.pathname === path;
   };
 
+  // Trigger enter animation (letters scroll down) on the active button when page loads
+  useEffect(() => {
+    const activeButton = buttons.find(button => isActive(button.path));
+    if (activeButton) {
+      // Step 1: Position letters above (no transition) - they start hidden
+      setEnterReady(activeButton.id);
+
+      // Step 2: After a frame, trigger enter animation (letters scroll down)
+      requestAnimationFrame(() => {
+        requestAnimationFrame(() => {
+          setEnterReady(null);
+          setEntering(activeButton.id);
+
+          // Clean up after animation completes
+          setTimeout(() => {
+            setEntering(null);
+          }, 450);
+        });
+      });
+    }
+  }, [location.pathname]);
+
   return (
     <header className="header" data-name="Header" data-node-id="1:18">
       {buttons.map((button) => (
         <button
           key={button.id}
-          className={`header-button ${hoveredButton === button.id ? 'hovered' : ''} ${isActive(button.path) ? 'active' : ''}`}
+          className={`header-button ${hoveredButton === button.id ? 'hovered' : ''} ${isActive(button.path) ? 'active' : ''} ${clickingButton === button.id ? 'clicking' : ''} ${enterReady === button.id ? 'enter-ready' : ''} ${entering === button.id ? 'entering' : ''}`}
           onMouseEnter={() => setHoveredButton(button.id)}
           onMouseLeave={() => setHoveredButton(null)}
-          onClick={() => handleButtonClick(button.path)}
+          onClick={() => handleButtonClick(button.id, button.path)}
           data-name="Button"
+          data-cursor-header
         >
           <p>
             <AnimatedLabel text={button.label} />

@@ -1,15 +1,18 @@
 import { useState, useEffect } from 'react';
-import './Title.css';
+import '~/components/Title.css';
 
-function Title() {
+function Title({ startAnimation = true }) {
   const [displayText, setDisplayText] = useState('');
   const [showCursor, setShowCursor] = useState(true);
   const fullText = "Hi, I'm MariannaParzick.";
   const finalText = "MariannaParzick";
 
   useEffect(() => {
+    // Don't start animation until told to
+    if (!startAnimation) return;
+
     let currentIndex = 0;
-    const typingSpeed = 100; // ms per character
+    const typingSpeed = 60; // ms per character
     const deleteSpeed = 30; // ms per character when deleting
     const pauseBeforeDelete = 500; // pause after typing completes
 
@@ -51,7 +54,7 @@ function Title() {
     }, typingSpeed);
 
     return () => clearInterval(typeInterval);
-  }, []);
+  }, [startAnimation]);
 
   return (
     <div className="title-container" data-node-id="35:19">

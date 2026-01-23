@@ -1,41 +1,17 @@
 .reel-container {
-  /* Reel sizing variables (change these to make the reel taller/shorter)
-     Shrunk the heights by 80px total as requested; adjust the values below to change size */
-  --reel-image-height: 501px;     /* was 521px */
-  --reel-image-height-alt: 508px; /* was 528px */
-  --reel-image-height-8n: 481px;  /* was 501px */
-
-  /* Side gutter for centered layout — change this value to alter left/right gutters */
-  --reel-side-gutter: 0px;
-
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 64px;
   width: 100%;
-  position: relative;
   overflow: hidden;
-  margin: 0;
-  margin-bottom: 20px;
-  box-sizing: border-box;
-  padding-left: var(--reel-side-gutter);
-  padding-right: var(--reel-side-gutter);
+  margin-bottom: 60px;
 }
 
 .reel {
   display: flex;
   gap: 32px;
-  align-items: center;
-  justify-content: center; /* center frames for the "centered frame with gutters" layout */
-  width: 100%;
   overflow-x: auto;
-  overflow-y: hidden;
-  scroll-behavior: unset; /* Disable smooth scrolling for programmatic updates */
-  -webkit-overflow-scrolling: touch;
   scrollbar-width: none;
-  -ms-overflow-style: none;
-  padding: 0;
-  margin: 0;
+  -webkit-overflow-scrolling: touch;
+  will-change: scroll-position;
+  contain: layout paint;
 }
 
 .reel::-webkit-scrollbar {
@@ -43,101 +19,92 @@
 }
 
 .reel-frame {
-  display: flex;
-  flex-direction: column;
-  align-items: flex-start;
   flex-shrink: 0;
-}
-
-.reel-frame {
-  width: 755px; /* scaled proportionally */
+  width: 755px;
 }
 
 .reel-frame:nth-child(8n) {
-  width: 342px; /* scaled proportionally */
+  width: 342px;
 }
 
 .reel-image-container {
   width: 100%;
-  padding: 10px;
-  display: flex;
-  flex-direction: column;
-  align-items: flex-start;
-  cursor: pointer;
+  aspect-ratio: 755 / 501;
   overflow: hidden;
 }
 
-.reel-frame .reel-image-container {
-  height: var(--reel-image-height);
-}
-
-.reel-frame:nth-child(4n) .reel-image-container {
-  height: var(--reel-image-height-alt);
+.reel-frame:nth-child(8n) .reel-image-container {
+  aspect-ratio: 342 / 481;
 }
 
 .reel-image {
   width: 100%;
   height: 100%;
   object-fit: cover;
-  object-position: center;
-  border-radius: 0;
-  background-color: #1a1a1a;
-  display: block;
-  transition: transform 0.3s ease;
-}
-
-.reel-image-container:hover .reel-image {
-  transform: scale(1.05);
-}
-
-.reel-frame:nth-child(8n) .reel-image {
-  width: 323px; /* scaled proportionally */
-  height: var(--reel-image-height-8n);
 }
 
 .reel-caption {
-  display: flex;
-  flex-direction: column;
-  align-items: flex-start;
-  justify-content: center;
-  height: 62px; /* scaled proportionally */
-  width: 100%;
-  padding: 0;
-  padding-bottom: 15px; /* scaled proportionally */
+  padding: 10px;
 }
 
 .caption-title {
-  display: flex;
-  align-items: center;
-  padding: 10px;
-  margin-bottom: -18px;
-}
-
-.caption-title p {
-  font-family: 'Manrope', sans-serif;
-  font-weight: 500;
+  font-family: Manrope, sans-serif;
   font-size: 14px;
-  line-height: normal;
   color: #ffbd2f;
-  white-space: nowrap;
-  margin: 0;
 }
 
 .caption-direction {
-  display: flex;
-  align-items: center;
-  padding: 10px;
-  margin-bottom: -18px;
-  width: 100%;
-}
-
-.caption-direction p {
-  font-family: 'Manrope', sans-serif;
-  font-weight: 500;
+  font-family: Manrope, sans-serif;
   font-size: 14px;
-  line-height: normal;
   color: rgba(255, 189, 47, 0.5);
-  white-space: nowrap;
-  margin: 0;
 }
 
+/* =========================
+   MOBILE
+========================= */
+
+@media (max-width: 768px) {
+  .reel {
+    gap: 16px;
+  }
+
+  .reel-frame {
+    width: 70vw;
+    min-width: 260px;
+  }
+
+  .reel-frame:nth-child(8n) {
+    width: 50vw;
+    min-width: 180px;
+  }
+
+  .reel-caption {
+    padding: 6px;
+  }
+
+  .caption-title,
+  .caption-direction {
+    font-size: 12px;
+  }
+}
+
+@media (max-width: 480px) {
+  .reel {
+    gap: 12px;
+  }
+
+  .reel-frame {
+    width: 75vw;
+    min-width: 240px;
+  }
+
+  .reel-frame:nth-child(8n) {
+    width: 55vw;
+    min-width: 160px;
+  }
+
+  .caption-title,
+  .caption-direction {
+    font-size: 11px;
+  }
+}

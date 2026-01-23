@@ -1,10 +1,13 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 import { useLocation } from 'react-router-dom';
-import Header from '../components/Header';
-import './FashionProject.css';
+import Header from '~/components/Header';
+import Footer from '~/components/Footer';
+import OptimizedImage from '~/components/OptimizedImage';
+import '~/pages/FashionProject.css';
 
 function FashionProject() {
   const location = useLocation();
+  const scrollToPhotoIndex = location.state?.scrollToPhotoIndex;
 
   // Header animation states
   const [headerAnimations, setHeaderAnimations] = useState({
@@ -14,69 +17,9 @@ function FashionProject() {
     body: false
   });
 
-  // Footer animation states
-  const footerRef = useRef(null);
-  const [footerVisible, setFooterVisible] = useState(false);
-  const [showContactBox, setShowContactBox] = useState(false);
-
-  // Scroll to top and trigger header animations on mount
-  useEffect(() => {
-    const scrollToPhotoIndex = location.state?.scrollToPhotoIndex;
-
-    if (scrollToPhotoIndex !== undefined && scrollToPhotoIndex !== null) {
-      // Scroll to specific photo in gallery
-      setTimeout(() => {
-        const galleryItems = document.querySelectorAll('.gallery-item');
-        if (galleryItems[scrollToPhotoIndex]) {
-          galleryItems[scrollToPhotoIndex].scrollIntoView({
-            behavior: 'smooth',
-            block: 'center'
-          });
-        }
-      }, 500); // Wait for page to render
-    } else {
-      window.scrollTo(0, 0);
-    }
-
-    // Trigger animations with delays
-    setTimeout(() => {
-      setHeaderAnimations(prev => ({ ...prev, date: true, image: true, body: true }));
-    }, 100);
-
-    setTimeout(() => {
-      setHeaderAnimations(prev => ({ ...prev, title: true }));
-    }, 250);
-  }, [location]);
-
-  // Intersection Observer for footer
-  useEffect(() => {
-    const observer = new IntersectionObserver(
-      (entries) => {
-        entries.forEach((entry) => {
-          if (entry.isIntersecting && !footerVisible) {
-            setFooterVisible(true);
-          }
-        });
-      },
-      { threshold: 0.3 }
-    );
-
-    if (footerRef.current) {
-      observer.observe(footerRef.current);
-    }
-
-    return () => {
-      if (footerRef.current) {
-        observer.unobserve(footerRef.current);
-      }
-    };
-  }, [footerVisible]);
-
-  // Show contact box after heading is visible
-  useEffect(() => {
-    if (!footerVisible) return;
-    setTimeout(() => setShowContactBox(true), 400);
-  }, [footerVisible]);
+  // Track which gallery images have loaded in DOM
+  const loadedImagesRef = useRef(new Set());
+  const hasScrolledRef = useRef(false);
 
   const galleryImages = [
     '/photos/Fashion/Fashion1.jpg',
@@ -96,6 +39,72 @@ function FashionProject() {
     '/photos/Fashion/Fashion15.jpg'
   ];
 
+  // Scroll to top immediately on mount
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, []);
+
+  // Handle gallery image load - scroll when target image is ready
+  const handleImageLoad = useCallback((index) => {
+    loadedImagesRef.current.add(index);
+
+    // Check if we should scroll to a specific photo
+    if (scrollToPhotoIndex !== undefined && scrollToPhotoIndex !== null && !hasScrolledRef.current) {
+      // Check if target image and all images before it have loaded
+      let allLoaded = true;
+      for (let i = 0; i <= scrollToPhotoIndex; i++) {
+        if (!loadedImagesRef.current.has(i)) {
+          allLoaded = false;
+          break;
+        }
+      }
+
+      if (allLoaded) {
+        hasScrolledRef.current = true;
+        // Small delay to ensure DOM has painted
+        requestAnimationFrame(() => {
+          const galleryItems = document.querySelectorAll('.gallery-item');
+          if (galleryItems[scrollToPhotoIndex]) {
+            galleryItems[scrollToPhotoIndex].scrollIntoView({
+              behavior: 'smooth',
+              block: 'center'
+            });
+          }
+        });
+      }
+    }
+  }, [scrollToPhotoIndex]);
+
+  // Handle animations
+  useEffect(() => {
+    // Start animations
+    setTimeout(() => {
+      setHeaderAnimations(prev => ({ ...prev, date: true, image: true, body: true }));
+    }, 100);
+
+    setTimeout(() => {
+      setHeaderAnimations(prev => ({ ...prev, title: true }));
+    }, 250);
+
+    // Fallback scroll in case images don't trigger onLoad
+    if (scrollToPhotoIndex !== undefined && scrollToPhotoIndex !== null) {
+      const fallbackTimer = setTimeout(() => {
+        if (!hasScrolledRef.current) {
+          hasScrolledRef.current = true;
+          const galleryItems = document.querySelectorAll('.gallery-item');
+          if (galleryItems[scrollToPhotoIndex]) {
+            galleryItems[scrollToPhotoIndex].scrollIntoView({
+              behavior: 'smooth',
+              block: 'center'
+            });
+          }
+        }
+      }, 3000);
+
+      return () => clearTimeout(fallbackTimer);
+    }
+  }, [location, scrollToPhotoIndex]);
+
   return (
     <div className="fashion-project">
       <Header />
@@ -104,14 +113,14 @@ function FashionProject() {
       <section className="main-container">
         {/* Date Frame */}
         <div className={`date-frame ${headerAnimations.date ? 'fade-in-up-quick' : ''}`}>
-          <div className="date-text">[ Photo Collections: 5 ]</div>
+          <div className="date-text">[ Photo Collections: 16 ]</div>
         </div>
 
         {/* Content Frame */}
         <div className="content-frame">
           {/* Left Frame - Image with Title Overlay */}
           <div className="image-title-frame">
-            <img src="/photos/Fashion/Fashion.jpg" alt="Fashion" className={`fashion-image ${headerAnimations.image ? 'fade-in-up-quick' : ''}`} />
+            <OptimizedImage src="/photos/Fashion/Fashion.jpg" alt="Fashion" className={`fashion-image ${headerAnimations.image ? 'fade-in-up-quick' : ''}`} />
             <h1 className={`fashion-title ${headerAnimations.title ? 'fade-in-up-long' : ''}`}>Fashion</h1>
           </div>
 
@@ -132,42 +141,19 @@ function FashionProject() {
         {galleryImages.map((image, index) => (
           <div key={index} className="gallery-item">
             <div className="gallery-image-container">
-              <img src={image} alt={`Fashion ${index + 1}`} className="gallery-image" />
+              <OptimizedImage
+                src={image}
+                alt={`Fashion ${index + 1}`}
+                className="gallery-image"
+                loading={scrollToPhotoIndex !== undefined ? 'eager' : 'lazy'}
+                onLoad={() => handleImageLoad(index)}
+              />
             </div>
           </div>
         ))}
 
-        {/* Footer - Same as Work section */}
-        <div className="project-contact-section" ref={footerRef}>
-          <div className={`project-together ${footerVisible ? 'fade-in-up' : ''}`}>
-            <h2 className="project-heading">
-              <span className="semibold">Lets</span> <span className="script">work</span> <span className="semibold">together</span>
-            </h2>
-          </div>
-
-          <div className={`contact-info ${showContactBox ? 'slide-up' : ''}`}>
-            <span className="corner corner-tl"></span>
-            <span className="corner corner-tr"></span>
-            <span className="corner corner-bl"></span>
-            <span className="corner corner-br"></span>
-
-            <p className="contact-text">Contact:</p>
-            <p className="contact-text">
-              Mobile: <a href="tel:+15127756749" className="contact-link">+1 512.775.6749</a>
-            </p>
-            <p className="contact-text">
-              <a href="mailto:mariannaparzick@gmail.com" className="contact-link">mariannaparzick@gmail.com</a>
-            </p>
-            <p className="contact-text">
-              LinkedIn: <a href="https://www.linkedin.com/in/marianna-parzick/" target="_blank" rel="noopener noreferrer" className="contact-link contact-link-underline">marianna-parzick</a>
-            </p>
-            <p className="contact-text">
-              Instagram: <a href="https://www.instagram.com/fla5hedbymari?utm_source=ig_web_button_share_sheet&igsh=ZDNlZDc0MzIxNw==" target="_blank" rel="noopener noreferrer" className="contact-link">@fla5hedbymari</a>
-            </p>
-            <p className="contact-text">Reach Out!</p>
-          </div>
-        </div>
       </section>
+      <Footer />
     </div>
   );
 }

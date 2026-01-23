@@ -1,6 +1,8 @@
-import { useState, useEffect, useRef } from 'react';
-import Header from '../components/Header';
-import './FineartProject.css';
+import { useState, useEffect } from 'react';
+import Header from '~/components/Header';
+import Footer from '~/components/Footer';
+import OptimizedImage from '~/components/OptimizedImage';
+import '~/pages/FineartProject.css';
 
 function FineartProject() {
   // Header animation states
@@ -11,16 +13,17 @@ function FineartProject() {
     body: false
   });
 
-  // Footer animation states
-  const footerRef = useRef(null);
-  const [footerVisible, setFooterVisible] = useState(false);
-  const [showContactBox, setShowContactBox] = useState(false);
+  const galleryImages = [
+    '/photos/Fineart/Fineart1.jpg'
+  ];
 
-  // Scroll to top and trigger header animations on mount
+  // Scroll to top immediately on mount
   useEffect(() => {
     window.scrollTo(0, 0);
+  }, []);
 
-    // Trigger animations with delays
+  // Handle animations
+  useEffect(() => {
     setTimeout(() => {
       setHeaderAnimations(prev => ({ ...prev, date: true, image: true, body: true }));
     }, 100);
@@ -29,40 +32,6 @@ function FineartProject() {
       setHeaderAnimations(prev => ({ ...prev, title: true }));
     }, 250);
   }, []);
-
-  // Intersection Observer for footer
-  useEffect(() => {
-    const observer = new IntersectionObserver(
-      (entries) => {
-        entries.forEach((entry) => {
-          if (entry.isIntersecting && !footerVisible) {
-            setFooterVisible(true);
-          }
-        });
-      },
-      { threshold: 0.3 }
-    );
-
-    if (footerRef.current) {
-      observer.observe(footerRef.current);
-    }
-
-    return () => {
-      if (footerRef.current) {
-        observer.unobserve(footerRef.current);
-      }
-    };
-  }, [footerVisible]);
-
-  // Show contact box after heading is visible
-  useEffect(() => {
-    if (!footerVisible) return;
-    setTimeout(() => setShowContactBox(true), 400);
-  }, [footerVisible]);
-
-  const galleryImages = [
-    '/photos/Fineart/Fineart1.jpg'
-  ];
 
   return (
     <div className="fineart-project">
@@ -79,17 +48,17 @@ function FineartProject() {
         <div className="content-frame">
           {/* Left Frame - Image with Title Overlay */}
           <div className="image-title-frame">
-            <img src="/photos/Fineart/Fineart.jpg" alt="Fine Art" className={`fineart-image ${headerAnimations.image ? 'fade-in-up-quick' : ''}`} />
+            <OptimizedImage src="/photos/Fineart/Fineart.jpg" alt="Fine Art" className={`fineart-image ${headerAnimations.image ? 'fade-in-up-quick' : ''}`} />
             <h1 className={`fineart-title ${headerAnimations.title ? 'fade-in-up-long' : ''}`}>Fine Art</h1>
           </div>
 
           {/* Right Frame - Body Text */}
           <div className={`body-text ${headerAnimations.body ? 'fade-in-up-quick' : ''}`}>
-            Creating and imagining stories before shooting was a vital part of this collection. 
-            Brainstorming for this included storyboarding and writing conceptual captions beforehand. 
-            These photos are meant to be interpreted abstractly with no clear answer for what is occurring 
-            in the photo. The audience should create their own story based on what is depicted in the image. 
-            The collection is meant to convey a sense of whimsy and appear as photos that could be found in 
+            Creating and imagining stories before shooting was a vital part of this collection.
+            Brainstorming for this included storyboarding and writing conceptual captions beforehand.
+            These photos are meant to be interpreted abstractly with no clear answer for what is occurring
+            in the photo. The audience should create their own story based on what is depicted in the image.
+            The collection is meant to convey a sense of whimsy and appear as photos that could be found in
             storybooks.
           </div>
         </div>
@@ -100,42 +69,13 @@ function FineartProject() {
         {galleryImages.map((image, index) => (
           <div key={index} className="gallery-item">
             <div className="gallery-image-container">
-              <img src={image} alt={`Fine Art ${index + 1}`} className="gallery-image" />
+              <OptimizedImage src={image} alt={`Fine Art ${index + 1}`} className="gallery-image" />
             </div>
           </div>
         ))}
 
-        {/* Footer - Same as Work section */}
-        <div className="project-contact-section" ref={footerRef}>
-          <div className={`project-together ${footerVisible ? 'fade-in-up' : ''}`}>
-            <h2 className="project-heading">
-              <span className="semibold">Lets</span> <span className="script">work</span> <span className="semibold">together</span>
-            </h2>
-          </div>
-
-          <div className={`contact-info ${showContactBox ? 'slide-up' : ''}`}>
-            <span className="corner corner-tl"></span>
-            <span className="corner corner-tr"></span>
-            <span className="corner corner-bl"></span>
-            <span className="corner corner-br"></span>
-
-            <p className="contact-text">Contact:</p>
-            <p className="contact-text">
-              Mobile: <a href="tel:+15127756749" className="contact-link">+1 512.775.6749</a>
-            </p>
-            <p className="contact-text">
-              <a href="mailto:mariannaparzick@gmail.com" className="contact-link">mariannaparzick@gmail.com</a>
-            </p>
-            <p className="contact-text">
-              LinkedIn: <a href="https://www.linkedin.com/in/marianna-parzick/" target="_blank" rel="noopener noreferrer" className="contact-link contact-link-underline">marianna-parzick</a>
-            </p>
-            <p className="contact-text">
-              Instagram: <a href="https://www.instagram.com/fla5hedbymari?utm_source=ig_web_button_share_sheet&igsh=ZDNlZDc0MzIxNw==" target="_blank" rel="noopener noreferrer" className="contact-link">@fla5hedbymari</a>
-            </p>
-            <p className="contact-text">Reach Out!</p>
-          </div>
-        </div>
       </section>
+      <Footer />
     </div>
   );
 }

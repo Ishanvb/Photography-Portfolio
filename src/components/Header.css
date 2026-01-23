@@ -2,27 +2,13 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  width: 100vw;
+  width: 100%;
   height: 73px;
   padding: 0 64px;
   padding-top: 24px;
   margin-bottom: 20px;
-  margin-left: calc(-50vw + 50%);
-  margin-right: calc(-50vw + 50%);
   position: relative;
   box-sizing: border-box;
-  animation: fadeInDown 1s ease-out;
-}
-
-@keyframes fadeInDown {
-  from {
-    opacity: 0;
-    transform: translateY(-30px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
 }
 
 .header-button {
@@ -40,22 +26,26 @@
   transition: all 0.2s ease;
 }
 
+/* Active (selected) page: full opacity */
 .header-button.active {
-  color: rgba(255, 255, 225, 0.5);
-}
-
-.header-button:not(.active) {
   color: #ffffe1;
 }
 
-.header-button.hovered {
+/* Non-active pages: half opacity */
+.header-button:not(.active) {
   color: rgba(255, 255, 225, 0.5);
-  border-top-color: rgba(255, 255, 225, 0.5);
 }
 
-.header-button.active.hovered {
+/* Hover on non-active: fill to full opacity */
+.header-button:not(.active).hovered {
   color: #ffffe1;
   border-top-color: #ffffe1;
+}
+
+/* Hover on active (current page): fill to half opacity */
+.header-button.active.hovered {
+  color: rgba(255, 255, 225, 0.5);
+  border-top-color: rgba(255, 255, 225, 0.5);
 }
 
 .header-button p {
@@ -90,12 +80,104 @@
   height: 50%;
 }
 
-.header-button:hover .letter-stack {
+/* Exit animation: letters scroll UP (when clicking) */
+.header-button.clicking .letter-stack {
   transform: translateY(-50%);
 }
 
-.header-button.active .letter-stack {
-  transform: translateY(0%);
+/* Enter animation setup: position letters above (hidden), no transition */
+.header-button.enter-ready .letter-stack {
+  transform: translateY(-50%);
+  transition: none !important;
 }
 
+/* Enter animation: letters scroll DOWN into view */
+.header-button.entering .letter-stack {
+  transform: translateY(0%);
+  transition: transform 0.45s cubic-bezier(0.76, 0, 0.24, 1);
+}
 
+/* ========== MOBILE RESPONSIVE STYLES ========== */
+@media (max-width: 768px) {
+  .header {
+    justify-content: center;
+    padding: 0 32px;
+    padding-top: 14px;
+    gap: 20px;
+    height: 60px;
+  }
+
+  .header-button {
+    font-size: 12px;
+    padding: 0 4px;
+  }
+
+  /* Active page: full opacity (same as desktop) */
+  .header-button.active {
+    color: #ffffe1;
+  }
+
+  /* Non-active pages: half opacity (same as desktop) */
+  .header-button:not(.active) {
+    color: rgba(255, 255, 225, 0.5);
+  }
+
+  .letter {
+    height: 15px;
+  }
+}
+
+@media (max-width: 480px) {
+  .header {
+    gap: 12px;
+    padding: 0 24px;
+    padding-top: 12px;
+    height: 50px;
+  }
+
+  .header-button {
+    font-size: 10px;
+    padding: 0 2px;
+  }
+
+  /* Active page: full opacity (same as desktop) */
+  .header-button.active {
+    color: #ffffe1;
+  }
+
+  /* Non-active pages: half opacity (same as desktop) */
+  .header-button:not(.active) {
+    color: rgba(255, 255, 225, 0.5);
+  }
+
+  .letter {
+    height: 13px;
+  }
+}
+
+/* ========== TOUCH DEVICE STYLES ========== */
+/* These styles ONLY apply to touch devices (no hover capability) */
+@media (hover: none) {
+  /* Active page: full opacity (same as desktop) */
+  .header-button.active {
+    color: #ffffe1;
+  }
+
+  /* Non-active pages: half opacity (same as desktop) */
+  .header-button:not(.active) {
+    color: rgba(255, 255, 225, 0.5);
+  }
+
+  /* Add active state for touch feedback */
+  .header-button:active {
+    opacity: 0.6;
+  }
+
+  /* Increase touch target size */
+  .header-button {
+    padding: 12px 16px;
+    min-height: 44px;
+  }
+
+  /* Letter animation triggers via clicking class (handled in JS) */
+}

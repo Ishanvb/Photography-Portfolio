@@ -1,54 +1,63 @@
-import Header from '../components/Header';
-import './Contact.css';
+import { useState, useEffect } from 'react';
+import Header from '~/components/Header';
+import '~/pages/Contact.css';
 
 function Contact() {
+  const [visible, setVisible] = useState(false);
+  const [revealed, setRevealed] = useState(false);
+
+  const contactLines = [
+    { left: 'Marianna', right: 'Parzick', dimmed: true },
+    { left: 'Marketing', right: 'Photography', dimmed: true },
+    { left: '', right: 'Videography', dimmed: true },
+    { left: 'Contact', right: 'Me', dimmed: true },
+    { left: 'Tel.', right: '512.775.6749', dimmed: false, href: 'tel:+15127756749' },
+    { left: 'Mail', right: 'mparzick@calpoly.edu', dimmed: false, href: 'mailto:mariannaparzick@gmail.com' },
+    { left: 'LinkedIn', right: 'marianna-parzick', dimmed: false, href: 'https://www.linkedin.com/in/marianna-parzick/', external: true },
+    { left: 'Instagram', right: '@fla5hedbymari', dimmed: false, href: 'https://www.instagram.com/fla5hedbymari', external: true },
+    { left: 'Reach', right: 'Out!', dimmed: false },
+  ];
+
+  // Trigger fade-in and highlight reveal on page load
+  useEffect(() => {
+    const visibleTimer = setTimeout(() => {
+      setVisible(true);
+    }, 100);
+    const revealTimer = setTimeout(() => {
+      setRevealed(true);
+    }, 150);
+    return () => {
+      clearTimeout(visibleTimer);
+      clearTimeout(revealTimer);
+    };
+  }, []);
+
   return (
     <div className="contact">
       <Header />
-      <div className="contact-container">
-        <div className="heading-with-lines">
-          <span className="guide-line guide-line-left"></span>
-          <span className="guide-line guide-line-right"></span>
-          <span className="guide-line guide-line-bottom"></span>
-          <h1 className="contact-heading">
-            <span className="semibold">Lets</span> <span className="work-script">work</span> <span className="semibold">together</span>
-          </h1>
-        </div>
-        <div className="contact-box">
-          <span className="corner corner-tl"></span>
-          <span className="corner corner-tr"></span>
-          <span className="corner corner-bl"></span>
-          <span className="corner corner-br"></span>
 
-          <h2 className="contact-title">Contact:</h2>
-
-          <div className="contact-item">
-            <span className="contact-label">Mobile: </span>
-            <a href="tel:+15127756749" className="contact-link">+1 512.775.6749</a>
+      {/* Contact lines container */}
+      <div className="contact-lines-container">
+        {contactLines.map((line, index) => (
+          <div
+            key={index}
+            className={`contact-line ${line.dimmed ? 'dimmed' : ''} ${visible ? 'visible' : ''} ${revealed ? 'revealed' : ''}`}
+          >
+            <span className="contact-line-left">{line.left}</span>
+            {line.href ? (
+              <a
+                href={line.href}
+                className="contact-line-right contact-link"
+                target={line.external ? '_blank' : undefined}
+                rel={line.external ? 'noopener noreferrer' : undefined}
+              >
+                {line.right}
+              </a>
+            ) : (
+              <span className="contact-line-right">{line.right}</span>
+            )}
           </div>
-
-          <div className="contact-item">
-            <a href="mailto:mariannaparzick@gmail.com" className="contact-link email">
-              mariannaparzick@gmail.com
-            </a>
-          </div>
-
-          <div className="contact-item">
-            <span className="contact-label">LinkedIn: </span>
-            <a href="https://linkedin.com/in/marianna-parzick" target="_blank" rel="noopener noreferrer" className="contact-link contact-link-underline">
-              marianna-parzick
-            </a>
-          </div>
-
-          <div className="contact-item">
-            <span className="contact-label">Instagram: </span>
-            <a href="https://instagram.com/fla5hedbymari" target="_blank" rel="noopener noreferrer" className="contact-link">
-              @fla5hedbymari
-            </a>
-          </div>
-
-          <div className="reach-out">Reach Out!</div>
-        </div>
+        ))}
       </div>
     </div>
   );

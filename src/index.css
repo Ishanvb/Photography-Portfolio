@@ -28,6 +28,11 @@ html, body {
   height: 100%;
 }
 
+html {
+  scrollbar-gutter: stable;
+  scroll-behavior: smooth;
+}
+
 body {
   min-width: 320px;
   background-color: #0c0c0c;
@@ -36,4 +41,9 @@ body {
 #root {
   width: 100%;
   min-height: 100vh;
+}
+
+/* High-quality image rendering */
+img {
+  image-rendering: auto;
 }

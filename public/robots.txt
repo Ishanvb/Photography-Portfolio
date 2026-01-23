@@ -1,0 +1,10 @@
+# Robots.txt for mariparzick.com
+
+User-agent: *
+Allow: /
+
+# Sitemap location
+Sitemap: https://mariparzick.com/sitemap.xml
+
+# Disallow admin or private paths (none currently)
+# Disallow: /admin/

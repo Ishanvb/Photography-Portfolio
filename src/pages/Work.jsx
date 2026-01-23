@@ -1,34 +1,40 @@
 import { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
-import Header from '../components/Header';
-import './Work.css';
+import Header from '~/components/Header';
+import Footer from '~/components/Footer';
+import OptimizedImage from '~/components/OptimizedImage';
+import '~/pages/Work.css';
 
-// Asset hashes for Work page images
-const assetHashes = {
-  mari1: '92a9b6d93d1fa93805444e74c5ce731435fbd3a2',
-  mari4: '2b82f9c749a60173f5347f19f52e7da344385dbe',
-  mari5: '36791b84b72621de39fd424b554fd012b10b982e',
-  mari6: 'eae66c416d784703bed49ad863cda27ff9e653d7',
-  mari7: 'f1e2d3c4b5a6978877665544332211aabbccdde0'
-};
-
-const getAssetPath = (hash) => {
-  if (import.meta.env.DEV) {
-    return `/mcp-assets/${hash}.jpg`;
-  }
-  return `http://localhost:3845/assets/${hash}.jpg`;
+// Animated category label with downward scrolling letters on hover
+const AnimatedCategoryLabel = ({ text }) => {
+  return (
+    <span className="animated-category">
+      {text.split("").map((char, i) => (
+        <span
+          key={i}
+          className="category-letter"
+          style={{ transitionDelay: `${i * 35}ms` }}
+        >
+          <span className="category-letter-stack">
+            <span>{char === " " ? "\u00A0" : char}</span>
+            <span>{char === " " ? "\u00A0" : char}</span>
+          </span>
+        </span>
+      ))}
+    </span>
+  );
 };
 
 const workProjects = [
   {
     id: 1,
-    image: getAssetPath(assetHashes.mari6),
+    image: '/photos/reelphotos/mari6.jpg',
     title: 'PORTRAITS',
     description: 'COLLECTIONS: 8'
   },
   {
     id: 2,
-    image: getAssetPath(assetHashes.mari7),
+    image: '/photos/reelphotos/mari7.jpg',
     title: 'FASHION',
     description: 'COLLECTIONS: 4'
   },
@@ -54,7 +60,7 @@ const workProjects = [
     id: 6,
     image: '/photos/Videography/videography.jpg',
     title: 'VIDEOGRAPHY',
-    description: 'COLLECTIONS: 2'
+    description: 'COLLECTIONS: 3'
   }
 ];
 
@@ -62,11 +68,31 @@ function Work() {
   const navigate = useNavigate();
   const [displayText, setDisplayText] = useState('');
   const [isTypingComplete, setIsTypingComplete] = useState(false);
+  const [isMobile, setIsMobile] = useState(false);
 
-  // Footer animation states
-  const footerRef = useRef(null);
-  const [footerVisible, setFooterVisible] = useState(false);
-  const [showContactBox, setShowContactBox] = useState(false);
+  // Store initial mobile state for typing text (doesn't change on resize)
+  const initialMobileRef = useRef(typeof window !== 'undefined' && window.innerWidth <= 768);
+
+  // Category dropdown state
+  const [dropdownOpen, setDropdownOpen] = useState(false);
+  const [dropdownReady, setDropdownReady] = useState(false);
+
+  // Instruction bar reveal state
+  const instructionRef = useRef(null);
+  const [instructionVisible, setInstructionVisible] = useState(false);
+
+  // Project section refs for scrolling
+  const projectRefs = useRef({});
+
+  // Detect mobile on resize (for clickable area behavior)
+  useEffect(() => {
+    const checkMobile = () => {
+      setIsMobile(window.innerWidth <= 768);
+    };
+    checkMobile();
+    window.addEventListener('resize', checkMobile);
+    return () => window.removeEventListener('resize', checkMobile);
+  }, []);
 
   const handleProjectClick = (projectId) => {
     if (projectId === 1) {
@@ -84,8 +110,52 @@ function Work() {
     }
   };
 
+  // Scroll to project section when category is clicked
+  const handleCategoryClick = (projectId) => {
+    const projectElement = projectRefs.current[projectId];
+    if (projectElement) {
+      if (isMobile) {
+        // On mobile, center the project image in the viewport
+        const imageContainer = projectElement.querySelector('.work-image-container');
+        const targetElement = imageContainer || projectElement;
+
+        const rect = targetElement.getBoundingClientRect();
+        const elementTop = rect.top + window.scrollY;
+        const elementCenter = elementTop + (rect.height / 2);
+        const viewportCenter = window.innerHeight / 2;
+        // Subtract offset to scroll less (center image higher on screen)
+        const scrollTo = elementCenter - viewportCenter - 250;
+
+        window.scrollTo({
+          top: Math.max(0, scrollTo),
+          behavior: 'smooth'
+        });
+      } else {
+        // On desktop, align to top
+        projectElement.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      }
+      setDropdownOpen(false);
+    }
+  };
+
+  // Toggle dropdown
+  const toggleDropdown = () => {
+    setDropdownOpen(!dropdownOpen);
+  };
+
+  // Set dropdown ready after fade-in animation completes (0.8s)
   useEffect(() => {
-    const fullText = "Here's some of my Work.";
+    if (isTypingComplete) {
+      const timer = setTimeout(() => {
+        setDropdownReady(true);
+      }, 800);
+      return () => clearTimeout(timer);
+    }
+  }, [isTypingComplete]);
+
+  useEffect(() => {
+    // Use shorter text on mobile (based on initial load, not resize)
+    const fullText = initialMobileRef.current ? "Here's my Work." : "Here's some of my Work.";
     const finalText = "Work";
     let currentIndex = 0;
     let isDeleting = false;
@@ -101,7 +171,7 @@ function Work() {
             typeText();
           }, 1000);
         } else {
-          setTimeout(typeText, 80);
+          setTimeout(typeText, 50);
         }
       } else if (isDeleting && deleteIndex >= 0) {
         setDisplayText(fullText.substring(0, deleteIndex));
@@ -123,120 +193,115 @@ function Work() {
             typeFinal();
           }, 200);
         } else {
-          setTimeout(typeText, 50);
+          setTimeout(typeText, 30);
         }
       }
     };
 
     typeText();
-  }, []);
+  }, []); // Run only once on mount
 
-  // Intersection Observer for footer
+  // Intersection Observer for instruction bar reveal
   useEffect(() => {
     const observer = new IntersectionObserver(
       (entries) => {
         entries.forEach((entry) => {
-          if (entry.isIntersecting && !footerVisible) {
-            setFooterVisible(true);
+          if (entry.isIntersecting && !instructionVisible) {
+            setInstructionVisible(true);
           }
         });
       },
       { threshold: 0.3 }
     );
 
-    if (footerRef.current) {
-      observer.observe(footerRef.current);
+    if (instructionRef.current) {
+      observer.observe(instructionRef.current);
     }
 
     return () => {
-      if (footerRef.current) {
-        observer.unobserve(footerRef.current);
+      if (instructionRef.current) {
+        observer.unobserve(instructionRef.current);
       }
     };
-  }, [footerVisible]);
+  }, [instructionVisible]);
 
-  // Show contact box after heading is visible
-  useEffect(() => {
-    if (!footerVisible) return;
-    setTimeout(() => setShowContactBox(true), 400);
-  }, [footerVisible]);
-
-  useEffect(() => {
-  const reveals = document.querySelectorAll('.reveal-group');
-
-  const observer = new IntersectionObserver(
-    (entries) => {
-      entries.forEach((entry) => {
-        if (entry.isIntersecting) {
-          entry.target.classList.add('is-visible');
-        }
-      });
-    },
-    { threshold: 0.4 }
-  );
-
-  reveals.forEach((el) => observer.observe(el));
-
-  return () => observer.disconnect();
-}, []);
-
+  // Helper to format title
+  const formatTitle = (title, index) => {
+    return `P${index + 1} ${title.split(' ').map(word => word.charAt(0) + word.slice(1).toLowerCase()).join(' ')}`;
+  };
 
   return (
     <div className="work-page">
       <Header />
-      <div className="work-title-frame">
-        <h1 className="work-page-title">
-          {displayText}
-          {!isTypingComplete && <span className="cursor">|</span>}
-        </h1>
+      <div className="work-header-row">
+        <div className={`work-category-dropdown ${dropdownOpen ? 'open' : ''} ${isTypingComplete ? 'visible' : ''}`}>
+          {/* Projects title with arrow on right - entire frame clickable on mobile */}
+          <div
+            className="work-category-item"
+            onClick={isMobile ? toggleDropdown : undefined}
+          >
+            <p className="work-category-text">Projects</p>
+            <div
+              className={`work-category-arrow ${dropdownOpen ? 'open' : ''}`}
+              onClick={!isMobile ? toggleDropdown : undefined}
+              {...(dropdownReady && !isMobile && { 'data-cursor-magnet': true })}
+            />
+          </div>
+
+          {/* Line under title */}
+          <div className="work-category-line" />
+
+          {/* Dropdown items P1-P6 */}
+          <div className="work-category-dropdown-items">
+            {workProjects.map((project, index) => (
+              <div
+                key={project.id}
+                className="work-category-dropdown-item"
+                onClick={() => handleCategoryClick(project.id)}
+              >
+                <p className="work-category-text">
+                  <AnimatedCategoryLabel text={formatTitle(project.title, index)} />
+                </p>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        <div className="work-title-frame">
+          <h1 className="work-page-title">
+            {displayText}
+            {!isTypingComplete && <span className="cursor">|</span>}
+          </h1>
+        </div>
       </div>
-      <div className="work-content">
+      <div className={`work-content ${isTypingComplete ? 'visible' : ''}`}>
+        {/* Instruction bar above gallery */}
+        <div
+          className={`work-gallery-instruction ${instructionVisible ? 'is-visible' : ''}`}
+          ref={instructionRef}
+        >
+          <span className="work-instruction-text"><span>SCROLL TO EXPLORE</span></span>
+          <span className="work-instruction-text"><span>SELECT FRAME - LEARN MORE</span></span>
+        </div>
+
         {workProjects.map((project) => (
-          <div key={project.id} className="work-project-presentation">
-            <div className="work-image-container" onClick={() => handleProjectClick(project.id)}>
-              <img src={project.image} alt={project.title} className="work-image" />
+          <div
+            key={project.id}
+            className="work-project-presentation"
+            ref={(el) => (projectRefs.current[project.id] = el)}
+          >
+            <div className="work-image-container" data-cursor="View Project" onClick={() => handleProjectClick(project.id)}>
+              <OptimizedImage src={project.image} alt={project.title} className="work-image" />
             </div>
-              <div className="work-caption reveal-group">
-                <p className="work-title reveal reveal-title">
-                  <span>{project.title}</span>
-                </p>
-                <p className="work-description reveal reveal-description">
-                  <span>{project.description}</span>
-                </p>
+              <div className="work-caption">
+                <p className="work-title">{project.title}</p>
+                <p className="work-description">{project.description}</p>
               </div>
           </div>
         ))}
 
-        <div className="work-contact-section" ref={footerRef}>
-          <div className={`work-together ${footerVisible ? 'fade-in-up' : ''}`}>
-            <h2 className="work-heading">
-              <span className="semibold">Lets</span> <span className="script">work</span> <span className="semibold">together</span>
-            </h2>
-          </div>
-
-          <div className={`contact-info ${showContactBox ? 'slide-up' : ''}`}>
-            <span className="corner corner-tl"></span>
-            <span className="corner corner-tr"></span>
-            <span className="corner corner-bl"></span>
-            <span className="corner corner-br"></span>
-
-            <p className="contact-text">Contact:</p>
-            <p className="contact-text">
-              Mobile: <a href="tel:+15127756749" className="contact-link">+1 512.775.6749</a>
-            </p>
-            <p className="contact-text">
-              <a href="mailto:mariannaparzick@gmail.com" className="contact-link">mariannaparzick@gmail.com</a>
-            </p>
-            <p className="contact-text">
-              LinkedIn: <a href="https://www.linkedin.com/in/marianna-parzick/" target="_blank" rel="noopener noreferrer" className="contact-link contact-link-underline">marianna-parzick</a>
-            </p>
-            <p className="contact-text">
-              Instagram: <a href="https://www.instagram.com/fla5hedbymari?utm_source=ig_web_button_share_sheet&igsh=ZDNlZDc0MzIxNw==" target="_blank" rel="noopener noreferrer" className="contact-link">@fla5hedbymari</a>
-            </p>
-            <p className="contact-text">Reach Out!</p>
-          </div>
-        </div>
       </div>
+      <Footer />
     </div>
   );
 }

@@ -37,3 +37,29 @@
   }
 }
 
+/* ========== MOBILE RESPONSIVE STYLES ========== */
+@media (max-width: 768px) {
+  .title-container {
+    padding: 0 40px;
+    height: 50px;
+  }
+
+  .title {
+    font-size: 36px;
+    letter-spacing: -3px;
+    height: 50px;
+  }
+}
+
+@media (max-width: 480px) {
+  .title-container {
+    padding: 0 20px;
+    height: 40px;
+  }
+
+  .title {
+    font-size: 28px;
+    letter-spacing: -2px;
+    height: 40px;
+  }
+}
