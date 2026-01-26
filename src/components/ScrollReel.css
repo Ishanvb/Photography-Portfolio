@@ -49,11 +49,48 @@
 /* Fixed placement to keep control on-screen without scrolling */
 .fixed-bottom-scroll-reel {
   position: fixed;
-  bottom: 40px; /* 10px from bottom of user's screen */
+  bottom: 5vh; /* Use viewport-relative units for consistent scaling */
   left: 50%;
   transform: translateX(-50%);
   z-index: 9999;
   pointer-events: auto; /* allow interaction */
+}
+
+/* ========== HEIGHT-BASED RESPONSIVE STYLES (Desktop) ========== */
+
+/* Tall desktop screens (1100px+, e.g., 16" MacBook Pro, external monitors) */
+@media (min-height: 1100px) and (min-width: 769px) {
+  .fixed-bottom-scroll-reel {
+    bottom: 50px;
+  }
+}
+
+/* Medium-tall desktop screens (1000-1100px, e.g., 15" laptops) */
+@media (max-height: 1099px) and (min-height: 1000px) and (min-width: 769px) {
+  .fixed-bottom-scroll-reel {
+    bottom: 40px;
+  }
+}
+
+/* Medium desktop screens (900-1000px, e.g., 14" MacBook Pro) */
+@media (max-height: 999px) and (min-height: 900px) and (min-width: 769px) {
+  .fixed-bottom-scroll-reel {
+    bottom: 30px;
+  }
+}
+
+/* Short desktop screens (800-900px, e.g., 13" MacBook Air) */
+@media (max-height: 899px) and (min-height: 800px) and (min-width: 769px) {
+  .fixed-bottom-scroll-reel {
+    bottom: 20px;
+  }
+}
+
+/* Very short desktop screens (<800px, scaled resolutions or browser with toolbars) */
+@media (max-height: 799px) and (min-width: 769px) {
+  .fixed-bottom-scroll-reel {
+    bottom: 15px;
+  }
 }
 
 /* ========== MOBILE RESPONSIVE STYLES ========== */

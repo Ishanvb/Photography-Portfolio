@@ -1,7 +1,7 @@
 .reel-container {
   width: 100%;
   overflow: hidden;
-  margin-bottom: 60px;
+  margin-bottom: 8vh; /* Use viewport-relative for consistent scaling */
 }
 
 .reel {
@@ -60,10 +60,74 @@
 }
 
 /* =========================
-   MOBILE
+   HEIGHT-BASED RESPONSIVE (Desktop)
+========================= */
+
+/* Short desktop screens (800-900px, e.g., 13" MacBook Air) */
+@media (max-height: 899px) and (min-height: 800px) and (min-width: 769px) {
+  .reel-frame {
+    width: 600px;
+  }
+
+  .reel-frame:nth-child(8n) {
+    width: 272px;
+  }
+
+  .reel-image-container {
+    aspect-ratio: 600 / 398;
+  }
+
+  .reel-frame:nth-child(8n) .reel-image-container {
+    aspect-ratio: 272 / 382;
+  }
+
+  .reel-caption {
+    padding: 8px;
+  }
+
+  .caption-title,
+  .caption-direction {
+    font-size: 13px;
+  }
+}
+
+/* Very short desktop screens (<800px) */
+@media (max-height: 799px) and (min-width: 769px) {
+  .reel-frame {
+    width: 500px;
+  }
+
+  .reel-frame:nth-child(8n) {
+    width: 227px;
+  }
+
+  .reel-image-container {
+    aspect-ratio: 500 / 332;
+  }
+
+  .reel-frame:nth-child(8n) .reel-image-container {
+    aspect-ratio: 227 / 319;
+  }
+
+  .reel-caption {
+    padding: 6px;
+  }
+
+  .caption-title,
+  .caption-direction {
+    font-size: 12px;
+  }
+}
+
+/* =========================
+   MOBILE (Width-based)
 ========================= */
 
 @media (max-width: 768px) {
+  .reel-container {
+    margin-bottom: 6vh;
+  }
+
   .reel {
     gap: 16px;
   }
@@ -89,6 +153,10 @@
 }
 
 @media (max-width: 480px) {
+  .reel-container {
+    margin-bottom: 5vh;
+  }
+
   .reel {
     gap: 12px;
   }
@@ -106,5 +174,24 @@
   .caption-title,
   .caption-direction {
     font-size: 11px;
+  }
+}
+
+/* =========================
+   HEIGHT-BASED MOBILE (Landscape/Split-screen)
+========================= */
+
+@media (max-height: 500px) and (max-width: 768px) {
+  .reel-container {
+    margin-bottom: 4vh;
+  }
+
+  .reel-caption {
+    padding: 4px;
+  }
+
+  .caption-title,
+  .caption-direction {
+    font-size: 10px;
   }
 }
