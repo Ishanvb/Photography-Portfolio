@@ -149,6 +149,10 @@
   .contact-line-right {
     font-size: 32px;
   }
+
+  .contact-link {
+    text-decoration: underline !important;
+  }
 }
 
 @media (max-width: 480px) {

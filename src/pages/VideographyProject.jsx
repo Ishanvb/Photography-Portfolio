@@ -17,9 +17,9 @@ function VideographyProject() {
 
   // YouTube video IDs
   const youtubeVideos = [
-    { id: 'ItjDChITeqY' },
-    { id: 'bibYaiWGmMA' },
-    { id: 'TY5KktQdBeU' }
+    { id: 'lakOaiXYcp4' },
+    { id: 'idLy5RoOYME' },
+    { id: 'ok38O_TNS0Q' }
   ];
 
   // Load YouTube IFrame API
@@ -109,23 +109,8 @@ function VideographyProject() {
         {youtubeVideos.map((video, index) => (
           <div key={index} className="gallery-item">
             <div className="gallery-video-container">
-              <div className="youtube-wrapper">
+              <div className="youtube-wrapper" data-cursor-youtube>
                 <div id={`youtube-player-${index}`} className="youtube-player"></div>
-                <div
-                  className="youtube-cursor-overlay"
-                  data-cursor-youtube
-                  onClick={() => {
-                    const player = playerRefs.current[index];
-                    if (player && player.getPlayerState) {
-                      const state = player.getPlayerState();
-                      if (state === 1) {
-                        player.pauseVideo();
-                      } else {
-                        player.playVideo();
-                      }
-                    }
-                  }}
-                />
               </div>
             </div>
           </div>

@@ -81,9 +81,6 @@ function Work() {
   const instructionRef = useRef(null);
   const [instructionVisible, setInstructionVisible] = useState(false);
 
-  // Project section refs for scrolling
-  const projectRefs = useRef({});
-
   // Detect mobile on resize (for clickable area behavior)
   useEffect(() => {
     const checkMobile = () => {
@@ -110,32 +107,10 @@ function Work() {
     }
   };
 
-  // Scroll to project section when category is clicked
+  // Navigate to project page when category is clicked
   const handleCategoryClick = (projectId) => {
-    const projectElement = projectRefs.current[projectId];
-    if (projectElement) {
-      if (isMobile) {
-        // On mobile, center the project image in the viewport
-        const imageContainer = projectElement.querySelector('.work-image-container');
-        const targetElement = imageContainer || projectElement;
-
-        const rect = targetElement.getBoundingClientRect();
-        const elementTop = rect.top + window.scrollY;
-        const elementCenter = elementTop + (rect.height / 2);
-        const viewportCenter = window.innerHeight / 2;
-        // Subtract offset to scroll less (center image higher on screen)
-        const scrollTo = elementCenter - viewportCenter - 250;
-
-        window.scrollTo({
-          top: Math.max(0, scrollTo),
-          behavior: 'smooth'
-        });
-      } else {
-        // On desktop, align to top
-        projectElement.scrollIntoView({ behavior: 'smooth', block: 'start' });
-      }
-      setDropdownOpen(false);
-    }
+    setDropdownOpen(false);
+    handleProjectClick(projectId);
   };
 
   // Toggle dropdown
@@ -288,7 +263,6 @@ function Work() {
           <div
             key={project.id}
             className="work-project-presentation"
-            ref={(el) => (projectRefs.current[project.id] = el)}
           >
             <div className="work-image-container" data-cursor="View Project" onClick={() => handleProjectClick(project.id)}>
               <OptimizedImage src={project.image} alt={project.title} className="work-image" />

@@ -199,19 +199,12 @@
   height: 100%;
 }
 
-/* Transparent overlay to capture cursor on YouTube videos */
-.youtube-cursor-overlay {
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: calc(100% - 60px); /* Leave bottom 60px for YouTube controls */
-  z-index: 10;
-  background: transparent;
-}
-
 @media (hover: hover) and (pointer: fine) {
-  .youtube-cursor-overlay {
+  .youtube-wrapper {
+    cursor: none !important;
+  }
+
+  .youtube-wrapper iframe {
     cursor: none !important;
   }
 }
