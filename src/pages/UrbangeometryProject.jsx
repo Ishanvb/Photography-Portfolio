@@ -3,6 +3,7 @@ import { useLocation } from 'react-router-dom';
 import Header from '~/components/Header';
 import Footer from '~/components/Footer';
 import OptimizedImage from '~/components/OptimizedImage';
+import LoadingScreen from '~/components/LoadingScreen';
 import '~/pages/UrbangeometryProject.css';
 
 function UrbangeometryProject() {
@@ -17,6 +18,9 @@ function UrbangeometryProject() {
     body: false
   });
 
+  // Loading state - wait for all gallery images
+  const [imagesLoaded, setImagesLoaded] = useState(false);
+
   // Track which gallery images have loaded in DOM
   const loadedImagesRef = useRef(new Set());
   const hasScrolledRef = useRef(false);
@@ -30,9 +34,24 @@ function UrbangeometryProject() {
     window.scrollTo({ top: 0, left: 0, behavior: 'instant' });
   }, []);
 
-  // Handle gallery image load - scroll when target image is ready
+  // Lock scroll while loading
+  useEffect(() => {
+    if (!imagesLoaded) {
+      document.body.style.overflow = 'hidden';
+    }
+    return () => {
+      document.body.style.overflow = '';
+    };
+  }, [imagesLoaded]);
+
+  // Handle gallery image load - track for loading screen + scroll when target is ready
   const handleImageLoad = useCallback((index) => {
     loadedImagesRef.current.add(index);
+
+    // Check if all gallery images are loaded for loading screen
+    if (loadedImagesRef.current.size >= galleryImages.length) {
+      setImagesLoaded(true);
+    }
 
     // Check if we should scroll to a specific photo
     if (scrollToPhotoIndex !== undefined && scrollToPhotoIndex !== null && !hasScrolledRef.current) {
@@ -59,7 +78,12 @@ function UrbangeometryProject() {
         });
       }
     }
-  }, [scrollToPhotoIndex]);
+  }, [scrollToPhotoIndex, galleryImages.length]);
+
+  // Handle loading screen fade complete - restore scroll
+  const handleLoadingFadeComplete = useCallback(() => {
+    document.body.style.overflow = '';
+  }, []);
 
   // Handle animations
   useEffect(() => {
@@ -71,6 +95,11 @@ function UrbangeometryProject() {
     setTimeout(() => {
       setHeaderAnimations(prev => ({ ...prev, title: true }));
     }, 250);
+
+    // Fallback timeout for loading screen
+    const loadingFallback = setTimeout(() => {
+      setImagesLoaded(true);
+    }, 8000);
 
     // Fallback scroll in case images don't trigger onLoad
     if (scrollToPhotoIndex !== undefined && scrollToPhotoIndex !== null) {
@@ -87,12 +116,18 @@ function UrbangeometryProject() {
         }
       }, 3000);
 
-      return () => clearTimeout(fallbackTimer);
+      return () => {
+        clearTimeout(fallbackTimer);
+        clearTimeout(loadingFallback);
+      };
     }
+
+    return () => clearTimeout(loadingFallback);
   }, [location, scrollToPhotoIndex]);
 
   return (
     <div className="urbangeometry-project">
+      <LoadingScreen isLoading={!imagesLoaded} onFadeComplete={handleLoadingFadeComplete} />
       <Header />
 
       {/* Main Container */}
@@ -130,7 +165,7 @@ function UrbangeometryProject() {
                 src={image}
                 alt={`Urban Geometry ${index + 1}`}
                 className="gallery-image"
-                loading={scrollToPhotoIndex !== undefined ? 'eager' : 'lazy'}
+                loading="eager"
                 onLoad={() => handleImageLoad(index)}
               />
             </div>

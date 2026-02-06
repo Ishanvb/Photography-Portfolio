@@ -3,6 +3,7 @@ import { useLocation } from 'react-router-dom';
 import Header from '~/components/Header';
 import Footer from '~/components/Footer';
 import OptimizedImage from '~/components/OptimizedImage';
+import LoadingScreen from '~/components/LoadingScreen';
 import '~/pages/FashionProject.css';
 
 function FashionProject() {
@@ -16,6 +17,9 @@ function FashionProject() {
     title: false,
     body: false
   });
+
+  // Loading state - wait for all gallery images
+  const [imagesLoaded, setImagesLoaded] = useState(false);
 
   // Track which gallery images have loaded in DOM
   const loadedImagesRef = useRef(new Set());
@@ -44,9 +48,24 @@ function FashionProject() {
     window.scrollTo({ top: 0, left: 0, behavior: 'instant' });
   }, []);
 
-  // Handle gallery image load - scroll when target image is ready
+  // Lock scroll while loading
+  useEffect(() => {
+    if (!imagesLoaded) {
+      document.body.style.overflow = 'hidden';
+    }
+    return () => {
+      document.body.style.overflow = '';
+    };
+  }, [imagesLoaded]);
+
+  // Handle gallery image load - track for loading screen + scroll when target is ready
   const handleImageLoad = useCallback((index) => {
     loadedImagesRef.current.add(index);
+
+    // Check if all gallery images are loaded for loading screen
+    if (loadedImagesRef.current.size >= galleryImages.length) {
+      setImagesLoaded(true);
+    }
 
     // Check if we should scroll to a specific photo
     if (scrollToPhotoIndex !== undefined && scrollToPhotoIndex !== null && !hasScrolledRef.current) {
@@ -73,7 +92,12 @@ function FashionProject() {
         });
       }
     }
-  }, [scrollToPhotoIndex]);
+  }, [scrollToPhotoIndex, galleryImages.length]);
+
+  // Handle loading screen fade complete - restore scroll
+  const handleLoadingFadeComplete = useCallback(() => {
+    document.body.style.overflow = '';
+  }, []);
 
   // Handle animations
   useEffect(() => {
@@ -85,6 +109,11 @@ function FashionProject() {
     setTimeout(() => {
       setHeaderAnimations(prev => ({ ...prev, title: true }));
     }, 250);
+
+    // Fallback timeout for loading screen
+    const loadingFallback = setTimeout(() => {
+      setImagesLoaded(true);
+    }, 8000);
 
     // Fallback scroll in case images don't trigger onLoad
     if (scrollToPhotoIndex !== undefined && scrollToPhotoIndex !== null) {
@@ -101,12 +130,18 @@ function FashionProject() {
         }
       }, 3000);
 
-      return () => clearTimeout(fallbackTimer);
+      return () => {
+        clearTimeout(fallbackTimer);
+        clearTimeout(loadingFallback);
+      };
     }
+
+    return () => clearTimeout(loadingFallback);
   }, [location, scrollToPhotoIndex]);
 
   return (
     <div className="fashion-project">
+      <LoadingScreen isLoading={!imagesLoaded} onFadeComplete={handleLoadingFadeComplete} />
       <Header />
 
       {/* Main Container */}
@@ -126,11 +161,11 @@ function FashionProject() {
 
           {/* Right Frame - Body Text */}
           <div className={`body-text ${headerAnimations.body ? 'fade-in-up-quick' : ''}`}>
-            My fashion photoshoots are intended to be styled and framed in ways that emulate a 
-            specific time period of fashion, industry, or lifestyle. The highlight of these photos 
-            is the clothing and accessories, but the models contribute to telling a story about 
-            the chosen aesthetic. Using technical skills, creative vision, elements like styling, 
-            location, and mood help elevate garments beyond mere products into encompassing a curated 
+            My fashion photoshoots are intended to be styled and framed in ways that emulate a
+            specific time period of fashion, industry, or lifestyle. The highlight of these photos
+            is the clothing and accessories, but the models contribute to telling a story about
+            the chosen aesthetic. Using technical skills, creative vision, elements like styling,
+            location, and mood help elevate garments beyond mere products into encompassing a curated
             atmosphere/visual.
           </div>
         </div>
@@ -145,7 +180,7 @@ function FashionProject() {
                 src={image}
                 alt={`Fashion ${index + 1}`}
                 className="gallery-image"
-                loading={scrollToPhotoIndex !== undefined ? 'eager' : 'lazy'}
+                loading="eager"
                 onLoad={() => handleImageLoad(index)}
               />
             </div>
