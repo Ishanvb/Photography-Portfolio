@@ -117,8 +117,22 @@ const Reel = forwardRef(function Reel(
     const reel = reelRef.current;
     if (!reel) return;
 
-    // Only set start time once when animation first begins
+    // Only initialize once when animation first begins
     if (startTimeRef.current === null) {
+      // Recalculate cycle length from actual DOM to ensure accuracy
+      // (the mount-time calculation may be stale if delayed by loading screen)
+      const frames = reel.querySelectorAll('.reel-frame');
+      const gap = getResponsiveGap();
+      let length = 0;
+      for (let i = 0; i < 8 && i < frames.length; i++) {
+        length += frames[i].offsetWidth + gap;
+      }
+      cycleLengthRef.current = length;
+
+      // Reset to clean starting position
+      scrollPosRef.current = 0;
+      reel.scrollLeft = 0;
+
       startTimeRef.current = Date.now();
     }
 
