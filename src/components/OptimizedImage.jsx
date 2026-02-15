@@ -1,8 +1,10 @@
+import { memo } from 'react';
+
 /**
  * OptimizedImage - Renders images with WebP (ICC color preserved) and JPEG fallback
  * WebP created with -sharp_yuv and -metadata icc for accurate colors
  */
-const OptimizedImage = ({ src, alt, className, loading = 'lazy', ...props }) => {
+const OptimizedImage = memo(({ src, alt, className, loading = 'lazy', sizes, width, height, ...props }) => {
   const webpSrc = src.replace(/\.(jpg|jpeg)$/i, '.webp');
 
   return (
@@ -13,10 +15,16 @@ const OptimizedImage = ({ src, alt, className, loading = 'lazy', ...props }) => 
         alt={alt}
         className={className}
         loading={loading}
+        decoding="async"
+        sizes={sizes}
+        width={width}
+        height={height}
         {...props}
       />
     </picture>
   );
-};
+});
+
+OptimizedImage.displayName = 'OptimizedImage';
 
 export default OptimizedImage;

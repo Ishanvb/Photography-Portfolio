@@ -5,8 +5,9 @@ import {
   useImperativeHandle
 } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useSelector } from 'react-redux';
 import OptimizedImage from '~/components/OptimizedImage';
-import '~/components/Reel.css';
+import * as S from './Reel.styled';
 
 /* =========================
    Helpers
@@ -16,7 +17,7 @@ const isMobile = () =>
   typeof window !== 'undefined' &&
   window.matchMedia('(hover: none) and (pointer: coarse)').matches;
 
-// Get responsive gap to match CSS media queries
+// Get responsive gap to match styled-component media queries
 const getResponsiveGap = () => {
   if (typeof window === 'undefined') return 32;
   const width = window.innerWidth;
@@ -55,15 +56,18 @@ const navigationMap = {
   8: { route: '/work/fashion-project', photoIndex: 2, title: 'Viva las Vegas', caption: 'Fashion-Project' }
 };
 
+const duplicatedImages = [...images, ...images, ...images, ...images, ...images, ...images];
+
 /* =========================
    Component
 ========================= */
 
 const Reel = forwardRef(function Reel(
-  { onScrollUpdate, isManualScrolling, onWheelScroll, startAnimation = true },
+  { onScrollUpdate, onWheelScroll, startAnimation = true },
   ref
 ) {
   const navigate = useNavigate();
+  const isManualScrolling = useSelector((state) => state.scroll.isManualScrolling);
   const reelRef = useRef(null);
   const animationRef = useRef(null);
   const scrollPosRef = useRef(0);
@@ -83,7 +87,7 @@ const Reel = forwardRef(function Reel(
     if (!reel) return;
 
     requestAnimationFrame(() => {
-      const frames = reel.querySelectorAll('.reel-frame');
+      const frames = reel.children;
       const gap = getResponsiveGap();
       let length = 0;
 
@@ -121,7 +125,7 @@ const Reel = forwardRef(function Reel(
     if (startTimeRef.current === null) {
       // Recalculate cycle length from actual DOM to ensure accuracy
       // (the mount-time calculation may be stale if delayed by loading screen)
-      const frames = reel.querySelectorAll('.reel-frame');
+      const frames = reel.children;
       const gap = getResponsiveGap();
       let length = 0;
       for (let i = 0; i < 8 && i < frames.length; i++) {
@@ -249,41 +253,40 @@ const Reel = forwardRef(function Reel(
     }
   };
 
-  const duplicatedImages = [...images, ...images, ...images, ...images, ...images, ...images];
-
   /* =========================
      Render
   ========================= */
 
   return (
-    <div className="reel-container">
-      <div className="reel" ref={reelRef}>
+    <S.Container>
+      <S.Track ref={reelRef}>
         {duplicatedImages.map((img, index) => {
           const meta = navigationMap[img.id];
+          const isNarrow = (index + 1) % 8 === 0;
 
           return (
-            <div className="reel-frame" key={`${img.id}-${index}`}>
-              <div
-                className="reel-image-container"
+            <S.Frame $isNarrow={isNarrow} key={`${img.id}-${index}`}>
+              <S.ImageContainer
+                $isNarrow={isNarrow}
                 data-cursor="View Photo"
                 onClick={() => handleImageClick(img.id)}
               >
                 <OptimizedImage
-                  className="reel-image"
                   src={img.src}
                   loading="lazy"
                   alt={meta?.title}
+                  style={{ width: '100%', height: '100%', objectFit: 'cover' }}
                 />
-              </div>
-              <div className="reel-caption">
-                <p className="caption-title">{meta?.title}</p>
-                <p className="caption-direction">{meta?.caption}</p>
-              </div>
-            </div>
+              </S.ImageContainer>
+              <S.Caption>
+                <S.CaptionTitle>{meta?.title}</S.CaptionTitle>
+                <S.CaptionDirection>{meta?.caption}</S.CaptionDirection>
+              </S.Caption>
+            </S.Frame>
           );
         })}
-      </div>
-    </div>
+      </S.Track>
+    </S.Container>
   );
 });
 

@@ -1,21 +1,21 @@
 import { useState, useEffect, useRef } from 'react';
-import '~/components/Footer.css';
+import * as S from './Footer.styled';
+
+const footerLines = [
+  { left: 'Marianna', right: 'Parzick', dimmed: true },
+  { left: 'Marketing', right: 'Photography', dimmed: true },
+  { left: '', right: 'Videography', dimmed: true },
+  { left: 'Contact', right: 'Me', dimmed: true },
+  { left: 'Tel.', right: '512.775.6749', dimmed: false, href: 'tel:+15127756749', cursorLabel: 'Call Me' },
+  { left: 'Mail', right: 'mparzick@calpoly.edu', dimmed: false, href: 'mailto:mariannaparzick@gmail.com', cursorLabel: 'Mail Me' },
+  { left: 'LinkedIn', right: 'marianna-parzick', dimmed: false, href: 'https://www.linkedin.com/in/marianna-parzick/', external: true, cursorLabel: 'Connect With Me' },
+  { left: 'Instagram', right: '@fla5hedbymari', dimmed: false, href: 'https://www.instagram.com/fla5hedbymari', external: true, cursorLabel: 'Add Me' },
+  { left: 'Reach', right: 'Out!', dimmed: false },
+];
 
 function Footer() {
   const footerRef = useRef(null);
   const [visibleLines, setVisibleLines] = useState([]);
-
-  const footerLines = [
-    { left: 'Marianna', right: 'Parzick', dimmed: true },
-    { left: 'Marketing', right: 'Photography', dimmed: true },
-    { left: '', right: 'Videography', dimmed: true },
-    { left: 'Contact', right: 'Me', dimmed: true },
-    { left: 'Tel.', right: '512.775.6749', dimmed: false, href: 'tel:+15127756749', cursorLabel: 'Call Me' },
-    { left: 'Mail', right: 'mparzick@calpoly.edu', dimmed: false, href: 'mailto:mariannaparzick@gmail.com', cursorLabel: 'Mail Me' },
-    { left: 'LinkedIn', right: 'marianna-parzick', dimmed: false, href: 'https://www.linkedin.com/in/marianna-parzick/', external: true, cursorLabel: 'Connect With Me' },
-    { left: 'Instagram', right: '@fla5hedbymari', dimmed: false, href: 'https://www.instagram.com/fla5hedbymari', external: true, cursorLabel: 'Add Me' },
-    { left: 'Reach', right: 'Out!', dimmed: false },
-  ];
 
   useEffect(() => {
     const observer = new IntersectionObserver(
@@ -43,38 +43,38 @@ function Footer() {
   }, []);
 
   return (
-    <footer className="footer" ref={footerRef}>
+    <S.FooterWrapper ref={footerRef}>
       {/* Section header */}
-      <div className={`footer-section-header ${visibleLines.length > 0 ? 'visible' : ''}`}>
-        <span>Contact information</span>
-        <span>F.1</span>
-      </div>
+      <S.SectionHeader $isVisible={visibleLines.length > 0}>
+        <S.SectionHeaderText>Contact information</S.SectionHeaderText>
+        <S.SectionHeaderText>F.1</S.SectionHeaderText>
+      </S.SectionHeader>
 
       {/* Footer lines */}
-      <div className="footer-lines">
+      <S.Lines>
         {footerLines.map((line, index) => (
-        <div
+        <S.Line
           key={index}
-          className={`footer-line ${line.dimmed ? 'dimmed' : ''} ${visibleLines.includes(index) ? 'visible' : ''}`}
+          $isDimmed={line.dimmed}
+          $isVisible={visibleLines.includes(index)}
         >
-          <span className="footer-line-left">{line.left}</span>
+          <S.LineLeft>{line.left}</S.LineLeft>
           {line.href ? (
-            <a
+            <S.LineLink
               href={line.href}
-              className="footer-line-right footer-link"
               target={line.external ? '_blank' : undefined}
               rel={line.external ? 'noopener noreferrer' : undefined}
               data-cursor={line.cursorLabel}
             >
               {line.right}
-            </a>
+            </S.LineLink>
           ) : (
-            <span className="footer-line-right">{line.right}</span>
+            <S.LineRight>{line.right}</S.LineRight>
           )}
-        </div>
+        </S.Line>
         ))}
-      </div>
-    </footer>
+      </S.Lines>
+    </S.FooterWrapper>
   );
 }
 

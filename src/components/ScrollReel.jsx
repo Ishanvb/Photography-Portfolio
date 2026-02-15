@@ -1,5 +1,6 @@
-import { useEffect, useRef, useState, useCallback } from 'react';
-import '~/components/ScrollReel.css';
+import { useEffect, useRef, useState, useCallback, useMemo, forwardRef, useImperativeHandle } from 'react';
+import { useSelector } from 'react-redux';
+import * as S from './ScrollReel.styled';
 
 // Get responsive dimensions based on screen width
 const getResponsiveDimensions = () => {
@@ -10,23 +11,28 @@ const getResponsiveDimensions = () => {
   const screenWidth = window.innerWidth;
 
   if (screenWidth <= 480) {
-    // Mobile small - matches CSS @media (max-width: 480px)
     return { containerWidth: 140, rectangleWidth: 22, lineSpacing: 14 };
   } else if (screenWidth <= 768) {
-    // Mobile - matches CSS @media (max-width: 768px)
     return { containerWidth: 160, rectangleWidth: 26, lineSpacing: 16 };
   }
 
-  // Desktop
   return { containerWidth: 280, rectangleWidth: 46, lineSpacing: 20 };
 };
 
-function ScrollReel({ cycleProgress, onManualScroll, isManualScrolling, className = '' }) {
+const ScrollReel = forwardRef(function ScrollReel({ onManualScroll, isFixed = false }, ref) {
+  const isManualScrolling = useSelector((state) => state.scroll.isManualScrolling);
   const containerRef = useRef(null);
   const rectangleRef = useRef(null);
+  const linesContainerRef = useRef(null);
   const [isDragging, setIsDragging] = useState(false);
-  const [rectanglePosition, setRectanglePosition] = useState(0);
+  const isDraggingRef = useRef(false);
   const [dimensions, setDimensions] = useState(getResponsiveDimensions);
+  const rectPositionRef = useRef(0);
+
+  // Keep ref in sync with state for imperative access
+  useEffect(() => {
+    isDraggingRef.current = isDragging;
+  }, [isDragging]);
 
   // Update dimensions on resize
   useEffect(() => {
@@ -41,34 +47,74 @@ function ScrollReel({ cycleProgress, onManualScroll, isManualScrolling, classNam
   const { containerWidth, rectangleWidth, lineSpacing } = dimensions;
   const maxRectanglePosition = containerWidth - rectangleWidth;
 
-  // Update rectangle position based on cycle progress when not dragging
-  useEffect(() => {
-    if (!isDragging && rectangleRef.current) {
-      const position = cycleProgress * maxRectanglePosition;
-      setRectanglePosition(position);
+  // Memoized line positions (only changes on resize)
+  const linePositions = useMemo(() => {
+    const startX = 6;
+    const endX = containerWidth;
+    const positions = [];
+    for (let x = startX; x <= endX; x += lineSpacing) {
+      positions.push(x);
+    }
+    return positions;
+  }, [containerWidth, lineSpacing]);
+
+  // Imperative DOM update — bypasses React rendering entirely at 60fps
+  const updateVisuals = useCallback((position) => {
+    rectPositionRef.current = position;
+    if (rectangleRef.current) {
       rectangleRef.current.style.left = `${position}px`;
       rectangleRef.current.style.transition = 'none';
     }
-  }, [cycleProgress, maxRectanglePosition, isDragging]);
+    const container = linesContainerRef.current;
+    if (!container) return;
+    const lines = container.children;
+    const rectWidth = rectangleWidth;
+    for (let i = 0; i < lines.length && i < linePositions.length; i++) {
+      const lineLeft = linePositions[i];
+      const isUnderRectangle = lineLeft >= position && lineLeft < position + rectWidth;
+      const rectangleCenter = position + rectWidth / 2;
+      const distanceFromCenter = Math.abs(lineLeft - rectangleCenter);
+      const maxFadeDistance = 110;
+      const minOpacity = 0.15;
+      const maxOpacity = 1;
+      let opacity;
+      if (isUnderRectangle) {
+        opacity = 0;
+      } else {
+        const fadeProgress = Math.min(distanceFromCenter / maxFadeDistance, 1);
+        opacity = maxOpacity - (fadeProgress * (maxOpacity - minOpacity));
+      }
+      lines[i].style.opacity = opacity;
+    }
+  }, [linePositions, rectangleWidth]);
 
+  // Expose imperative API — called at 60fps from Reel auto-scroll
+  useImperativeHandle(ref, () => ({
+    updateProgress(progress) {
+      if (isDraggingRef.current) return;
+      const position = progress * maxRectanglePosition;
+      updateVisuals(position);
+    }
+  }), [maxRectanglePosition, updateVisuals]);
+
+  // Set initial line opacities on mount / dimension change
+  useEffect(() => {
+    updateVisuals(rectPositionRef.current);
+  }, [updateVisuals]);
+
+  // Mouse drag handlers
   const handleMouseMove = useCallback((e) => {
     const containerRect = containerRef.current?.getBoundingClientRect();
     if (!containerRect) return;
 
-    // Calculate new rectangle position
     const newRectX = e.clientX - containerRect.left;
     const clampedRectX = Math.max(0, Math.min(maxRectanglePosition, newRectX - rectangleWidth / 2));
-    
-    setRectanglePosition(clampedRectX);
-    
-    if (rectangleRef.current) {
-      rectangleRef.current.style.left = `${clampedRectX}px`;
-    }
 
-    // Calculate corresponding cycle progress (0 to 1)
+    updateVisuals(clampedRectX);
+
     const cycleProgress = clampedRectX / maxRectanglePosition;
     onManualScroll(true, cycleProgress);
-  }, [maxRectanglePosition, rectangleWidth, onManualScroll]);
+  }, [maxRectanglePosition, rectangleWidth, onManualScroll, updateVisuals]);
 
   const handleMouseUp = useCallback(() => {
     setIsDragging(false);
@@ -91,72 +137,34 @@ function ScrollReel({ cycleProgress, onManualScroll, isManualScrolling, classNam
     }
   }, [isDragging, handleMouseMove, handleMouseUp]);
 
-  // Generate vertical lines across the band the rectangle travels through (including the initial area)
-  // All vertical lines have equal spacing and are rendered from left inset to the right bound.
-  // They behave identically: each line hides individually when the rectangle covers it.
-  // Line spacing and band - lineSpacing comes from responsive dimensions
-  const startX = 6; // include the rectangle's initial area so lines beneath it reappear when it leaves
-  const endX = containerWidth; // right bound of band
-  const linePositions = [];
-  for (let x = startX; x <= endX; x += lineSpacing) {
-    linePositions.push(x);
-  }
-
-  return (
-    <div 
-      className={`scroll-reel-container ${className}`.trim()} 
+  const content = (
+    <S.Container
       ref={containerRef}
-      data-name="Scroll Reel" 
+      data-name="Scroll Reel"
       data-node-id="1:100"
     >
-      <div
-        className="scroll-reel-rectangle"
+      <S.Rectangle
         ref={rectangleRef}
         onMouseDown={handleMouseDown}
         {...(isManualScrolling && { 'data-cursor': 'Resume Autoscroll' })}
       />
 
-      {/* Lines across the rectangle's band — unified set, equal spacing, gradient opacity based on distance from rectangle */}
-      <div className="scroll-reel-lines">
-        {linePositions.map((lineLeft, index) => {
-          // Lines under the rectangle are hidden
-          const isUnderRectangle = lineLeft >= rectanglePosition && lineLeft < rectanglePosition + rectangleWidth;
-
-          // Calculate distance from rectangle center for gradient effect
-          const rectangleCenter = rectanglePosition + rectangleWidth / 2;
-          const distanceFromCenter = Math.abs(lineLeft - rectangleCenter);
-
-          // Gradient: lines close to rectangle are opaque, fade as they get further
-          // Max fade distance (how far until lines become minimum opacity)
-          const maxFadeDistance = 110;
-          const minOpacity = 0.15;
-          const maxOpacity = 1;
-
-          // Calculate opacity based on distance (closer = more opaque)
-          let lineOpacity;
-          if (isUnderRectangle) {
-            lineOpacity = 0;
-          } else {
-            // Linear fade from maxOpacity at rectangle edge to minOpacity at maxFadeDistance
-            const fadeProgress = Math.min(distanceFromCenter / maxFadeDistance, 1);
-            lineOpacity = maxOpacity - (fadeProgress * (maxOpacity - minOpacity));
-          }
-
-          return (
-            <div
-              key={`${index}-${lineLeft}`}
-              className="scroll-reel-line"
-              style={{
-                left: `${lineLeft}px`,
-                opacity: lineOpacity
-              }}
-            />
-          );
-        })}
-      </div>
-    </div>
+      <S.LinesContainer ref={linesContainerRef}>
+        {linePositions.map((lineLeft, index) => (
+          <S.Line
+            key={`${index}-${lineLeft}`}
+            style={{ left: `${lineLeft}px` }}
+          />
+        ))}
+      </S.LinesContainer>
+    </S.Container>
   );
-}
+
+  if (isFixed) {
+    return <S.FixedWrapper>{content}</S.FixedWrapper>;
+  }
+
+  return content;
+});
 
 export default ScrollReel;
-

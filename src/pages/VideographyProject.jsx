@@ -1,28 +1,21 @@
-import { useState, useEffect, useLayoutEffect, useRef } from 'react';
+import { useEffect, useLayoutEffect, useRef } from 'react';
+import useHeaderAnimations from '~/hooks/useHeaderAnimations';
 import Header from '~/components/Header';
 import Footer from '~/components/Footer';
 import OptimizedImage from '~/components/OptimizedImage';
-import '~/pages/VideographyProject.css';
+import * as S from '~/pages/ProjectGallery.styled';
 
 function VideographyProject() {
-  // Header animation states
-  const [headerAnimations, setHeaderAnimations] = useState({
-    date: false,
-    image: false,
-    title: false,
-    body: false
-  });
+  const headerAnimations = useHeaderAnimations();
 
   const playerRefs = useRef([null, null, null]);
 
-  // YouTube video IDs
   const youtubeVideos = [
     { id: 'lakOaiXYcp4' },
     { id: 'idLy5RoOYME' },
     { id: 'ok38O_TNS0Q' }
   ];
 
-  // Load YouTube IFrame API
   useEffect(() => {
     if (!window.YT) {
       const tag = document.createElement('script');
@@ -51,74 +44,68 @@ function VideographyProject() {
       });
     };
 
-    // If API already loaded, initialize players
     if (window.YT && window.YT.Player) {
       window.onYouTubeIframeAPIReady();
     }
   }, []);
 
-  // Scroll to top immediately on mount (useLayoutEffect runs before paint)
   useLayoutEffect(() => {
     window.scrollTo({ top: 0, left: 0, behavior: 'instant' });
   }, []);
 
-  // Handle animations
-  useEffect(() => {
-    setTimeout(() => {
-      setHeaderAnimations(prev => ({ ...prev, date: true, image: true, body: true }));
-    }, 100);
-
-    setTimeout(() => {
-      setHeaderAnimations(prev => ({ ...prev, title: true }));
-    }, 250);
-  }, []);
+  // headerAnimations handled by useHeaderAnimations hook
 
   return (
-    <div className="videography-project">
+    <S.ProjectContainer>
       <Header />
 
-      {/* Main Container */}
-      <section className="main-container">
-        {/* Date Frame */}
-        <div className={`date-frame ${headerAnimations.date ? 'fade-in-up-quick' : ''}`}>
-          <div className="date-text">[ Photo Collections: 3 ]</div>
-        </div>
+      <S.MainContainer $paddingBottom="200px">
+        <S.DateFrame $isVisible={headerAnimations.date}>
+          <S.DateText>[ Photo Collections: 3 ]</S.DateText>
+        </S.DateFrame>
 
-        {/* Content Frame */}
-        <div className="content-frame">
-          {/* Left Frame - Image with Title Overlay */}
-          <div className="image-title-frame">
-            <OptimizedImage src="/photos/Videography/videography.jpg" alt="Videography" className={`videography-image ${headerAnimations.image ? 'fade-in-up-quick' : ''}`} />
-            <h1 className={`videography-title ${headerAnimations.title ? 'fade-in-up-long' : ''}`}>Videography</h1>
-          </div>
+        <S.ContentFrame>
+          <S.ImageTitleFrame>
+            <S.HeroImage
+              as={OptimizedImage}
+              src="/photos/Videography/videography.jpg"
+              alt="Videography"
+              $isVisible={headerAnimations.image}
+            />
+            <S.ProjectTitle
+              $isVisible={headerAnimations.title}
+              $left="80px"
+              $leftXl="150px"
+              $leftMd="110px"
+            >
+              Videography
+            </S.ProjectTitle>
+          </S.ImageTitleFrame>
 
-          {/* Right Frame - Body Text */}
-          <div className={`body-text ${headerAnimations.body ? 'fade-in-up-quick' : ''}`}>
+          <S.BodyText $isVisible={headerAnimations.body}>
             My videography is often in collaboration with other artists to help portray their art visually.
             I attempt to capture the essence of artists' music through video by using a variety of techniques,
             pacing, framing, editing, and even cameras. These videos are used for social media promotion and
             Spotify to appeal to audiences who may resonate with the video and feel more inclined to look into
             the associated music. My videography is also used to promote Cal Poly's fashion club, FITS, and
             their related campaigns by using video to highlight clothing using a more fashion and lifestyle approach.
-          </div>
-        </div>
-      </section>
+          </S.BodyText>
+        </S.ContentFrame>
+      </S.MainContainer>
 
-      {/* Gallery Section */}
-      <section className="gallery-section">
+      <S.GallerySection>
         {youtubeVideos.map((video, index) => (
-          <div key={index} className="gallery-item">
-            <div className="gallery-video-container">
-              <div className="youtube-wrapper" data-cursor-youtube>
-                <div id={`youtube-player-${index}`} className="youtube-player"></div>
-              </div>
-            </div>
-          </div>
+          <S.GalleryItem key={index} $index={index}>
+            <S.GalleryVideoContainer>
+              <S.YoutubeWrapper data-cursor-youtube>
+                <S.YoutubePlayer id={`youtube-player-${index}`} />
+              </S.YoutubeWrapper>
+            </S.GalleryVideoContainer>
+          </S.GalleryItem>
         ))}
-
-      </section>
+      </S.GallerySection>
       <Footer />
-    </div>
+    </S.ProjectContainer>
   );
 }
 

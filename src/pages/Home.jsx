@@ -1,29 +1,27 @@
-import { useState, useRef, useEffect } from 'react';
+import { useState, useRef, useEffect, useCallback } from 'react';
+import { useSelector, useDispatch } from 'react-redux';
+import { markLoaded, setContentReady } from '~/store/uiSlice';
+import { setManualScrolling } from '~/store/scrollSlice';
 import Header from '~/components/Header';
 import Title from '~/components/Title';
 import Reel from '~/components/Reel';
 import ScrollReel from '~/components/ScrollReel';
 import LoadingScreen from '~/components/LoadingScreen';
-import '~/pages/Home.css';
+import * as S from './Home.styled';
 
 // Track if site has been loaded this session (persists across navigation)
 const hasLoadedKey = 'mariPortfolioLoaded';
 
 function Home() {
-  // Only show loading screen on first visit this session
-  const [isFirstVisit] = useState(() => !sessionStorage.getItem(hasLoadedKey));
-  const [isLoading, setIsLoading] = useState(isFirstVisit);
-  const [contentReady, setContentReady] = useState(!isFirstVisit); // Hide content until loading done
-  const [cycleProgress, setCycleProgress] = useState(0);
-  const [, setCycleLength] = useState(0);
-  const [isManualScrolling, setIsManualScrolling] = useState(false);
-  const [manualScrollPosition, setManualScrollPosition] = useState(null);
+  const dispatch = useDispatch();
+  const { isFirstVisit, isLoading, contentReady } = useSelector((state) => state.ui);
+
   const [instructionVisible, setInstructionVisible] = useState(false);
   const reelRef = useRef(null);
+  const scrollReelRef = useRef(null);
 
   // Preload all key images on initial site load
   useEffect(() => {
-    // If not first visit, just show UI immediately
     if (!isFirstVisit) {
       setTimeout(() => {
         setInstructionVisible(true);
@@ -31,9 +29,7 @@ function Home() {
       return;
     }
 
-    // Preload WebP versions (what actually gets displayed)
     const imagesToPreload = [
-      // Reel images (WebP)
       '/photos/reelphotos/mari1.webp',
       '/photos/reelphotos/mari8.webp',
       '/photos/reelphotos/mari3.webp',
@@ -48,10 +44,8 @@ function Home() {
     const totalImages = imagesToPreload.length;
 
     const onImagesLoaded = () => {
-      // Mark as loaded for this session
       sessionStorage.setItem(hasLoadedKey, 'true');
-      // This triggers the fade-out animation
-      setIsLoading(false);
+      dispatch(markLoaded());
     };
 
     imagesToPreload.forEach(src => {
@@ -77,83 +71,68 @@ function Home() {
       }
     });
 
-    // Fallback timeout in case images take too long
     const fallbackTimer = setTimeout(onImagesLoaded, 5000);
     return () => clearTimeout(fallbackTimer);
-  }, [isFirstVisit]);
+  }, [isFirstVisit, dispatch]);
 
   // Called after loading screen fade-out completes
   const handleFadeComplete = () => {
-    // Show content first
-    setContentReady(true);
-    // Then start animations after a brief buffer
+    dispatch(setContentReady(true));
     setTimeout(() => {
       setInstructionVisible(true);
     }, 300);
   };
 
-  const handleScrollUpdate = (progress, length) => {
-    if (!isManualScrolling) {
-      setCycleProgress(progress);
-      setCycleLength(length);
-    }
-  };
+  // Called at 60fps from Reel auto-scroll — updates ScrollReel imperatively, NO React state
+  const handleScrollUpdate = useCallback((progress) => {
+    scrollReelRef.current?.updateProgress(progress);
+  }, []);
 
-  const handleManualScroll = (isManual, cycleProgress = null) => {
-    setIsManualScrolling(isManual);
-    if (isManual && cycleProgress !== null) {
-      setManualScrollPosition(cycleProgress);
-      setCycleProgress(cycleProgress);
-    } else {
-      setManualScrollPosition(null);
+  const handleManualScroll = useCallback((isManual, progress = null) => {
+    dispatch(setManualScrolling(isManual));
+    if (isManual && progress !== null) {
+      scrollReelRef.current?.updateProgress(progress);
     }
-  };
+  }, [dispatch]);
 
-  const handleWheelScroll = (isManual, cycleProgress) => {
-    setIsManualScrolling(isManual);
-    if (isManual && cycleProgress !== null) {
-      setManualScrollPosition(cycleProgress);
-      setCycleProgress(cycleProgress);
-    } else {
-      // Resume auto-scroll
-      setManualScrollPosition(null);
+  const handleWheelScroll = useCallback((isManual, progress) => {
+    dispatch(setManualScrolling(isManual));
+    if (isManual && progress !== null) {
+      scrollReelRef.current?.updateProgress(progress);
     }
-  };
+  }, [dispatch]);
 
   return (
     <>
       {isFirstVisit && <LoadingScreen isLoading={isLoading} onFadeComplete={handleFadeComplete} />}
-      <div className={`home ${contentReady ? 'content-ready' : 'content-hidden'}`} data-name="Home" data-node-id="1:3">
+      <S.Container $contentReady={contentReady} data-name="Home" data-node-id="1:3">
         <Header />
         <Title startAnimation={contentReady} />
-        <div className="reel-wrapper">
+        <S.ReelWrapper>
           {/* Selected Works label - desktop only */}
-          <div className={`selected-works-label ${instructionVisible ? 'is-visible' : ''}`}>
-            <span className="selected-works-text">
-              <span>* SELECTED WORKS</span>
-            </span>
-          </div>
+          <S.SelectedWorksLabel>
+            <S.SelectedWorksText $isVisible={instructionVisible}>
+              <S.SelectedWorksInner>* SELECTED WORKS</S.SelectedWorksInner>
+            </S.SelectedWorksText>
+          </S.SelectedWorksLabel>
           {/* Instruction bar - mobile only */}
-          <div className={`home-gallery-instruction ${instructionVisible ? 'is-visible' : ''}`}>
-            <span className="home-instruction-text">DRAG TO EXPLORE</span>
-            <span className="home-instruction-text">SELECT TO VIEW</span>
-          </div>
+          <S.GalleryInstruction $isVisible={instructionVisible}>
+            <S.InstructionText>DRAG TO EXPLORE</S.InstructionText>
+            <S.InstructionText>SELECT TO VIEW</S.InstructionText>
+          </S.GalleryInstruction>
           <Reel
             ref={reelRef}
             onScrollUpdate={handleScrollUpdate}
-            isManualScrolling={isManualScrolling}
-            manualScrollPosition={manualScrollPosition}
             onWheelScroll={handleWheelScroll}
             startAnimation={contentReady}
           />
           <ScrollReel
-            className="fixed-bottom-scroll-reel"
-            cycleProgress={cycleProgress}
+            ref={scrollReelRef}
+            isFixed
             onManualScroll={handleManualScroll}
-            isManualScrolling={isManualScrolling}
           />
-        </div>
-      </div>
+        </S.ReelWrapper>
+      </S.Container>
     </>
   );
 }

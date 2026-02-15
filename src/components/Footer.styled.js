@@ -1,0 +1,165 @@
+import styled, { css } from 'styled-components';
+
+export const FooterWrapper = styled.footer`
+  width: 100%;
+  margin-top: 200px;
+  padding: 0 ${({ theme }) => theme.spacing(18.75)};
+  padding-bottom: 100px;
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+
+  ${({ theme }) => theme.media.xl} {
+    margin-top: 160px;
+    padding: 0 100px;
+    padding-bottom: 80px;
+  }
+
+  ${({ theme }) => theme.media.lg} {
+    margin-top: 140px;
+    padding: 0 ${({ theme }) => theme.spacing(10)};
+    padding-bottom: 60px;
+  }
+
+  ${({ theme }) => theme.media.sm} {
+    margin-top: 100px;
+    padding: 0 30px;
+    padding-bottom: ${({ theme }) => theme.spacing(5)};
+  }
+
+  ${({ theme }) => theme.media.xs} {
+    margin-top: ${({ theme }) => theme.spacing(10)};
+    padding: 0 ${({ theme }) => theme.spacing(2.5)};
+    padding-bottom: 30px;
+  }
+`;
+
+export const SectionHeader = styled.div`
+  width: 100%;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0 400px;
+  box-sizing: border-box;
+  margin-bottom: 100px;
+  opacity: 0;
+  transform: translateY(20px);
+  transition: opacity ${({ theme }) => theme.transitions.slow},
+    transform ${({ theme }) => theme.transitions.slow};
+
+  ${({ $isVisible }) => $isVisible && css`
+    opacity: 1;
+    transform: translateY(0);
+  `}
+
+  ${({ theme }) => theme.media.xl} {
+    margin-bottom: ${({ theme }) => theme.spacing(10)};
+  }
+
+  ${({ theme }) => theme.media.lg} {
+    margin-bottom: 60px;
+  }
+
+  ${({ theme }) => theme.media.sm} {
+    padding: 0;
+    margin-bottom: ${({ theme }) => theme.spacing(5)};
+  }
+
+  ${({ theme }) => theme.media.xs} {
+    padding: 0;
+    margin-bottom: 30px;
+  }
+`;
+
+export const SectionHeaderText = styled.span`
+  font-family: ${({ theme }) => theme.typography.fontFamily.primary};
+  font-weight: ${({ theme }) => theme.typography.fontWeight.regular};
+  font-size: ${({ theme }) => theme.typography.fontSize.sm};
+  color: ${({ theme }) => theme.colors.text};
+
+  ${({ theme }) => theme.media.sm} {
+    font-size: 10px;
+  }
+
+  ${({ theme }) => theme.media.xs} {
+    font-size: ${({ theme }) => theme.typography.fontSize.xs};
+  }
+`;
+
+export const Lines = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+`;
+
+const footerLineFontStyles = css`
+  font-family: ${({ theme }) => theme.typography.fontFamily.primary};
+  font-weight: ${({ theme }) => theme.typography.fontWeight.medium};
+  font-size: ${({ theme }) => theme.typography.fontSize['8xl']};
+  letter-spacing: ${({ theme }) => theme.typography.letterSpacing.tight};
+
+  ${({ theme }) => theme.media.xl} {
+    font-size: 64px;
+  }
+
+  ${({ theme }) => theme.media.lg} {
+    font-size: 56px;
+  }
+
+  ${({ theme }) => theme.media.sm} {
+    font-size: ${({ theme }) => theme.typography.fontSize['3xl']};
+  }
+
+  ${({ theme }) => theme.media.xs} {
+    font-size: ${({ theme }) => theme.typography.fontSize['2xl']};
+  }
+`;
+
+export const Line = styled.div`
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  width: 100%;
+  ${footerLineFontStyles}
+  line-height: ${({ theme }) => theme.typography.lineHeight.none};
+  color: ${({ theme }) => theme.colors.text};
+  opacity: 0;
+  transform: translateY(30px);
+  transition: opacity ${({ theme }) => theme.transitions.slow},
+    transform ${({ theme }) => theme.transitions.slow};
+  will-change: opacity, transform;
+
+  ${({ $isVisible, $isDimmed }) => $isVisible && css`
+    opacity: ${$isDimmed ? 0.6 : 1};
+    transform: translateY(0);
+  `}
+`;
+
+export const LineLeft = styled.span`
+  ${footerLineFontStyles}
+`;
+
+export const LineRight = styled.span`
+  ${footerLineFontStyles}
+`;
+
+export const LineLink = styled.a`
+  ${footerLineFontStyles}
+  color: ${({ theme }) => theme.colors.text};
+  text-decoration: none;
+  transition: opacity ${({ theme }) => theme.transitions.fast};
+  letter-spacing: 0;
+
+  &:hover {
+    opacity: 0.7;
+  }
+
+  ${({ theme }) => theme.media.touch} {
+    padding: 4px 0;
+
+    &:active {
+      opacity: 0.5;
+    }
+  }
+`;

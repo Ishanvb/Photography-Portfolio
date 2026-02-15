@@ -1,26 +1,37 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, memo } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
-import '~/components/Header.css';
+import * as S from './Header.styled';
 
-const AnimatedLabel = ({ text }) => {
+const AnimatedLabel = memo(({ text, isClicking, isEnterReady, isEntering }) => {
   return (
-    <span className="animated-word">
+    <S.AnimatedWord>
       {text.split("").map((char, i) => (
-        <span
+        <S.Letter
           key={i}
-          className="letter"
           style={{ transitionDelay: `${i * 35}ms` }}
         >
-          <span className="letter-stack">
+          <S.LetterStack
+            $isClicking={isClicking}
+            $isEnterReady={isEnterReady}
+            $isEntering={isEntering}
+          >
             <span>{char === " " ? "\u00A0" : char}</span>
             <span>{char === " " ? "\u00A0" : char}</span>
-          </span>
-        </span>
+          </S.LetterStack>
+        </S.Letter>
       ))}
-    </span>
+    </S.AnimatedWord>
   );
-};
+});
 
+AnimatedLabel.displayName = 'AnimatedLabel';
+
+const buttons = [
+  { id: 'home', label: '01 home', path: '/' },
+  { id: 'work', label: '02 work', path: '/work' },
+  { id: 'about', label: '03 about', path: '/about' },
+  { id: 'contact', label: '04 Contact', path: '/contact' }
+];
 
 function Header() {
   const [hoveredButton, setHoveredButton] = useState(null);
@@ -29,13 +40,6 @@ function Header() {
   const [entering, setEntering] = useState(null);
   const navigate = useNavigate();
   const location = useLocation();
-
-  const buttons = [
-    { id: 'home', label: '01 home', path: '/' },
-    { id: 'work', label: '02 work', path: '/work' },
-    { id: 'about', label: '03 about', path: '/about' },
-    { id: 'contact', label: '04 Contact', path: '/contact' }
-  ];
 
   const handleButtonClick = (buttonId, path) => {
     // Trigger the exit animation (letters scroll up)
@@ -83,11 +87,12 @@ function Header() {
   }, [location.pathname]);
 
   return (
-    <header className="header" data-name="Header" data-node-id="1:18">
+    <S.HeaderContainer data-name="Header" data-node-id="1:18">
       {buttons.map((button) => (
-        <button
+        <S.HeaderButton
           key={button.id}
-          className={`header-button ${hoveredButton === button.id ? 'hovered' : ''} ${isActive(button.path) ? 'active' : ''} ${clickingButton === button.id ? 'clicking' : ''} ${enterReady === button.id ? 'enter-ready' : ''} ${entering === button.id ? 'entering' : ''}`}
+          $isActive={isActive(button.path)}
+          $isHovered={hoveredButton === button.id}
           onMouseEnter={() => setHoveredButton(button.id)}
           onMouseLeave={() => setHoveredButton(null)}
           onClick={() => handleButtonClick(button.id, button.path)}
@@ -95,13 +100,17 @@ function Header() {
           data-cursor-header
         >
           <p>
-            <AnimatedLabel text={button.label} />
+            <AnimatedLabel
+              text={button.label}
+              isClicking={clickingButton === button.id}
+              isEnterReady={enterReady === button.id}
+              isEntering={entering === button.id}
+            />
           </p>
-        </button>
+        </S.HeaderButton>
       ))}
-    </header>
+    </S.HeaderContainer>
   );
 }
 
 export default Header;
-

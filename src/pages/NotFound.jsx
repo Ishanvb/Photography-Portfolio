@@ -1,19 +1,19 @@
 import { Link } from 'react-router-dom';
 import Header from '~/components/Header';
-import '~/pages/NotFound.css';
+import * as S from '~/pages/NotFound.styled';
 
 function NotFound() {
   return (
-    <div className="not-found">
+    <S.Container>
       <Header />
-      <div className="not-found-content">
-        <h1 className="not-found-code">404</h1>
-        <p className="not-found-message">Page not found</p>
-        <Link to="/" className="not-found-link">
+      <S.Content>
+        <S.Code>404</S.Code>
+        <S.Message>Page not found</S.Message>
+        <S.HomeLink as={Link} to="/">
           Back to Home
-        </Link>
-      </div>
-    </div>
+        </S.HomeLink>
+      </S.Content>
+    </S.Container>
   );
 }
 

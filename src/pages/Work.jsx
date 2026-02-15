@@ -1,27 +1,27 @@
 import { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
+import useMobileDetect from '~/hooks/useMobileDetect';
 import Header from '~/components/Header';
 import Footer from '~/components/Footer';
 import OptimizedImage from '~/components/OptimizedImage';
-import '~/pages/Work.css';
+import * as S from '~/pages/Work.styled';
 
 // Animated category label with downward scrolling letters on hover
 const AnimatedCategoryLabel = ({ text }) => {
   return (
-    <span className="animated-category">
+    <S.AnimatedCategory>
       {text.split("").map((char, i) => (
-        <span
+        <S.Letter
           key={i}
-          className="category-letter"
           style={{ transitionDelay: `${i * 35}ms` }}
         >
-          <span className="category-letter-stack">
+          <S.LetterStack>
             <span>{char === " " ? "\u00A0" : char}</span>
             <span>{char === " " ? "\u00A0" : char}</span>
-          </span>
-        </span>
+          </S.LetterStack>
+        </S.Letter>
       ))}
-    </span>
+    </S.AnimatedCategory>
   );
 };
 
@@ -66,9 +66,9 @@ const workProjects = [
 
 function Work() {
   const navigate = useNavigate();
+  const isMobile = useMobileDetect();
   const [displayText, setDisplayText] = useState('');
   const [isTypingComplete, setIsTypingComplete] = useState(false);
-  const [isMobile, setIsMobile] = useState(false);
 
   // Store initial mobile state for typing text (doesn't change on resize)
   const initialMobileRef = useRef(typeof window !== 'undefined' && window.innerWidth <= 768);
@@ -80,16 +80,6 @@ function Work() {
   // Instruction bar reveal state
   const instructionRef = useRef(null);
   const [instructionVisible, setInstructionVisible] = useState(false);
-
-  // Detect mobile on resize (for clickable area behavior)
-  useEffect(() => {
-    const checkMobile = () => {
-      setIsMobile(window.innerWidth <= 768);
-    };
-    checkMobile();
-    window.addEventListener('resize', checkMobile);
-    return () => window.removeEventListener('resize', checkMobile);
-  }, []);
 
   const handleProjectClick = (projectId) => {
     if (projectId === 1) {
@@ -206,77 +196,76 @@ function Work() {
   };
 
   return (
-    <div className="work-page">
+    <S.Page>
       <Header />
-      <div className="work-header-row">
-        <div className={`work-category-dropdown ${dropdownOpen ? 'open' : ''} ${isTypingComplete ? 'visible' : ''}`}>
+      <S.HeaderRow>
+        <S.CategoryDropdown $isOpen={dropdownOpen} $isVisible={isTypingComplete} data-category-dropdown={dropdownOpen ? 'open' : 'closed'}>
           {/* Projects title with arrow on right - entire frame clickable on mobile */}
-          <div
-            className="work-category-item"
+          <S.CategoryItem
             onClick={isMobile ? toggleDropdown : undefined}
           >
-            <p className="work-category-text">Projects</p>
-            <div
-              className={`work-category-arrow ${dropdownOpen ? 'open' : ''}`}
+            <S.CategoryText>Projects</S.CategoryText>
+            <S.CategoryArrow
+              $isOpen={dropdownOpen}
               onClick={!isMobile ? toggleDropdown : undefined}
               {...(dropdownReady && !isMobile && { 'data-cursor-magnet': true })}
             />
-          </div>
+          </S.CategoryItem>
 
           {/* Line under title */}
-          <div className="work-category-line" />
+          <S.CategoryLine />
 
           {/* Dropdown items P1-P6 */}
-          <div className="work-category-dropdown-items">
+          <S.DropdownItems>
             {workProjects.map((project, index) => (
-              <div
+              <S.DropdownItem
                 key={project.id}
-                className="work-category-dropdown-item"
                 onClick={() => handleCategoryClick(project.id)}
               >
-                <p className="work-category-text">
+                <S.CategoryText>
                   <AnimatedCategoryLabel text={formatTitle(project.title, index)} />
-                </p>
-              </div>
+                </S.CategoryText>
+              </S.DropdownItem>
             ))}
-          </div>
-        </div>
+          </S.DropdownItems>
+        </S.CategoryDropdown>
 
-        <div className="work-title-frame">
-          <h1 className="work-page-title">
+        <S.TitleFrame>
+          <S.PageTitle>
             {displayText}
-            {!isTypingComplete && <span className="cursor">|</span>}
-          </h1>
-        </div>
-      </div>
-      <div className={`work-content ${isTypingComplete ? 'visible' : ''}`}>
+            {!isTypingComplete && <S.Cursor>|</S.Cursor>}
+          </S.PageTitle>
+        </S.TitleFrame>
+      </S.HeaderRow>
+      <S.Content>
         {/* Instruction bar above gallery */}
-        <div
-          className={`work-gallery-instruction ${instructionVisible ? 'is-visible' : ''}`}
+        <S.GalleryInstruction
+          $isVisible={instructionVisible}
+          $isContentVisible={isTypingComplete}
           ref={instructionRef}
         >
-          <span className="work-instruction-text"><span>SCROLL TO EXPLORE</span></span>
-          <span className="work-instruction-text"><span>SELECT FRAME - LEARN MORE</span></span>
-        </div>
+          <S.InstructionText><span>SCROLL TO EXPLORE</span></S.InstructionText>
+          <S.InstructionText><span>SELECT FRAME - LEARN MORE</span></S.InstructionText>
+        </S.GalleryInstruction>
 
-        {workProjects.map((project) => (
-          <div
+        {workProjects.map((project, index) => (
+          <S.ProjectPresentation
             key={project.id}
-            className="work-project-presentation"
+            $index={index}
           >
-            <div className="work-image-container" data-cursor="View Project" onClick={() => handleProjectClick(project.id)}>
-              <OptimizedImage src={project.image} alt={project.title} className="work-image" />
-            </div>
-              <div className="work-caption">
-                <p className="work-title">{project.title}</p>
-                <p className="work-description">{project.description}</p>
-              </div>
-          </div>
+            <S.ImageContainer data-cursor="View Project" onClick={() => handleProjectClick(project.id)}>
+              <OptimizedImage src={project.image} alt={project.title} />
+            </S.ImageContainer>
+              <S.Caption>
+                <S.Title>{project.title}</S.Title>
+                <S.Description>{project.description}</S.Description>
+              </S.Caption>
+          </S.ProjectPresentation>
         ))}
 
-      </div>
+      </S.Content>
       <Footer />
-    </div>
+    </S.Page>
   );
 }
 

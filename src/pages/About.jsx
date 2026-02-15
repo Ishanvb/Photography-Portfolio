@@ -2,7 +2,7 @@ import { useState, useEffect, useRef } from 'react';
 import Header from '~/components/Header';
 import Footer from '~/components/Footer';
 import OptimizedImage from '~/components/OptimizedImage';
-import '~/pages/About.css';
+import * as S from './About.styled';
 
 function About() {
   const [showContent, setShowContent] = useState(false);
@@ -24,7 +24,7 @@ function About() {
   // Calculate list widths based on longest item + 50px
   useEffect(() => {
     if (bioListRef.current) {
-      const items = bioListRef.current.querySelectorAll('.about-bio-list-item');
+      const items = bioListRef.current.querySelectorAll('p');
       let maxWidth = 0;
       items.forEach(item => {
         const width = item.scrollWidth;
@@ -34,7 +34,7 @@ function About() {
     }
 
     if (workListRef.current) {
-      const items = workListRef.current.querySelectorAll('.about-work-list-item');
+      const items = workListRef.current.querySelectorAll('p');
       let maxWidth = 0;
       items.forEach(item => {
         const width = item.scrollWidth;
@@ -68,7 +68,7 @@ function About() {
       (entries) => {
         entries.forEach((entry) => {
           if (entry.isIntersecting) {
-            const items = bioListRef.current?.querySelectorAll('.about-bio-list-item');
+            const items = bioListRef.current?.querySelectorAll('p');
             if (items) {
               items.forEach((_, index) => {
                 setTimeout(() => {
@@ -92,7 +92,7 @@ function About() {
       (entries) => {
         entries.forEach((entry) => {
           if (entry.isIntersecting) {
-            const items = workListRef.current?.querySelectorAll('.about-work-list-item');
+            const items = workListRef.current?.querySelectorAll('p');
             if (items) {
               items.forEach((_, index) => {
                 setTimeout(() => {
@@ -126,7 +126,7 @@ function About() {
     const timer = setTimeout(() => {
       if (!bodyTextRef.current) return;
 
-      const words = bodyTextRef.current.querySelectorAll('.blur-word');
+      const words = bodyTextRef.current.querySelectorAll('span');
       if (words.length === 0) return;
 
       // Get each word's vertical position relative to the container
@@ -224,16 +224,16 @@ function About() {
       }
 
       return (
-        <span
+        <S.BlurWord
           key={globalIndex}
-          className={`blur-word ${isHighlight ? 'about-text-highlight' : 'about-text-rest'}`}
+          $isHighlight={isHighlight}
           style={{
             filter: `blur(${style.blur}px)`,
             opacity: opacity
           }}
         >
           {word}{' '}
-        </span>
+        </S.BlurWord>
       );
     });
   };
@@ -241,81 +241,81 @@ function About() {
   const firstSentenceWords = firstSentence.split(' ').length;
 
   return (
-    <div className="about">
+    <S.Container>
       <Header />
 
       {/* About title at top center */}
-      <h1 className={`about-title ${showContent ? 'visible' : ''}`}>About</h1>
+      <S.Title $isVisible={showContent}>About</S.Title>
 
       {/* Main content frame */}
-      <div className={`about-content-frame ${showContent ? 'visible' : ''}`}>
+      <S.ContentFrame $isVisible={showContent}>
         {/* Welcome header */}
-        <div className="about-section-header">
-          <span>Welcome</span>
-          <span>S.1</span>
-        </div>
+        <S.SectionHeader>
+          <S.SectionHeaderText>Welcome</S.SectionHeaderText>
+          <S.SectionHeaderText>S.1</S.SectionHeaderText>
+        </S.SectionHeader>
 
         {/* Body text with blur reveal */}
-        <div className="about-body-text" ref={bodyTextRef}>
+        <S.BodyText ref={bodyTextRef}>
           {renderBlurText(firstSentence, true, 0)}
           {renderBlurText(restOfText, false, firstSentenceWords)}
-        </div>
+        </S.BodyText>
 
         {/* Photos frame */}
-        <div className={`about-photos-frame ${photosVisible ? 'visible' : ''}`} ref={photosRef}>
-          <div className="about-photo-wrapper about-photo-large" data-cursor="School" data-cursor-icon="school">
+        <S.PhotosFrame $isVisible={photosVisible} ref={photosRef}>
+          <S.PhotoLarge data-cursor="School" data-cursor-icon="school">
             <OptimizedImage src="/photos/About/About.jpg" alt="School" />
-          </div>
-          <div className="about-photo-wrapper about-photo-medium" data-cursor="Fashion" data-cursor-icon="fashion">
+          </S.PhotoLarge>
+          <S.PhotoMedium data-cursor="Fashion" data-cursor-icon="fashion">
             <OptimizedImage src="/photos/About/About1.jpg" alt="Fashion" />
-          </div>
-          <div className="about-photo-wrapper about-photo-small" data-cursor="Me!" data-cursor-icon="me">
+          </S.PhotoMedium>
+          <S.PhotoSmall data-cursor="Me!" data-cursor-icon="me">
             <img src="/photos/About/AboutMe.jpg" alt="Me" />
-          </div>
-        </div>
+          </S.PhotoSmall>
+        </S.PhotosFrame>
 
         {/* Information header */}
-        <div className="about-section-header">
-          <span>Information</span>
-          <span>S.2</span>
-        </div>
-      </div>
+        <S.SectionHeader>
+          <S.SectionHeaderText>Information</S.SectionHeaderText>
+          <S.SectionHeaderText>S.2</S.SectionHeaderText>
+        </S.SectionHeader>
+      </S.ContentFrame>
 
       {/* Info section - Biography and Work (outside content-frame for full width) */}
-      <div className="about-info-section">
+      <S.InfoSection>
         {/* Biography row - 150px from left */}
-        <div className="about-bio-row">
-          <div className="about-bio-list" ref={bioListRef} style={{ width: bioListWidth }}>
+        <S.BioRow>
+          <S.BioList ref={bioListRef} style={{ width: bioListWidth }}>
             {['Hometown : Austin, TX', 'School : Cal Poly San Luis Obispo', 'Year : Sophomore', 'Major : Business', 'Minor : Photography and Videography', 'Favorite Camera : Nikon D3500'].map((item, index) => (
-              <p
+              <S.BioListItem
                 key={index}
-                className={`about-bio-list-item ${visibleBioItems.includes(index) ? 'visible' : ''}`}
+                $isVisible={visibleBioItems.includes(index)}
               >
                 {item}
-              </p>
+              </S.BioListItem>
             ))}
-          </div>
-          <h2 className={`about-bio-title ${visibleBioItems.length > 0 ? 'visible' : ''}`}>Biography</h2>
-        </div>
+          </S.BioList>
+          <S.BioTitle $isVisible={visibleBioItems.length > 0}>Biography</S.BioTitle>
+        </S.BioRow>
 
         {/* Work row - 150px from right */}
-        <div className="about-work-row">
-          <h2 className={`about-work-title ${visibleWorkItems.length > 0 ? 'visible' : ''}`}>Work</h2>
-          <div className="about-work-list" ref={workListRef} style={{ width: workListWidth }}>
+        <S.WorkRow>
+          <S.WorkTitle $isVisible={visibleWorkItems.length > 0}>Work</S.WorkTitle>
+          <S.WorkList ref={workListRef} style={{ width: workListWidth }}>
             {['Cal Poly FITS', 'MeerMutter Label', 'ART 122'].map((item, index) => (
-              <p
+              <S.WorkListItem
                 key={index}
-                className={`about-work-list-item ${visibleWorkItems.includes(index) ? 'visible' : ''}`}
+                $isVisible={visibleWorkItems.includes(index)}
               >
                 {item}
-              </p>
+              </S.WorkListItem>
             ))}
-          </div>
-        </div>
-      </div>
+          </S.WorkList>
+        </S.WorkRow>
+      </S.InfoSection>
 
       <Footer />
-    </div>
+    </S.Container>
   );
 }
 

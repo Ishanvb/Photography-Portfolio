@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import Header from '~/components/Header';
-import '~/pages/Contact.css';
+import * as S from './Contact.styled';
 
 function Contact() {
   const [visible, setVisible] = useState(false);
@@ -33,33 +33,36 @@ function Contact() {
   }, []);
 
   return (
-    <div className="contact">
+    <S.Container>
       <Header />
 
       {/* Contact lines container */}
-      <div className="contact-lines-container">
+      <S.LinesContainer>
         {contactLines.map((line, index) => (
-          <div
+          <S.ContactLine
             key={index}
-            className={`contact-line ${line.dimmed ? 'dimmed' : ''} ${visible ? 'visible' : ''} ${revealed ? 'revealed' : ''}`}
+            $isDimmed={line.dimmed}
+            $isVisible={visible}
+            $isRevealed={revealed}
+            $index={index}
           >
-            <span className="contact-line-left">{line.left}</span>
+            <S.LineLeft>{line.left}</S.LineLeft>
             {line.href ? (
-              <a
+              <S.ContactLink
                 href={line.href}
-                className="contact-line-right contact-link"
+                $isVisible={visible}
                 target={line.external ? '_blank' : undefined}
                 rel={line.external ? 'noopener noreferrer' : undefined}
               >
                 {line.right}
-              </a>
+              </S.ContactLink>
             ) : (
-              <span className="contact-line-right">{line.right}</span>
+              <S.LineRight>{line.right}</S.LineRight>
             )}
-          </div>
+          </S.ContactLine>
         ))}
-      </div>
-    </div>
+      </S.LinesContainer>
+    </S.Container>
   );
 }
 

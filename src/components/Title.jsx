@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import '~/components/Title.css';
+import * as S from '~/components/Title.styled';
 
 function Title({ startAnimation = true }) {
   const [displayText, setDisplayText] = useState('');
@@ -8,15 +8,13 @@ function Title({ startAnimation = true }) {
   const finalText = "MariannaParzick";
 
   useEffect(() => {
-    // Don't start animation until told to
     if (!startAnimation) return;
 
     let currentIndex = 0;
-    const typingSpeed = 60; // ms per character
-    const deleteSpeed = 30; // ms per character when deleting
-    const pauseBeforeDelete = 500; // pause after typing completes
+    const typingSpeed = 60;
+    const deleteSpeed = 30;
+    const pauseBeforeDelete = 500;
 
-    // Phase 1: Type full text with period
     const typeInterval = setInterval(() => {
       if (currentIndex < fullText.length) {
         setDisplayText(fullText.slice(0, currentIndex + 1));
@@ -24,7 +22,6 @@ function Title({ startAnimation = true }) {
       } else {
         clearInterval(typeInterval);
 
-        // Phase 2: Pause, then delete everything
         setTimeout(() => {
           let currentText = fullText;
           const deleteInterval = setInterval(() => {
@@ -34,7 +31,6 @@ function Title({ startAnimation = true }) {
             } else {
               clearInterval(deleteInterval);
 
-              // Phase 3: Type out final text
               setTimeout(() => {
                 let finalIndex = 0;
                 const finalTypeInterval = setInterval(() => {
@@ -57,13 +53,12 @@ function Title({ startAnimation = true }) {
   }, [startAnimation]);
 
   return (
-    <div className="title-container" data-node-id="35:19">
-      <h1 className={`title ${showCursor ? 'typing' : ''}`} data-node-id="1:4">
+    <S.Container data-node-id="35:19">
+      <S.TitleText $isTyping={showCursor} data-node-id="1:4">
         {displayText}
-      </h1>
-    </div>
+      </S.TitleText>
+    </S.Container>
   );
 }
 
 export default Title;
-
