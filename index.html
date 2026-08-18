@@ -69,7 +69,10 @@
       "knowsAbout": ["Fashion Photography", "Portrait Photography", "Fine Art Photography", "Videography"]
     }
     </script>
-  </head>
+      <!-- Start the content manifest in parallel with the JS bundle rather than
+         after it, so galleries are not waiting on a fetch waterfall. -->
+    <link rel="preload" href="/api/content" as="fetch" crossorigin="anonymous" />
+</head>
   <body>
     <div id="root"></div>
     <script type="module" src="/src/main.jsx"></script>

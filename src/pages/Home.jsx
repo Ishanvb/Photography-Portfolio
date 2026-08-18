@@ -1,6 +1,7 @@
 import { useState, useRef, useEffect, useCallback } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
 import { markLoaded, setContentReady } from '~/store/uiSlice';
+import useContent from '~/hooks/useContent';
 import { setManualScrolling } from '~/store/scrollSlice';
 import Header from '~/components/Header';
 import Title from '~/components/Title';
@@ -14,6 +15,7 @@ const hasLoadedKey = 'mariPortfolioLoaded';
 
 function Home() {
   const dispatch = useDispatch();
+  const { reel } = useContent();
   const { isFirstVisit, isLoading, contentReady } = useSelector((state) => state.ui);
 
   const [instructionVisible, setInstructionVisible] = useState(false);
@@ -29,24 +31,22 @@ function Home() {
       return;
     }
 
-    const imagesToPreload = [
-      '/photos/reelphotos/mari1.webp',
-      '/photos/reelphotos/mari8.webp',
-      '/photos/reelphotos/mari3.webp',
-      '/photos/reelphotos/mari4.webp',
-      '/photos/reelphotos/mari5.webp',
-      '/photos/reelphotos/mari6.webp',
-      '/photos/reelphotos/mari7.webp',
-      '/photos/reelphotos/mari2.webp'
-    ];
-
-    let loadedCount = 0;
-    const totalImages = imagesToPreload.length;
+    // Preload exactly what the reel is about to render, in order.
+    const imagesToPreload = reel.map((item) => item.webp ?? item.jpg).filter(Boolean);
 
     const onImagesLoaded = () => {
       sessionStorage.setItem(hasLoadedKey, 'true');
       dispatch(markLoaded());
     };
+
+    let loadedCount = 0;
+    const totalImages = imagesToPreload.length;
+
+    // Nothing to wait for (empty reel) — do not hold the loading screen open.
+    if (totalImages === 0) {
+      onImagesLoaded();
+      return;
+    }
 
     imagesToPreload.forEach(src => {
       const img = new Image();
@@ -73,7 +73,7 @@ function Home() {
 
     const fallbackTimer = setTimeout(onImagesLoaded, 5000);
     return () => clearTimeout(fallbackTimer);
-  }, [isFirstVisit, dispatch]);
+  }, [isFirstVisit, dispatch, reel]);
 
   // Called after loading screen fade-out completes
   const handleFadeComplete = () => {

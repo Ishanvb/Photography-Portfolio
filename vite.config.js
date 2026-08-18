@@ -29,6 +29,19 @@ export default defineConfig({
           'vendor-router': ['react-router-dom'],
           'vendor-redux': ['@reduxjs/toolkit'],
         },
+        entryFileNames: 'assets/[name]-[hash].js',
+        // The management UI is emitted under /admin-assets/, which
+        // middleware.js 404s without a valid session. Nothing outside
+        // src/admin/app imports from it, so any chunk containing one of its
+        // modules contains only admin code.
+        chunkFileNames(chunk) {
+          const isAdminApp = (chunk.moduleIds ?? []).some((id) =>
+            id.includes('/src/admin/app/')
+          );
+          return isAdminApp
+            ? 'admin-assets/[name]-[hash].js'
+            : 'assets/[name]-[hash].js';
+        },
       },
     },
     cssCodeSplit: true,

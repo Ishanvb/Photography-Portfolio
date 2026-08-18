@@ -1,5 +1,6 @@
 import {
   useEffect,
+  useMemo,
   useRef,
   forwardRef,
   useImperativeHandle
@@ -7,6 +8,7 @@ import {
 import { useNavigate } from 'react-router-dom';
 import { useSelector } from 'react-redux';
 import OptimizedImage from '~/components/OptimizedImage';
+import useContent from '~/hooks/useContent';
 import * as S from './Reel.styled';
 
 /* =========================
@@ -27,36 +29,12 @@ const getResponsiveGap = () => {
 };
 
 /* =========================
-   Assets
+   Layout
 ========================= */
 
-const images = [
-  { id: 1, src: '/photos/reelphotos/mari1.jpg' },
-  { id: 2, src: '/photos/reelphotos/mari8.jpg' },
-  { id: 3, src: '/photos/reelphotos/mari3.jpg' },
-  { id: 4, src: '/photos/reelphotos/mari4.jpg' },
-  { id: 5, src: '/photos/reelphotos/mari5.jpg' },
-  { id: 6, src: '/photos/reelphotos/mari6.jpg' },
-  { id: 7, src: '/photos/reelphotos/mari7.jpg' },
-  { id: 8, src: '/photos/reelphotos/mari2.jpg' }
-];
-
-/* =========================
-   Navigation
-========================= */
-
-const navigationMap = {
-  1: { route: '/work/fashion-project', photoIndex: 5, title: "Heaven's Playground", caption: 'Fashion-Project' },
-  2: { route: '/work/portrait-project', photoIndex: 1, title: 'Breath of Winter', caption: 'Portrait-Project' },
-  3: { route: '/work/portrait-project', photoIndex: 0, title: 'Rest Stop', caption: 'Portrait-Project' },
-  4: { route: '/work/fashion-project', photoIndex: 7, title: "Headin' South", caption: 'Fashion-Project' },
-  5: { route: '/work/urbangeometry-project', title: "Nature's Architect", caption: 'Urban-Geometry-Project' },
-  6: { route: '/work/portrait-project', title: 'Misty Blues', caption: 'Portrait-Project' },
-  7: { route: '/work/fashion-project', title: 'Viva las Vegas', caption: 'Fashion-Project' },
-  8: { route: '/work/fashion-project', photoIndex: 2, title: 'Viva las Vegas', caption: 'Fashion-Project' }
-};
-
-const duplicatedImages = [...images, ...images, ...images, ...images, ...images, ...images];
+// The track renders the reel six times over so the auto-scroll can loop
+// seamlessly without ever hitting an edge.
+const LOOPS = 6;
 
 /* =========================
    Component
@@ -67,7 +45,14 @@ const Reel = forwardRef(function Reel(
   ref
 ) {
   const navigate = useNavigate();
+  const { reel } = useContent();
   const isManualScrolling = useSelector((state) => state.scroll.isManualScrolling);
+
+  const duplicatedImages = useMemo(
+    () => Array.from({ length: LOOPS }, () => reel).flat(),
+    [reel]
+  );
+  const cycleCount = reel.length;
   const reelRef = useRef(null);
   const animationRef = useRef(null);
   const scrollPosRef = useRef(0);
@@ -91,7 +76,7 @@ const Reel = forwardRef(function Reel(
       const gap = getResponsiveGap();
       let length = 0;
 
-      for (let i = 0; i < 8 && i < frames.length; i++) {
+      for (let i = 0; i < cycleCount && i < frames.length; i++) {
         length += frames[i].offsetWidth + gap;
       }
 
@@ -99,7 +84,7 @@ const Reel = forwardRef(function Reel(
       reel.scrollLeft = 0;
       scrollPosRef.current = 0;
     });
-  }, []);
+  }, [cycleCount]);
 
   /* =========================
      Imperative API
@@ -128,7 +113,7 @@ const Reel = forwardRef(function Reel(
       const frames = reel.children;
       const gap = getResponsiveGap();
       let length = 0;
-      for (let i = 0; i < 8 && i < frames.length; i++) {
+      for (let i = 0; i < cycleCount && i < frames.length; i++) {
         length += frames[i].offsetWidth + gap;
       }
       cycleLengthRef.current = length;
@@ -168,7 +153,7 @@ const Reel = forwardRef(function Reel(
     animationRef.current = requestAnimationFrame(animate);
 
     return () => cancelAnimationFrame(animationRef.current);
-  }, [startAnimation, isManualScrolling, onScrollUpdate]);
+  }, [startAnimation, isManualScrolling, onScrollUpdate, cycleCount]);
 
   /* =========================
      Desktop Wheel Scroll
@@ -244,13 +229,11 @@ const Reel = forwardRef(function Reel(
      Image Handling
   ========================= */
 
-  const handleImageClick = (id) => {
-    const nav = navigationMap[id];
-    if (nav) {
-      navigate(nav.route, {
-        state: { scrollToPhotoIndex: nav.photoIndex }
-      });
-    }
+  const handleImageClick = (item) => {
+    if (!item.targetSlug) return;
+    navigate(`/work/${item.targetSlug}`, {
+      state: { scrollToPhotoIndex: item.targetPhotoIndex ?? undefined }
+    });
   };
 
   /* =========================
@@ -260,31 +243,27 @@ const Reel = forwardRef(function Reel(
   return (
     <S.Container>
       <S.Track ref={reelRef}>
-        {duplicatedImages.map((img, index) => {
-          const meta = navigationMap[img.id];
-          const isNarrow = (index + 1) % 8 === 0;
-
-          return (
-            <S.Frame $isNarrow={isNarrow} key={`${img.id}-${index}`}>
-              <S.ImageContainer
-                $isNarrow={isNarrow}
-                data-cursor="View Photo"
-                onClick={() => handleImageClick(img.id)}
-              >
-                <OptimizedImage
-                  src={img.src}
-                  loading="lazy"
-                  alt={meta?.title}
-                  style={{ width: '100%', height: '100%', objectFit: 'cover' }}
-                />
-              </S.ImageContainer>
-              <S.Caption>
-                <S.CaptionTitle>{meta?.title}</S.CaptionTitle>
-                <S.CaptionDirection>{meta?.caption}</S.CaptionDirection>
-              </S.Caption>
-            </S.Frame>
-          );
-        })}
+        {duplicatedImages.map((img, index) => (
+          <S.Frame $isNarrow={img.isNarrow} key={`${img.jpg}-${index}`}>
+            <S.ImageContainer
+              $isNarrow={img.isNarrow}
+              data-cursor="View Photo"
+              onClick={() => handleImageClick(img)}
+            >
+              <OptimizedImage
+                src={img.jpg}
+                webpSrc={img.webp}
+                loading="lazy"
+                alt={img.title}
+                style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+              />
+            </S.ImageContainer>
+            <S.Caption>
+              <S.CaptionTitle>{img.title}</S.CaptionTitle>
+              <S.CaptionDirection>{img.caption}</S.CaptionDirection>
+            </S.Caption>
+          </S.Frame>
+        ))}
       </S.Track>
     </S.Container>
   );

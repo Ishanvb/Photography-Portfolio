@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import useMobileDetect from '~/hooks/useMobileDetect';
+import useContent from '~/hooks/useContent';
 import Header from '~/components/Header';
 import Footer from '~/components/Footer';
 import OptimizedImage from '~/components/OptimizedImage';
@@ -25,47 +26,10 @@ const AnimatedCategoryLabel = ({ text }) => {
   );
 };
 
-const workProjects = [
-  {
-    id: 1,
-    image: '/photos/reelphotos/mari6.jpg',
-    title: 'PORTRAITS',
-    description: 'COLLECTIONS: 8'
-  },
-  {
-    id: 2,
-    image: '/photos/reelphotos/mari7.jpg',
-    title: 'FASHION',
-    description: 'COLLECTIONS: 4'
-  },
-  {
-    id: 3,
-    image: '/photos/Light/Light.jpg',
-    title: 'LIGHT',
-    description: 'COLLECTIONS: 3'
-  },
-  {
-    id: 4,
-    image: '/photos/Fineart/Fineart.jpg',
-    title: 'FINE ART',
-    description: 'COLLECTIONS: 2'
-  },
-  {
-    id: 5,
-    image: '/photos/Urbangeometry/Urbangeometry.jpg',
-    title: 'URBAN GEOMETRY',
-    description: 'COLLECTIONS: 2'
-  },
-  {
-    id: 6,
-    image: '/photos/Videography/videography.jpg',
-    title: 'VIDEOGRAPHY',
-    description: 'COLLECTIONS: 3'
-  }
-];
 
 function Work() {
   const navigate = useNavigate();
+  const { projects } = useContent();
   const isMobile = useMobileDetect();
   const [displayText, setDisplayText] = useState('');
   const [isTypingComplete, setIsTypingComplete] = useState(false);
@@ -81,26 +45,14 @@ function Work() {
   const instructionRef = useRef(null);
   const [instructionVisible, setInstructionVisible] = useState(false);
 
-  const handleProjectClick = (projectId) => {
-    if (projectId === 1) {
-      navigate('/work/portrait-project');
-    } else if (projectId === 2) {
-      navigate('/work/fashion-project');
-    } else if (projectId === 3) {
-      navigate('/work/light-project');
-    } else if (projectId === 4) {
-      navigate('/work/fineart-project');
-    } else if (projectId === 5) {
-      navigate('/work/urbangeometry-project');
-    } else if (projectId === 6) {
-      navigate('/work/videography-project');
-    }
+  const handleProjectClick = (slug) => {
+    navigate(`/work/${slug}`);
   };
 
   // Navigate to project page when category is clicked
-  const handleCategoryClick = (projectId) => {
+  const handleCategoryClick = (slug) => {
     setDropdownOpen(false);
-    handleProjectClick(projectId);
+    handleProjectClick(slug);
   };
 
   // Toggle dropdown
@@ -217,10 +169,10 @@ function Work() {
 
           {/* Dropdown items P1-P6 */}
           <S.DropdownItems>
-            {workProjects.map((project, index) => (
+            {projects.map((project, index) => (
               <S.DropdownItem
-                key={project.id}
-                onClick={() => handleCategoryClick(project.id)}
+                key={project.slug}
+                onClick={() => handleCategoryClick(project.slug)}
               >
                 <S.CategoryText>
                   <AnimatedCategoryLabel text={formatTitle(project.title, index)} />
@@ -248,16 +200,20 @@ function Work() {
           <S.InstructionText><span>SELECT FRAME - LEARN MORE</span></S.InstructionText>
         </S.GalleryInstruction>
 
-        {workProjects.map((project, index) => (
+        {projects.map((project, index) => (
           <S.ProjectPresentation
-            key={project.id}
+            key={project.slug}
             $index={index}
           >
-            <S.ImageContainer data-cursor="View Project" onClick={() => handleProjectClick(project.id)}>
-              <OptimizedImage src={project.image} alt={project.title} />
+            <S.ImageContainer data-cursor="View Project" onClick={() => handleProjectClick(project.slug)}>
+              <OptimizedImage
+                src={project.cover?.jpg}
+                webpSrc={project.cover?.webp}
+                alt={project.title}
+              />
             </S.ImageContainer>
               <S.Caption>
-                <S.Title>{project.title}</S.Title>
+                <S.Title>{project.title.toUpperCase()}</S.Title>
                 <S.Description>{project.description}</S.Description>
               </S.Caption>
           </S.ProjectPresentation>
