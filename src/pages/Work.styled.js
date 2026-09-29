@@ -20,7 +20,7 @@ export const HeaderRow = styled.div`
   justify-content: space-between;
   align-items: flex-start;
   width: 100%;
-  padding: 0 250px;
+  padding: 0 ${({ theme }) => theme.spacing(5)};
   margin-top: ${({ theme }) => theme.spacing(2.5)};
   margin-bottom: ${({ theme }) => theme.spacing(11)};
   box-sizing: border-box;
@@ -29,7 +29,7 @@ export const HeaderRow = styled.div`
     flex-direction: row;
     align-items: flex-start;
     justify-content: space-between;
-    padding: 0 ${({ theme }) => theme.spacing(2.5)};
+    padding: 0 ${({ theme }) => theme.spacing(3)};
     margin-top: 10px;
     margin-bottom: ${({ theme }) => theme.spacing(5)};
   }
@@ -45,19 +45,6 @@ export const TitleFrame = styled.div`
 
   ${({ theme }) => theme.media.sm} {
     text-align: right;
-  }
-`;
-
-// LetterStack must be declared before components that reference it
-export const LetterStack = styled.span`
-  display: block;
-  height: 200%;
-  transform: translateY(-50%);
-  transition: transform ${({ theme }) => theme.transitions.smooth};
-
-  & span {
-    display: block;
-    height: 50%;
   }
 `;
 
@@ -82,6 +69,39 @@ export const CategoryText = styled.p`
   }
 `;
 
+/** Letters roll down one after another as a dropdown row is hovered. */
+export const LetterStack = styled.span`
+  display: block;
+  height: 200%;
+  transform: translateY(-50%);
+  transition: transform ${({ theme }) => theme.transitions.smooth};
+
+  & span {
+    display: block;
+    height: 50%;
+  }
+`;
+
+export const AnimatedCategory = styled.span`
+  display: inline-flex;
+`;
+
+export const Letter = styled.span`
+  position: relative;
+  overflow: hidden;
+  height: 32px;
+  display: inline-block;
+
+  ${({ theme }) => theme.media.sm} {
+    height: 18px;
+  }
+
+  ${({ theme }) => theme.media.xs} {
+    height: 16px;
+  }
+`;
+
+/** Sits under the title when closed and under the whole list when open. */
 export const CategoryLine = styled.div``;
 
 export const DropdownItems = styled.div`
@@ -94,20 +114,26 @@ export const DropdownItems = styled.div`
   order: 1;
 `;
 
-export const DropdownItem = styled.div`
+export const DropdownItem = styled.button`
   display: flex;
   padding: 10px;
   align-items: center;
   gap: 10px;
   align-self: stretch;
+  border: none;
   border-bottom: 2px solid ${({ theme }) => theme.colors.text};
+  background: none;
+  font: inherit;
+  color: inherit;
+  text-align: left;
   cursor: pointer;
   width: 100%;
   box-sizing: border-box;
   opacity: 0;
   transform: translateY(-10px);
-  transition: opacity ${({ theme }) => theme.transitions.normal},
-              transform ${({ theme }) => theme.transitions.normal};
+  transition:
+    opacity ${({ theme }) => theme.transitions.normal},
+    transform ${({ theme }) => theme.transitions.normal};
 
   &:hover ${LetterStack} {
     transform: translateY(0%);
@@ -124,6 +150,42 @@ export const DropdownItem = styled.div`
     &:active ${LetterStack} {
       transform: translateY(0%);
     }
+  }
+`;
+
+export const CategoryArrow = styled.button`
+  width: 0;
+  height: 0;
+  padding: 0;
+  border-left: 12px solid transparent;
+  border-right: 12px solid transparent;
+  border-top: 12px solid ${({ theme }) => theme.colors.text};
+  border-bottom: none;
+  background: none;
+  cursor: pointer;
+  transition:
+    transform ${({ theme }) => theme.transitions.normal},
+    border-top-color ${({ theme }) => theme.transitions.fast};
+  flex-shrink: 0;
+
+  ${({ $isOpen }) => $isOpen && css`
+    transform: rotate(180deg);
+  `}
+
+  &.cursor-nearby {
+    border-top-color: transparent;
+  }
+
+  ${({ theme }) => theme.media.sm} {
+    border-left-width: 5px;
+    border-right-width: 5px;
+    border-top-width: 5px;
+  }
+
+  ${({ theme }) => theme.media.xs} {
+    border-left-width: 4px;
+    border-right-width: 4px;
+    border-top-width: 4px;
   }
 `;
 
@@ -188,10 +250,6 @@ export const CategoryItem = styled.div`
     margin: 0;
   }
 
-  &:hover ${LetterStack} {
-    transform: translateY(0%);
-  }
-
   ${({ theme }) => theme.media.sm} {
     gap: ${({ theme }) => theme.spacing(2)};
     cursor: pointer;
@@ -207,57 +265,6 @@ export const CategoryItem = styled.div`
     & ${CategoryText} {
       font-size: 28px;
     }
-  }
-`;
-
-export const CategoryArrow = styled.div`
-  width: 0;
-  height: 0;
-  border-left: 12px solid transparent;
-  border-right: 12px solid transparent;
-  border-top: 12px solid ${({ theme }) => theme.colors.text};
-  cursor: pointer;
-  transition: transform ${({ theme }) => theme.transitions.normal},
-              border-top-color ${({ theme }) => theme.transitions.fast};
-  flex-shrink: 0;
-
-  ${({ $isOpen }) => $isOpen && css`
-    transform: rotate(180deg);
-  `}
-
-  &.cursor-nearby {
-    border-top-color: transparent;
-  }
-
-  ${({ theme }) => theme.media.sm} {
-    border-left-width: 5px;
-    border-right-width: 5px;
-    border-top-width: 5px;
-  }
-
-  ${({ theme }) => theme.media.xs} {
-    border-left-width: 4px;
-    border-right-width: 4px;
-    border-top-width: 4px;
-  }
-`;
-
-export const AnimatedCategory = styled.span`
-  display: inline-flex;
-`;
-
-export const Letter = styled.span`
-  position: relative;
-  overflow: hidden;
-  height: 32px;
-  display: inline-block;
-
-  ${({ theme }) => theme.media.sm} {
-    height: 18px;
-  }
-
-  ${({ theme }) => theme.media.xs} {
-    height: 16px;
   }
 `;
 
@@ -294,14 +301,14 @@ export const Content = styled.div`
   align-items: center;
   gap: ${({ theme }) => theme.spacing(11)};
   width: 100%;
-  max-width: 1728px;
   padding-top: ${({ theme }) => theme.spacing(2.5)};
-  padding-left: 250px;
-  padding-right: 250px;
+  padding-left: ${({ theme }) => theme.spacing(5)};
+  padding-right: ${({ theme }) => theme.spacing(5)};
+  box-sizing: border-box;
 
   ${({ theme }) => theme.media.sm} {
-    padding-left: ${({ theme }) => theme.spacing(2.5)};
-    padding-right: ${({ theme }) => theme.spacing(2.5)};
+    padding-left: ${({ theme }) => theme.spacing(3)};
+    padding-right: ${({ theme }) => theme.spacing(3)};
     gap: ${({ theme }) => theme.spacing(5)};
   }
 
@@ -312,137 +319,208 @@ export const Content = styled.div`
   }
 `;
 
-export const GalleryInstruction = styled.div`
-  display: none;
-  justify-content: space-between;
-  align-items: center;
-  width: 100%;
-  padding: 10px 0;
-  margin-bottom: -87px;
-  opacity: 0;
+/* ========== Photo Grid ==========
+   An imaginary four column grid: one column is exactly the width of one
+   landscape photo, and a portrait photo keeps that same width and simply runs
+   taller. Every spot is either a framed photo, an empty black space, or an
+   empty black space with placeholder text in the middle of it. Horizontal and
+   vertical spacing are the same value, so the grid breathes evenly.
+*/
 
-  ${({ $isVisible, $isContentVisible }) => $isContentVisible && $isVisible && css`
-    animation: ${fadeInFromTop} 0.8s ease-out forwards;
-  `}
+export const GalleryGrid = styled.div`
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  align-items: start;
+  gap: ${({ theme }) => theme.spacing(5)};
+  width: 100%;
 
   ${({ theme }) => theme.media.sm} {
-    display: flex;
-    margin-bottom: -32px;
+    grid-template-columns: repeat(2, 1fr);
+    gap: ${({ theme }) => theme.spacing(3)};
+  }
+
+  ${({ theme }) => theme.media.xs} {
+    grid-template-columns: 1fr;
+    gap: ${({ theme }) => theme.spacing(2)};
   }
 `;
 
-export const InstructionText = styled.span`
+// A blank spot has no photo to size it, so it takes the shape of a horizontal
+// one: full column width, and the height that follows from it.
+const spot = css`
+  width: 100%;
+  box-sizing: border-box;
+  aspect-ratio: 3 / 2;
+  opacity: 0;
+  animation: ${fadeInFromTop} 0.8s ease-out forwards;
+  animation-delay: ${({ $index }) => `${Math.min($index || 0, 12) * 0.06}s`};
+`;
+
+// How far the frame stands off the photo — the ring that fills in.
+const FRAME_GAP = 10;
+
+export const PhotoSpot = styled.figure`
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  width: 100%;
+  margin: 0;
+  opacity: 0;
+  animation: ${fadeInFromTop} 0.8s ease-out forwards;
+  animation-delay: ${({ $index }) => `${Math.min($index || 0, 12) * 0.06}s`};
+`;
+
+/**
+ * Rendered as a button — clicking a photo opens its collection.
+ *
+ * The photo is also its own cursor: hovering swallows the real one (see the
+ * `merge` variant in CustomCursor.styled.js) and a thin border settles around
+ * the photo in its place, with the ring between the two filling in behind it —
+ * quicker than the border arrives, so the frame reads as closing onto the shot.
+ */
+export const PhotoFrame = styled.div`
+  position: relative;
+  display: block;
+  width: 100%;
+  padding: 0;
+  border: none;
+  background: none;
+  appearance: none;
+  font: inherit;
+  color: inherit;
+  text-align: left;
+  cursor: pointer;
+
+  /* Until the file lands the photo has no shape of its own, so it holds a black
+     square in its place and fades in over it once it arrives.
+
+     The square is reserved on the image rather than on this box: a lazily
+     loaded image with no height covers no area, never counts as reaching the
+     viewport, and so never loads — which would leave it without a height for
+     good. Giving it the square up front breaks that circle. */
+  background-color: ${({ theme }) => theme.colors.black};
+
+  & picture,
+  & img {
+    display: block;
+    width: 100%;
+    height: auto;
+    position: relative;
+  }
+
+  & img {
+    aspect-ratio: 1;
+    border-radius: 0;
+    opacity: 0;
+    transition: opacity 0.5s ease-out;
+  }
+
+  & img[data-loaded='true'] {
+    aspect-ratio: auto;
+    opacity: 1;
+  }
+
+  &::before,
+  &::after {
+    content: '';
+    position: absolute;
+    inset: -${FRAME_GAP}px;
+    opacity: 0;
+    pointer-events: none;
+  }
+
+  /* The ring around the photo. Behind the shot, so only the margin shows. */
+  &::before {
+    z-index: -1;
+    background-color: ${({ theme }) => theme.colors.text};
+    transform: scale(0.99);
+    transition:
+      opacity 0.12s ease-out,
+      transform 0.12s ease-out;
+  }
+
+  /* The border the cursor becomes. */
+  &::after {
+    border: 1px solid ${({ theme }) => theme.colors.text};
+    transform: scale(0.97);
+    transition:
+      opacity 0.28s ease-out,
+      transform 0.34s cubic-bezier(0.16, 1, 0.3, 1);
+  }
+
+  &:hover::before,
+  &:hover::after,
+  &:focus-visible::before,
+  &:focus-visible::after {
+    opacity: 1;
+    transform: scale(1);
+  }
+
+  &:focus-visible {
+    outline: none;
+  }
+
+  ${({ theme }) => theme.media.touch} {
+    &::before,
+    &::after {
+      display: none;
+    }
+  }
+`;
+
+// The number sits under the bottom left corner of the photo it belongs to.
+export const PhotoCaption = styled.figcaption`
   font-family: ${({ theme }) => theme.typography.fontFamily.primary};
   font-weight: ${({ theme }) => theme.typography.fontWeight.regular};
   font-size: ${({ theme }) => theme.typography.fontSize.sm};
-  color: rgb(255, 255, 255);
   letter-spacing: ${({ theme }) => theme.typography.letterSpacing.wide};
-  position: relative;
-  overflow: hidden;
-  display: inline-block;
+  color: ${({ theme }) => theme.colors.white};
+  margin-top: 8px;
+  text-align: left;
 
-  & span {
-    position: relative;
-    z-index: 1;
-  }
-
-  ${({ theme }) => theme.media.sm} {
+  ${({ theme }) => theme.media.xs} {
     font-size: ${({ theme }) => theme.typography.fontSize.xs};
-  }
-
-  ${({ theme }) => theme.media.xs} {
-    font-size: 8px;
+    margin-top: 6px;
   }
 `;
 
-export const ProjectPresentation = styled.div`
-  display: flex;
-  flex-direction: column;
-  align-items: flex-start;
-  width: 100%;
-  opacity: 0;
-  animation: ${fadeInFromTop} 0.8s ease-out forwards;
-  animation-delay: ${({ $index }) => {
-    if ($index === 0) return '0s';
-    return `${$index * 0.1}s`;
-  }};
+export const EmptySpot = styled.div`
+  ${spot}
+  position: relative;
+  background-color: ${({ theme }) => theme.colors.background};
 `;
 
-export const ImageContainer = styled.div`
-  width: 100%;
-  overflow: hidden;
-  background-color: ${({ theme }) => theme.colors.backgroundLight};
-
-  & img {
-    width: 100%;
-    height: auto;
-    object-fit: cover;
-    display: block;
-    border-radius: 0;
-    padding: 10px;
-    transition: transform ${({ theme }) => theme.transitions.normal};
-    cursor: pointer;
-
-    &:hover {
-      transform: scale(1.05);
-    }
-
-    ${({ theme }) => theme.media.sm} {
-      padding: 4px;
-    }
-
-    ${({ theme }) => theme.media.touch} {
-      &:active {
-        transform: scale(0.98);
-        opacity: 0.85;
-      }
-    }
-  }
-`;
-
-export const Caption = styled.div`
-  display: flex;
-  flex-direction: column;
-  align-items: flex-start;
-  width: 100%;
-  margin-top: ${({ theme }) => theme.spacing(1)};
-  gap: 2px;
+/**
+ * A cluster of dots in the middle of a blank spot. The box is the size of the
+ * lone circle, and every arrangement lives inside it — so one circle and seven
+ * take up exactly the same area, the seven sitting within the round the one
+ * would have filled.
+ */
+export const Circles = styled.div`
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 52px;
+  height: 52px;
+  transform: translate(-50%, -50%);
+  pointer-events: none;
 
   ${({ theme }) => theme.media.sm} {
-    margin-top: 4px;
+    width: 36px;
+    height: 36px;
   }
 `;
 
-export const Title = styled.p`
-  font-family: ${({ theme }) => theme.typography.fontFamily.primary};
-  font-weight: ${({ theme }) => theme.typography.fontWeight.regular};
-  font-size: ${({ theme }) => theme.typography.fontSize.base};
-  line-height: normal;
-  color: ${({ theme }) => theme.colors.text};
-  margin: 0;
+export const Circle = styled.span`
+  position: absolute;
+  width: ${({ $solo }) => ($solo ? '100%' : '10px')};
+  height: ${({ $solo }) => ($solo ? '100%' : '10px')};
+  border-radius: 50%;
+  background-color: ${({ theme }) => theme.colors.text};
+  transform: translate(-50%, -50%);
 
   ${({ theme }) => theme.media.sm} {
-    font-size: 11px;
-  }
-
-  ${({ theme }) => theme.media.xs} {
-    font-size: 10px;
-  }
-`;
-
-export const Description = styled.p`
-  font-family: ${({ theme }) => theme.typography.fontFamily.primary};
-  font-weight: ${({ theme }) => theme.typography.fontWeight.regular};
-  font-size: ${({ theme }) => theme.typography.fontSize.base};
-  line-height: normal;
-  color: ${({ theme }) => theme.colors.textDimmed};
-  margin: 0;
-
-  ${({ theme }) => theme.media.sm} {
-    font-size: 11px;
-  }
-
-  ${({ theme }) => theme.media.xs} {
-    font-size: 10px;
+    width: ${({ $solo }) => ($solo ? '100%' : '7px')};
+    height: ${({ $solo }) => ($solo ? '100%' : '7px')};
   }
 `;

@@ -20,17 +20,17 @@ async function uniqueSlug(base) {
   }
 }
 
+// Only what the site actually reads. count_label, body_text, title_offset and
+// media_kind belonged to the per-project page that no longer exists; the
+// columns are left in the database so nothing written into them is lost.
 const COLUMNS = {
   title: 'title',
   description: 'description',
-  countLabel: 'count_label',
-  bodyText: 'body_text',
+  dateLabel: 'date_label',
   heroJpg: 'hero_jpg',
   heroWebp: 'hero_webp',
   coverJpg: 'cover_jpg',
   coverWebp: 'cover_webp',
-  titleOffset: 'title_offset',
-  mediaKind: 'media_kind',
   sortOrder: 'sort_order',
   published: 'published',
 };
@@ -52,7 +52,7 @@ export default withErrors(async (req, res) => {
     const rows = unwrap(
       await db
         .from('projects')
-        .select('*, photos(id, url_jpg, url_webp, youtube_id, alt, sort_order)')
+        .select('*, photos(id, url_jpg, url_webp, youtube_id, alt, caption, sort_order)')
         .order('sort_order', { ascending: true })
     );
     return json(res, 200, { projects: rows });

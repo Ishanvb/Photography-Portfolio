@@ -134,6 +134,25 @@ export const Line = styled.div`
     opacity: ${$isDimmed ? 0.6 : 1};
     transform: translateY(0);
   `}
+
+  /* Scroll-driven: slide down out of LineMask rather than fading up. */
+  ${({ $dropIn, $isVisible, $isDimmed }) => $dropIn && css`
+    /* line-height is 1, so descenders hang below the box; take them in so
+       the hidden line is hidden entirely. */
+    padding-bottom: 0.25em;
+    opacity: ${$isDimmed ? 0.6 : 1};
+    transform: translateY(${$isVisible ? '0' : '-101%'});
+    transition: transform 0.6s cubic-bezier(0.77, 0, 0.175, 1);
+  `}
+`;
+
+/* Clips a scroll-revealed line to its own box, so it appears to come out from
+   under the line above it. */
+export const LineMask = styled.div`
+  overflow: hidden;
+  /* Gives back the room Line takes for its descenders. */
+  margin-bottom: -0.25em;
+  ${footerLineFontStyles}
 `;
 
 export const LineLeft = styled.span`

@@ -5,7 +5,7 @@ const GlobalStyles = createGlobalStyle`
     font-family: ${({ theme }) => theme.typography.fontFamily.primary};
     line-height: ${({ theme }) => theme.typography.lineHeight.normal};
     font-weight: ${({ theme }) => theme.typography.fontWeight.regular};
-    color-scheme: dark;
+    color-scheme: ${({ theme }) => theme.colorScheme};
     color: ${({ theme }) => theme.colors.text};
     background-color: ${({ theme }) => theme.colors.background};
     font-synthesis: none;
@@ -44,6 +44,13 @@ const GlobalStyles = createGlobalStyle`
 
   img {
     image-rendering: auto;
+  }
+
+  /* Day/night switch (see ThemeModeProvider): a slow, even cross-fade. */
+  ::view-transition-old(root),
+  ::view-transition-new(root) {
+    animation-duration: 0.6s;
+    animation-timing-function: ease-in-out;
   }
 `;
 

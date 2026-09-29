@@ -8,7 +8,6 @@ const Home = lazy(() => import('~/pages/Home'))
 const Work = lazy(() => import('~/pages/Work'))
 const About = lazy(() => import('~/pages/About'))
 const Contact = lazy(() => import('~/pages/Contact'))
-const ProjectPage = lazy(() => import('~/pages/ProjectPage'))
 const NotFound = lazy(() => import('~/pages/NotFound'))
 
 // Admin is split in two on purpose.
@@ -34,7 +33,6 @@ function App() {
             <Route path="/work" element={<Work />} />
             <Route path="/about" element={<About />} />
             <Route path="/contact" element={<Contact />} />
-            <Route path="/work/:slug" element={<ProjectPage />} />
             <Route path="/admin/login" element={<AdminLogin />} />
             <Route path="/admin/*" element={<AdminApp />} />
             <Route path="*" element={<NotFound />} />

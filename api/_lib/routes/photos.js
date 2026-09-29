@@ -52,10 +52,16 @@ export default withErrors(async (req, res) => {
       );
       return json(res, 200, { ok: true });
     }
-    const { id, alt } = req.body ?? {};
+    const { id, alt, caption } = req.body ?? {};
     if (!id) return json(res, 400, { error: 'id required' });
+    // Only the fields actually sent are written, so saving a caption does not
+    // blank the alt text and vice versa.
+    const patch = {};
+    if (alt !== undefined) patch.alt = alt ?? '';
+    if (caption !== undefined) patch.caption = caption ?? '';
+    if (!Object.keys(patch).length) return json(res, 400, { error: 'nothing to update' });
     const updated = unwrap(
-      await db.from('photos').update({ alt: alt ?? '' }).eq('id', id).select().single()
+      await db.from('photos').update(patch).eq('id', id).select().single()
     );
     return json(res, 200, { photo: updated });
   }

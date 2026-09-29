@@ -229,10 +229,14 @@ const Reel = forwardRef(function Reel(
      Image Handling
   ========================= */
 
+  // A photo in the reel opens the same collection pop-up the Work page opens,
+  // over the Work page — so closing it leaves you in Work rather than back here.
   const handleImageClick = (item) => {
     if (!item.targetSlug) return;
-    navigate(`/work/${item.targetSlug}`, {
-      state: { scrollToPhotoIndex: item.targetPhotoIndex ?? undefined }
+    navigate('/work', {
+      state: {
+        openCollection: { slug: item.targetSlug, photoIndex: item.targetPhotoIndex ?? 0 }
+      }
     });
   };
 

@@ -4,8 +4,7 @@
       "slug": "portrait-project",
       "title": "Portraits",
       "description": "COLLECTIONS: 8",
-      "countLabel": "[ Photo Collections: 8 ]",
-      "bodyText": "This collection of portraits was meant to capture the ways I view my friends and their unique auras. I used a variety of portrait lighting techniques including split, loop, beauty, rembrandt, paramount, and short/broad light. Each of these techniques is used to accentuate the feelings each photo evokes. I work with my models to style and pose them in ways that align with their own personal image and simultaneously match the vision I conceptualized for the photograph.",
+      "dateLabel": "",
       "hero": {
         "jpg": "/photos/PortraitProject/Portrait.jpg",
         "webp": "/photos/PortraitProject/Portrait.webp"
@@ -14,18 +13,13 @@
         "jpg": "/photos/reelphotos/mari6.jpg",
         "webp": "/photos/reelphotos/mari6.webp"
       },
-      "titleOffset": {
-        "left": "198px",
-        "leftXl": "150px",
-        "leftMd": "110px"
-      },
-      "mediaKind": "photo",
       "photos": [
         {
           "jpg": "/photos/PortraitProject/Portrait1.jpg",
           "webp": "/photos/PortraitProject/Portrait1.webp",
           "youtubeId": null,
           "alt": "Portraits 1",
+          "caption": "",
           "width": null,
           "height": null
         },
@@ -34,6 +28,7 @@
           "webp": "/photos/PortraitProject/Portrait2.webp",
           "youtubeId": null,
           "alt": "Portraits 2",
+          "caption": "",
           "width": null,
           "height": null
         },
@@ -42,6 +37,7 @@
           "webp": "/photos/PortraitProject/Portrait3.webp",
           "youtubeId": null,
           "alt": "Portraits 3",
+          "caption": "",
           "width": null,
           "height": null
         },
@@ -50,6 +46,7 @@
           "webp": "/photos/PortraitProject/Portrait4.webp",
           "youtubeId": null,
           "alt": "Portraits 4",
+          "caption": "",
           "width": null,
           "height": null
         },
@@ -58,6 +55,7 @@
           "webp": "/photos/PortraitProject/Portrait5.webp",
           "youtubeId": null,
           "alt": "Portraits 5",
+          "caption": "",
           "width": null,
           "height": null
         },
@@ -66,6 +64,7 @@
           "webp": "/photos/PortraitProject/Portrait6.webp",
           "youtubeId": null,
           "alt": "Portraits 6",
+          "caption": "",
           "width": null,
           "height": null
         },
@@ -74,6 +73,7 @@
           "webp": "/photos/PortraitProject/Portrait7.webp",
           "youtubeId": null,
           "alt": "Portraits 7",
+          "caption": "",
           "width": null,
           "height": null
         }
@@ -83,8 +83,7 @@
       "slug": "fashion-project",
       "title": "Fashion",
       "description": "COLLECTIONS: 4",
-      "countLabel": "[ Photo Collections: 16 ]",
-      "bodyText": "My fashion photoshoots are intended to be styled and framed in ways that emulate a specific time period of fashion, industry, or lifestyle. The highlight of these photos is the clothing and accessories, but the models contribute to telling a story about the chosen aesthetic. Using technical skills, creative vision, elements like styling, location, and mood help elevate garments beyond mere products into encompassing a curated atmosphere/visual.",
+      "dateLabel": "",
       "hero": {
         "jpg": "/photos/Fashion/Fashion.jpg",
         "webp": "/photos/Fashion/Fashion.webp"
@@ -93,18 +92,13 @@
         "jpg": "/photos/reelphotos/mari7.jpg",
         "webp": "/photos/reelphotos/mari7.webp"
       },
-      "titleOffset": {
-        "left": "198px",
-        "leftXl": "150px",
-        "leftMd": "110px"
-      },
-      "mediaKind": "photo",
       "photos": [
         {
           "jpg": "/photos/Fashion/Fashion1.jpg",
           "webp": "/photos/Fashion/Fashion1.webp",
           "youtubeId": null,
           "alt": "Fashion 1",
+          "caption": "",
           "width": null,
           "height": null
         },
@@ -113,6 +107,7 @@
           "webp": "/photos/Fashion/Fashion2.webp",
           "youtubeId": null,
           "alt": "Fashion 2",
+          "caption": "",
           "width": null,
           "height": null
         },
@@ -121,6 +116,7 @@
           "webp": "/photos/Fashion/Fashion3.webp",
           "youtubeId": null,
           "alt": "Fashion 3",
+          "caption": "",
           "width": null,
           "height": null
         },
@@ -129,6 +125,7 @@
           "webp": "/photos/Fashion/Fashion4.webp",
           "youtubeId": null,
           "alt": "Fashion 4",
+          "caption": "",
           "width": null,
           "height": null
         },
@@ -137,6 +134,7 @@
           "webp": "/photos/Fashion/Fashion5.webp",
           "youtubeId": null,
           "alt": "Fashion 5",
+          "caption": "",
           "width": null,
           "height": null
         },
@@ -145,6 +143,7 @@
           "webp": "/photos/Fashion/Fashion6.webp",
           "youtubeId": null,
           "alt": "Fashion 6",
+          "caption": "",
           "width": null,
           "height": null
         },
@@ -153,6 +152,7 @@
           "webp": "/photos/Fashion/Fashion7.webp",
           "youtubeId": null,
           "alt": "Fashion 7",
+          "caption": "",
           "width": null,
           "height": null
         },
@@ -161,6 +161,7 @@
           "webp": "/photos/Fashion/Fashion8.webp",
           "youtubeId": null,
           "alt": "Fashion 8",
+          "caption": "",
           "width": null,
           "height": null
         },
@@ -169,6 +170,7 @@
           "webp": "/photos/Fashion/Fashion9.webp",
           "youtubeId": null,
           "alt": "Fashion 9",
+          "caption": "",
           "width": null,
           "height": null
         },
@@ -177,6 +179,7 @@
           "webp": "/photos/Fashion/Fashion10.webp",
           "youtubeId": null,
           "alt": "Fashion 10",
+          "caption": "",
           "width": null,
           "height": null
         },
@@ -185,6 +188,7 @@
           "webp": "/photos/Fashion/Fashion11.webp",
           "youtubeId": null,
           "alt": "Fashion 11",
+          "caption": "",
           "width": null,
           "height": null
         },
@@ -193,6 +197,7 @@
           "webp": "/photos/Fashion/Fashion12.webp",
           "youtubeId": null,
           "alt": "Fashion 12",
+          "caption": "",
           "width": null,
           "height": null
         },
@@ -201,6 +206,7 @@
           "webp": "/photos/Fashion/Fashion13.webp",
           "youtubeId": null,
           "alt": "Fashion 13",
+          "caption": "",
           "width": null,
           "height": null
         },
@@ -209,6 +215,7 @@
           "webp": "/photos/Fashion/Fashion14.webp",
           "youtubeId": null,
           "alt": "Fashion 14",
+          "caption": "",
           "width": null,
           "height": null
         },
@@ -217,6 +224,7 @@
           "webp": "/photos/Fashion/Fashion15.webp",
           "youtubeId": null,
           "alt": "Fashion 15",
+          "caption": "",
           "width": null,
           "height": null
         }
@@ -226,8 +234,7 @@
       "slug": "light-project",
       "title": "Light",
       "description": "COLLECTIONS: 3",
-      "countLabel": "[ Photo Collections: 4 ]",
-      "bodyText": "In this collection I used a photographic technique called painting with light. I used various light sources to illuminate parts of a scene during a long exposure. This method allows for the creation of unique light patterns, highlights, and artistic effects that are not possible with standard lighting techniques. A combination of gelled lights, external flash, and natural light was used to paint the photo interpretation of song lyrics I chose beforehand.",
+      "dateLabel": "",
       "hero": {
         "jpg": "/photos/Light/Light.jpg",
         "webp": "/photos/Light/Light.webp"
@@ -236,18 +243,13 @@
         "jpg": "/photos/Light/Light.jpg",
         "webp": "/photos/Light/Light.webp"
       },
-      "titleOffset": {
-        "left": "198px",
-        "leftXl": "150px",
-        "leftMd": "110px"
-      },
-      "mediaKind": "photo",
       "photos": [
         {
           "jpg": "/photos/Light/Light1.jpg",
           "webp": "/photos/Light/Light1.webp",
           "youtubeId": null,
           "alt": "Light 1",
+          "caption": "",
           "width": null,
           "height": null
         },
@@ -256,6 +258,7 @@
           "webp": "/photos/Light/Light2.webp",
           "youtubeId": null,
           "alt": "Light 2",
+          "caption": "",
           "width": null,
           "height": null
         },
@@ -264,6 +267,7 @@
           "webp": "/photos/Light/Light3.webp",
           "youtubeId": null,
           "alt": "Light 3",
+          "caption": "",
           "width": null,
           "height": null
         }
@@ -273,8 +277,7 @@
       "slug": "fineart-project",
       "title": "Fine Art",
       "description": "COLLECTIONS: 2",
-      "countLabel": "[ Photo Collections: 2 ]",
-      "bodyText": "Creating and imagining stories before shooting was a vital part of this collection. Brainstorming for this included storyboarding and writing conceptual captions beforehand. These photos are meant to be interpreted abstractly with no clear answer for what is occurring in the photo. The audience should create their own story based on what is depicted in the image. The collection is meant to convey a sense of whimsy and appear as photos that could be found in storybooks.",
+      "dateLabel": "",
       "hero": {
         "jpg": "/photos/Fineart/Fineart.jpg",
         "webp": "/photos/Fineart/Fineart.webp"
@@ -283,18 +286,13 @@
         "jpg": "/photos/Fineart/Fineart.jpg",
         "webp": "/photos/Fineart/Fineart.webp"
       },
-      "titleOffset": {
-        "left": "198px",
-        "leftXl": "150px",
-        "leftMd": "110px"
-      },
-      "mediaKind": "photo",
       "photos": [
         {
           "jpg": "/photos/Fineart/Fineart1.jpg",
           "webp": "/photos/Fineart/Fineart1.webp",
           "youtubeId": null,
           "alt": "Fine Art 1",
+          "caption": "",
           "width": null,
           "height": null
         }
@@ -304,8 +302,7 @@
       "slug": "urbangeometry-project",
       "title": "Urban Geometry",
       "description": "COLLECTIONS: 2",
-      "countLabel": "[ Photo Collections: 2 ]",
-      "bodyText": "This collection highlights the natural patterns that appear in urban settings. These photos focus on architectural design, negative space, and the harmony of the natural and man-made world. Perspective and framing is very important here as it can highlight symmetries and light and identify otherwise hidden textures or patterns.",
+      "dateLabel": "",
       "hero": {
         "jpg": "/photos/Urbangeometry/Urbangeometry.jpg",
         "webp": "/photos/Urbangeometry/Urbangeometry.webp"
@@ -314,22 +311,13 @@
         "jpg": "/photos/Urbangeometry/Urbangeometry.jpg",
         "webp": "/photos/Urbangeometry/Urbangeometry.webp"
       },
-      "titleOffset": {
-        "left": "80px",
-        "top": "80%",
-        "width": "900px",
-        "lineHeight": "0.65",
-        "leftXl": "150px",
-        "leftMd": "110px",
-        "fontSizeXs": "50px"
-      },
-      "mediaKind": "photo",
       "photos": [
         {
           "jpg": "/photos/Urbangeometry/Urbangeometry1.jpg",
           "webp": "/photos/Urbangeometry/Urbangeometry1.webp",
           "youtubeId": null,
           "alt": "Urban Geometry 1",
+          "caption": "",
           "width": null,
           "height": null
         }
@@ -339,8 +327,7 @@
       "slug": "videography-project",
       "title": "Videography",
       "description": "COLLECTIONS: 3",
-      "countLabel": "[ Photo Collections: 3 ]",
-      "bodyText": "My videography is often in collaboration with other artists to help portray their art visually. I attempt to capture the essence of artists' music through video by using a variety of techniques, pacing, framing, editing, and even cameras. These videos are used for social media promotion and Spotify to appeal to audiences who may resonate with the video and feel more inclined to look into the associated music. My videography is also used to promote Cal Poly's fashion club, FITS, and their related campaigns by using video to highlight clothing using a more fashion and lifestyle approach.",
+      "dateLabel": "",
       "hero": {
         "jpg": "/photos/Videography/videography.jpg",
         "webp": "/photos/Videography/videography.webp"
@@ -349,18 +336,13 @@
         "jpg": "/photos/Videography/videography.jpg",
         "webp": "/photos/Videography/videography.webp"
       },
-      "titleOffset": {
-        "left": "80px",
-        "leftXl": "150px",
-        "leftMd": "110px"
-      },
-      "mediaKind": "video",
       "photos": [
         {
           "jpg": null,
           "webp": null,
           "youtubeId": "lakOaiXYcp4",
           "alt": "Videography 1",
+          "caption": "",
           "width": null,
           "height": null
         },
@@ -369,6 +351,7 @@
           "webp": null,
           "youtubeId": "idLy5RoOYME",
           "alt": "Videography 2",
+          "caption": "",
           "width": null,
           "height": null
         },
@@ -377,6 +360,7 @@
           "webp": null,
           "youtubeId": "ok38O_TNS0Q",
           "alt": "Videography 3",
+          "caption": "",
           "width": null,
           "height": null
         }

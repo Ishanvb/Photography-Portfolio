@@ -2,20 +2,18 @@ import { useState, useEffect } from 'react';
 import * as S from '~/components/LoadingScreen.styled';
 
 function LoadingScreen({ isLoading, onFadeComplete }) {
-  const [isFading, setIsFading] = useState(false);
   const [isVisible, setIsVisible] = useState(true);
+  // The screen is fading exactly when there is nothing left to load.
+  const isFading = !isLoading;
 
   useEffect(() => {
-    if (!isLoading && !isFading) {
-      setIsFading(true);
-      setTimeout(() => {
-        setIsVisible(false);
-        if (onFadeComplete) {
-          onFadeComplete();
-        }
-      }, 500);
-    }
-  }, [isLoading, isFading, onFadeComplete]);
+    if (isLoading) return;
+    const timer = setTimeout(() => {
+      setIsVisible(false);
+      onFadeComplete?.();
+    }, 500);
+    return () => clearTimeout(timer);
+  }, [isLoading, onFadeComplete]);
 
   if (!isVisible) return null;
 
@@ -26,7 +24,7 @@ function LoadingScreen({ isLoading, onFadeComplete }) {
           viewBox="0 0 100 100"
           xmlns="http://www.w3.org/2000/svg"
         >
-          <g fill="#ffffe1">
+          <g fill="currentColor">
             {[0, 60, 120, 180, 240, 300].map((angle, i) => (
               <ellipse
                 key={i}

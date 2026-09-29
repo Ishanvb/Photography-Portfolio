@@ -20,6 +20,8 @@ export const CursorWrapper = styled.div`
   height: 12px;
   border-radius: 30px;
   background: ${({ theme }) => theme.colors.cursorBg};
+  /* The icons inside draw in currentColor: the page colour, on the light pill. */
+  color: ${({ theme }) => theme.colors.background};
 
   display: flex;
   align-items: center;
@@ -30,8 +32,12 @@ export const CursorWrapper = styled.div`
     width ${({ theme }) => theme.transitions.spring},
     height ${({ theme }) => theme.transitions.spring},
     padding ${({ theme }) => theme.transitions.spring},
+    border-radius ${({ theme }) => theme.transitions.spring},
     opacity ${({ theme }) => theme.transitions.fast},
-    background ${({ theme }) => theme.transitions.normal};
+    background ${({ theme }) => theme.transitions.normal},
+    border-color ${({ theme }) => theme.transitions.normal};
+  /* Invisible until the cursor becomes a ring (see .toggle-ring). */
+  border: 1.5px solid transparent;
 
   &.hidden {
     opacity: 0;
@@ -61,6 +67,15 @@ export const CursorWrapper = styled.div`
   &.active span {
     opacity: 1;
     transform: scale(1);
+  }
+
+  /* Merged state: the cursor is absorbed by the element it is over, which
+     takes over as the cursor itself. Must follow .active to win the cascade. */
+  &.merged {
+    width: 0;
+    height: 0;
+    padding: 0;
+    opacity: 0;
   }
 
   /* Arrow icon inside cursor for magnetic state */
@@ -205,6 +220,10 @@ export const CursorWrapper = styled.div`
                 transform ${({ theme }) => theme.transitions.normal};
   }
 
+  & .cursor-me-label {
+    fill: ${({ theme }) => theme.colors.backgroundOverlay};
+  }
+
   & .cursor-me.visible {
     opacity: 1;
     transform: scale(1);
@@ -215,6 +234,16 @@ export const CursorWrapper = styled.div`
     width: 32px;
     height: 32px;
     padding: 0;
+  }
+
+  /* Day/night switch, by day: the cursor opens into a ring around the moon.
+     The merged state (the sun, at night) is handled by .merged above. */
+  &.toggle-ring {
+    width: 44px;
+    height: 44px;
+    padding: 0;
+    background: transparent;
+    border-color: ${({ theme }) => theme.colors.cursorBg};
   }
 
   /* YouTube cursor state - slightly bigger circle */

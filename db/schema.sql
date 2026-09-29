@@ -14,7 +14,10 @@ create table if not exists projects (
   slug          text unique not null,
   title         text not null,
   description   text not null default '',   -- /work tile subtitle, e.g. "COLLECTIONS: 8"
-  count_label   text not null default '',   -- project page label, e.g. "[ Photo Collections: 8 ]"
+  -- The four columns below belonged to the per-project page, which the gallery
+  -- pop-up replaced. Nothing on the site reads them any more; they are kept so
+  -- the copy written into them is not lost, and can be surfaced again later.
+  count_label   text not null default '',
   body_text     text not null default '',
   hero_jpg      text,
   hero_webp     text,
@@ -43,6 +46,14 @@ create table if not exists photos (
 );
 
 create index if not exists photos_project_idx on photos(project_id, sort_order);
+
+-- Added after launch: the collection's date, shown top-right in the gallery
+-- modal ("PRESENT" until she sets one), and a per-photo caption, shown in the
+-- gap under each photo. ALTERs rather than table columns so re-running this
+-- file also upgrades a database that already exists.
+alter table projects add column if not exists date_label text not null default '';
+alter table photos   add column if not exists caption    text not null default '';
+
 
 create table if not exists reel_items (
   id                 uuid primary key default gen_random_uuid(),

@@ -14,10 +14,10 @@ export default withErrors(async (req, res) => {
     await db
       .from('projects')
       .select(`
-        slug, title, description, count_label, body_text,
+        slug, title, description, date_label,
         hero_jpg, hero_webp, cover_jpg, cover_webp,
-        title_offset, media_kind, sort_order,
-        photos ( url_jpg, url_webp, youtube_id, alt, width, height, sort_order )
+        sort_order,
+        photos ( url_jpg, url_webp, youtube_id, alt, caption, width, height, sort_order )
       `)
       .eq('published', true)
       .order('sort_order', { ascending: true })
@@ -35,12 +35,9 @@ export default withErrors(async (req, res) => {
       slug: p.slug,
       title: p.title,
       description: p.description,
-      countLabel: p.count_label,
-      bodyText: p.body_text,
+      dateLabel: p.date_label ?? '',
       hero: img(p.hero_jpg, p.hero_webp),
       cover: img(p.cover_jpg, p.cover_webp),
-      titleOffset: p.title_offset ?? {},
-      mediaKind: p.media_kind,
       photos: (p.photos ?? [])
         .sort((a, b) => a.sort_order - b.sort_order)
         .map((ph) => ({
@@ -48,6 +45,7 @@ export default withErrors(async (req, res) => {
           webp: ph.url_webp,
           youtubeId: ph.youtube_id,
           alt: ph.alt,
+          caption: ph.caption ?? '',
           width: ph.width,
           height: ph.height,
         })),

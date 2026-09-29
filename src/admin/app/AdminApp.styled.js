@@ -86,8 +86,6 @@ const control = `
 
 export const Input = styled.input`${control}`;
 export const Select = styled.select`${control}`;
-export const Textarea = styled.textarea`${control} min-height: 120px; resize: vertical; line-height: 1.6;`;
-
 export const Button = styled.button`
   padding: 10px 18px;
   font-family: inherit;

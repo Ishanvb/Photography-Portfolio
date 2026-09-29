@@ -46,8 +46,7 @@ function ProjectEditor({ project, onChanged }) {
   const [form, setForm] = useState({
     title: project.title ?? '',
     description: project.description ?? '',
-    countLabel: project.count_label ?? '',
-    bodyText: project.body_text ?? '',
+    dateLabel: project.date_label ?? '',
   });
   const [saving, setSaving] = useState(false);
   const [message, setMessage] = useState(null);
@@ -115,14 +114,9 @@ function ProjectEditor({ project, onChanged }) {
         <S.Input value={form.description} onChange={set('description')} placeholder="COLLECTIONS: 8" />
       </S.Field>
       <S.Field>
-        <span>Label on the project page</span>
-        <S.Input value={form.countLabel} onChange={set('countLabel')} placeholder="[ Photo Collections: 8 ]" />
+        <span>Date, shown top right in the gallery pop-up</span>
+        <S.Input value={form.dateLabel} onChange={set('dateLabel')} placeholder="PRESENT" />
       </S.Field>
-      <S.Field>
-        <span>Description</span>
-        <S.Textarea value={form.bodyText} onChange={set('bodyText')} />
-      </S.Field>
-
       <S.Row>
         <S.Button onClick={save} disabled={saving}>{saving ? 'Saving…' : 'Save changes'}</S.Button>
         <S.Button $variant="ghost" onClick={togglePublished}>
@@ -153,6 +147,11 @@ function ProjectEditor({ project, onChanged }) {
           }}
         />
 
+        <S.Hint>
+          The caption under each photo is the line that appears beside it in the
+          gallery pop-up. It saves as soon as you click away.
+        </S.Hint>
+
         <S.Grid>
           {photos.map((photo, index) => (
             <S.Thumb key={photo.id}>
@@ -163,6 +162,7 @@ function ProjectEditor({ project, onChanged }) {
                   YouTube · {photo.youtube_id}
                 </div>
               )}
+              <PhotoCaption photo={photo} onChanged={onChanged} onError={setError} />
               <S.ThumbBar>
                 <span>
                   <S.IconButton onClick={() => move(index, -1)} disabled={index === 0}>←</S.IconButton>
@@ -175,6 +175,39 @@ function ProjectEditor({ project, onChanged }) {
         </S.Grid>
       </div>
     </div>
+  );
+}
+
+/** One photo's caption. Saved on blur, and only when it actually changed. */
+function PhotoCaption({ photo, onChanged, onError }) {
+  const saved = photo.caption ?? '';
+  const [value, setValue] = useState(saved);
+  const [saving, setSaving] = useState(false);
+
+  const commit = async () => {
+    if (value === saved || saving) return;
+    setSaving(true);
+    try {
+      await api.updatePhoto({ id: photo.id, caption: value });
+      onChanged();
+    } catch (err) {
+      setValue(saved);
+      onError(err.message);
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  return (
+    <S.Input
+      value={value}
+      onChange={(e) => setValue(e.target.value)}
+      onBlur={commit}
+      onKeyDown={(e) => e.key === 'Enter' && e.currentTarget.blur()}
+      disabled={saving}
+      placeholder="Caption"
+      style={{ borderRadius: 0, borderLeft: 0, borderRight: 0, fontSize: 12 }}
+    />
   );
 }
 

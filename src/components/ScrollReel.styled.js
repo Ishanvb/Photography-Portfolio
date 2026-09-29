@@ -1,4 +1,4 @@
-import styled from 'styled-components';
+import styled, { css } from 'styled-components';
 
 export const Container = styled.div`
   position: relative;
@@ -77,13 +77,12 @@ export const Line = styled.div`
   }
 `;
 
-export const FixedWrapper = styled.div`
-  position: fixed;
+/**
+ * Where the scroll block sits above the bottom of the window. Shared, because
+ * the gallery's thumbnail strip stands in exactly the same place.
+ */
+export const dockBottom = css`
   bottom: 5vh;
-  left: 50%;
-  transform: translateX(-50%);
-  z-index: ${({ theme }) => theme.zIndex.scrollReel};
-  pointer-events: auto;
 
   ${({ theme }) => theme.media.heightTall} {
     bottom: 50px;
@@ -107,14 +106,18 @@ export const FixedWrapper = styled.div`
 
   ${({ theme }) => theme.media.sm} {
     bottom: 24px;
-    left: 50%;
-    right: auto;
-    margin-left: 0;
-    margin-right: 0;
-    transform: translateX(-50%);
   }
 
   ${({ theme }) => theme.media.xs} {
     bottom: 20px;
   }
+`;
+
+export const FixedWrapper = styled.div`
+  position: fixed;
+  ${dockBottom}
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: ${({ theme }) => theme.zIndex.scrollReel};
+  pointer-events: auto;
 `;

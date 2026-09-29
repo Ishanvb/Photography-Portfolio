@@ -218,6 +218,149 @@ export const PhotoSmall = styled(PhotoWrapper)`
   }
 `;
 
+/**
+ * The Information section. InfoScroll is as tall as the scroll it takes to
+ * play the section out (set inline from About.jsx); InfoStage pins to the top
+ * of the screen for that whole distance.
+ */
+export const InfoScroll = styled.section`
+  width: 100%;
+  position: relative;
+`;
+
+export const InfoStage = styled.div`
+  position: sticky;
+  top: 0;
+  height: 100vh;
+  height: 100svh;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding-top: 40px;
+  box-sizing: border-box;
+  overflow: hidden;
+
+  ${({ theme }) => theme.media.sm} {
+    padding-top: 24px;
+  }
+`;
+
+export const InfoHeaderFrame = styled.div`
+  width: 940px;
+  max-width: calc(100% - 40px);
+
+  ${({ theme }) => theme.media.md} {
+    width: 100%;
+    max-width: calc(100% - 80px);
+  }
+
+  ${({ theme }) => theme.media.sm} {
+    max-width: calc(100% - 40px);
+  }
+
+  ${({ theme }) => theme.media.xs} {
+    max-width: calc(100% - 32px);
+  }
+`;
+
+/* Starts a fixed way down rather than being centred, so the title stays put
+   while the lines build up underneath it. */
+export const InfoBody = styled.div`
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 48px;
+  padding: clamp(60px, 18vh, 200px) 20px 0;
+  box-sizing: border-box;
+
+  ${({ theme }) => theme.media.sm} {
+    gap: 32px;
+  }
+`;
+
+export const InfoTitle = styled.h2`
+  font-family: ${({ theme }) => theme.typography.fontFamily.primary};
+  font-weight: ${({ theme }) => theme.typography.fontWeight.medium};
+  font-size: 68px;
+  letter-spacing: ${({ theme }) => theme.typography.letterSpacing.tight};
+  color: ${({ theme }) => theme.colors.text};
+  margin: 0;
+  line-height: 1.2;
+  min-height: 1.2em;
+  white-space: nowrap;
+  text-align: center;
+
+  ${({ theme }) => theme.media.md} {
+    font-size: 56px;
+  }
+
+  ${({ theme }) => theme.media.sm} {
+    font-size: ${({ theme }) => theme.typography.fontSize['4xl']};
+  }
+
+  ${({ theme }) => theme.media.xs} {
+    font-size: 32px;
+  }
+`;
+
+/* Biography and Work share one slot, so Work's lines drop into the same
+   places Biography's just left. */
+export const InfoLists = styled.div`
+  display: grid;
+  width: 460px;
+  max-width: 100%;
+
+  & > * {
+    grid-area: 1 / 1;
+  }
+`;
+
+export const InfoList = styled.div`
+  display: flex;
+  flex-direction: column;
+`;
+
+/* Each line is clipped to its own box, so it appears to come out from under
+   the line above it. */
+export const InfoLineMask = styled.div`
+  overflow: hidden;
+  margin-bottom: 10px;
+`;
+
+export const InfoLine = styled.p`
+  font-family: ${({ theme }) => theme.typography.fontFamily.primary};
+  font-size: ${({ theme }) => theme.typography.fontSize.lg};
+  font-weight: ${({ theme }) => theme.typography.fontWeight.semibold};
+  color: ${({ theme }) => theme.colors.text};
+  line-height: ${({ theme }) => theme.typography.lineHeight.snug};
+  text-align: center;
+  padding-bottom: 10px;
+  border-bottom: 1px solid ${({ theme }) => theme.colors.text};
+  margin: 0;
+  transform: translateY(-101%);
+  transition: transform 0.6s cubic-bezier(0.77, 0, 0.175, 1);
+  transition-delay: ${({ $delay = 0 }) => $delay}ms;
+  will-change: transform;
+
+  ${({ $isVisible }) => $isVisible && css`
+    transform: translateY(0);
+  `}
+
+  ${({ theme }) => theme.media.sm} {
+    font-size: ${({ theme }) => theme.typography.fontSize.md};
+  }
+
+  ${({ theme }) => theme.media.xs} {
+    font-size: ${({ theme }) => theme.typography.fontSize.base};
+  }
+`;
+
+/* =========================
+   Static layout — what the section settles into once it has played through.
+========================= */
+
 export const InfoSection = styled.div`
   width: 100%;
   display: flex;
@@ -258,6 +401,11 @@ export const BioRow = styled.div`
 export const BioList = styled.div`
   display: flex;
   flex-direction: column;
+  width: max-content;
+
+  & > p {
+    padding-right: 50px;
+  }
 
   ${({ theme }) => theme.media.sm} {
     width: 100%;
@@ -276,15 +424,6 @@ export const BioListItem = styled.p`
   border-bottom: 1px solid ${({ theme }) => theme.colors.text};
   margin: 0;
   margin-bottom: 10px;
-  opacity: 0;
-  transform: translateY(-20px);
-  transition: opacity 0.4s ease-out, transform 0.4s ease-out;
-  will-change: opacity, transform;
-
-  ${({ $isVisible }) => $isVisible && css`
-    opacity: 1;
-    transform: translateY(0);
-  `}
 
   ${({ theme }) => theme.media.sm} {
     font-size: ${({ theme }) => theme.typography.fontSize.md};
@@ -311,15 +450,6 @@ export const BioTitle = styled.h2`
   line-height: ${({ theme }) => theme.typography.lineHeight.none};
   margin-left: 150px;
   align-self: center;
-  opacity: 0;
-  transform: translateY(-20px);
-  transition: opacity 0.5s ease-out, transform 0.5s ease-out;
-  will-change: opacity, transform;
-
-  ${({ $isVisible }) => $isVisible && css`
-    opacity: 1;
-    transform: translateY(0);
-  `}
 
   ${({ theme }) => theme.media.md} {
     font-size: 40px;
@@ -369,6 +499,11 @@ export const WorkRow = styled.div`
 export const WorkList = styled.div`
   display: flex;
   flex-direction: column;
+  width: max-content;
+
+  & > p {
+    padding-left: 50px;
+  }
 
   ${({ theme }) => theme.media.sm} {
     width: 100%;
@@ -388,15 +523,6 @@ export const WorkListItem = styled.p`
   margin: 0;
   margin-bottom: 10px;
   text-align: right;
-  opacity: 0;
-  transform: translateY(-20px);
-  transition: opacity 0.4s ease-out, transform 0.4s ease-out;
-  will-change: opacity, transform;
-
-  ${({ $isVisible }) => $isVisible && css`
-    opacity: 1;
-    transform: translateY(0);
-  `}
 
   ${({ theme }) => theme.media.sm} {
     font-size: ${({ theme }) => theme.typography.fontSize.md};
@@ -423,15 +549,6 @@ export const WorkTitle = styled.h2`
   line-height: ${({ theme }) => theme.typography.lineHeight.none};
   margin-right: 150px;
   align-self: center;
-  opacity: 0;
-  transform: translateY(-20px);
-  transition: opacity 0.5s ease-out, transform 0.5s ease-out;
-  will-change: opacity, transform;
-
-  ${({ $isVisible }) => $isVisible && css`
-    opacity: 1;
-    transform: translateY(0);
-  `}
 
   ${({ theme }) => theme.media.md} {
     font-size: 40px;

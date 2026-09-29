@@ -1,24 +1,52 @@
 const SPACING_BASE = 8;
 
+/**
+ * Dark is the site's own look. Day mode is its exact inverse: the off-white
+ * and the near-black trade places, and pure white and pure black trade places.
+ * The accent stays as it is.
+ */
+const darkColors = {
+  background: '#0c0c0c',
+  backgroundLight: '#1a1a1a',
+  text: '#ffffe1',
+  accent: '#ffbd2f',
+  textDimmed: 'rgba(255, 255, 225, 0.5)',
+  textHidden: 'rgba(255, 255, 225, 0)',
+  textLight: 'rgba(255, 255, 225, 0.7)',
+  textFaint: 'rgba(255, 255, 225, 0.05)',
+  textSubtle: 'rgba(255, 255, 225, 0.12)',
+  scrim: 'rgba(12, 12, 12, 0.55)',
+  backgroundOverlay: 'rgba(255, 255, 255, 0.95)',
+  cursorBg: '#fff',
+  black: '#000',
+  white: '#fff',
+  transparent: 'transparent',
+  linkBlue: '#0088ff',
+  accentDimmed: 'rgba(255, 189, 47, 0.5)',
+};
+
+const lightColors = {
+  ...darkColors,
+  background: '#ffffe1',
+  backgroundLight: '#e5e5cb',
+  text: '#0c0c0c',
+  textDimmed: 'rgba(12, 12, 12, 0.5)',
+  textHidden: 'rgba(12, 12, 12, 0)',
+  textLight: 'rgba(12, 12, 12, 0.7)',
+  textFaint: 'rgba(12, 12, 12, 0.05)',
+  textSubtle: 'rgba(12, 12, 12, 0.12)',
+  scrim: 'rgba(255, 255, 225, 0.55)',
+  backgroundOverlay: 'rgba(0, 0, 0, 0.95)',
+  cursorBg: '#000',
+  black: '#fff',
+  white: '#000',
+};
+
 const theme = {
   spacing: (multiplier) => `${multiplier * SPACING_BASE}px`,
 
-  colors: {
-    background: '#0c0c0c',
-    backgroundLight: '#1a1a1a',
-    text: '#ffffe1',
-    accent: '#ffbd2f',
-    textDimmed: 'rgba(255, 255, 225, 0.5)',
-    textHidden: 'rgba(255, 255, 225, 0)',
-    textLight: 'rgba(255, 255, 225, 0.7)',
-    backgroundOverlay: 'rgba(255, 255, 255, 0.95)',
-    cursorBg: '#fff',
-    black: '#000',
-    white: '#fff',
-    transparent: 'transparent',
-    linkBlue: '#0088ff',
-    accentDimmed: 'rgba(255, 189, 47, 0.5)',
-  },
+  colorScheme: 'dark',
+  colors: darkColors,
 
   typography: {
     fontFamily: {
@@ -106,7 +134,11 @@ const theme = {
     scrollReel: 9999,
     header: 1000,
     dropdown: 100,
+    // Over the header and the scroll block, under the cursor and the loader.
+    modal: 9998,
   },
 };
+
+export const lightTheme = { ...theme, colorScheme: 'light', colors: lightColors };
 
 export default theme;

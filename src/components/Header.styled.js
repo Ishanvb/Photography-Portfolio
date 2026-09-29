@@ -10,6 +10,9 @@ export const HeaderContainer = styled.header`
   padding-top: ${({ theme }) => theme.spacing(3)};
   margin-bottom: 20px;
   position: relative;
+  /* Over the gallery stage, which spans the window and would otherwise swallow
+     the nav's clicks while the gallery is open. */
+  z-index: ${({ theme }) => theme.zIndex.header};
   box-sizing: border-box;
 
   ${({ theme }) => theme.media.sm} {

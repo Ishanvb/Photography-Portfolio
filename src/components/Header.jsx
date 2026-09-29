@@ -1,5 +1,6 @@
 import { useState, useEffect, memo } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
+import ThemeToggle from '~/components/ThemeToggle';
 import * as S from './Header.styled';
 
 const AnimatedLabel = memo(({ text, isClicking, isEnterReady, isEntering }) => {
@@ -33,7 +34,7 @@ const buttons = [
   { id: 'contact', label: '04 Contact', path: '/contact' }
 ];
 
-function Header() {
+function Header({ onHomeClick }) {
   const [hoveredButton, setHoveredButton] = useState(null);
   const [clickingButton, setClickingButton] = useState(null);
   const [enterReady, setEnterReady] = useState(null);
@@ -48,7 +49,11 @@ function Header() {
     // Wait for exit animation to complete, then navigate
     setTimeout(() => {
       setClickingButton(null);
-      if (location.pathname === path) {
+      // Home has somewhere to go back to of its own — the gallery closing — so
+      // it says so rather than being reloaded on the spot.
+      if (buttonId === 'home' && onHomeClick) {
+        onHomeClick();
+      } else if (location.pathname === path) {
         window.location.reload();
       } else {
         navigate(path);
@@ -64,51 +69,63 @@ function Header() {
     return location.pathname === path;
   };
 
-  // Trigger enter animation (letters scroll down) on the active button when page loads
+  // Trigger enter animation (letters scroll down) on the active button when page
+  // loads. The match is inlined rather than reusing isActive() so the effect
+  // depends only on the path, and every frame and timer it starts is cancelled
+  // on the way out — navigating quickly used to let the old route's timeout cut
+  // the new page's animation short.
   useEffect(() => {
-    const activeButton = buttons.find(button => isActive(button.path));
-    if (activeButton) {
-      // Step 1: Position letters above (no transition) - they start hidden
-      setEnterReady(activeButton.id);
+    const active = buttons.find(({ path }) =>
+      path === '/work' ? location.pathname.startsWith('/work') : location.pathname === path
+    );
+    if (!active) return;
 
-      // Step 2: After a frame, trigger enter animation (letters scroll down)
-      requestAnimationFrame(() => {
-        requestAnimationFrame(() => {
-          setEnterReady(null);
-          setEntering(activeButton.id);
+    // Step 1: position letters above (no transition) — they start hidden.
+    setEnterReady(active.id);
 
-          // Clean up after animation completes
-          setTimeout(() => {
-            setEntering(null);
-          }, 450);
-        });
+    let secondFrame = 0;
+    let settle = 0;
+    // Step 2: after a frame, let them scroll down into place.
+    const firstFrame = requestAnimationFrame(() => {
+      secondFrame = requestAnimationFrame(() => {
+        setEnterReady(null);
+        setEntering(active.id);
+        settle = setTimeout(() => setEntering(null), 450);
       });
-    }
+    });
+
+    return () => {
+      cancelAnimationFrame(firstFrame);
+      cancelAnimationFrame(secondFrame);
+      clearTimeout(settle);
+    };
   }, [location.pathname]);
 
   return (
     <S.HeaderContainer data-name="Header" data-node-id="1:18">
-      {buttons.map((button) => (
+      {buttons.map(({ id, label, path }, index) => [
+        // The day/night switch sits in the middle of the row.
+        index === 2 && <ThemeToggle key="theme-toggle" />,
         <S.HeaderButton
-          key={button.id}
-          $isActive={isActive(button.path)}
-          $isHovered={hoveredButton === button.id}
-          onMouseEnter={() => setHoveredButton(button.id)}
+          key={id}
+          $isActive={isActive(path)}
+          $isHovered={hoveredButton === id}
+          onMouseEnter={() => setHoveredButton(id)}
           onMouseLeave={() => setHoveredButton(null)}
-          onClick={() => handleButtonClick(button.id, button.path)}
+          onClick={() => handleButtonClick(id, path)}
           data-name="Button"
           data-cursor-header
         >
           <p>
             <AnimatedLabel
-              text={button.label}
-              isClicking={clickingButton === button.id}
-              isEnterReady={enterReady === button.id}
-              isEntering={entering === button.id}
+              text={label}
+              isClicking={clickingButton === id}
+              isEnterReady={enterReady === id}
+              isEntering={entering === id}
             />
           </p>
-        </S.HeaderButton>
-      ))}
+        </S.HeaderButton>,
+      ])}
     </S.HeaderContainer>
   );
 }
