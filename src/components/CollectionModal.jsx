@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react';
-import { photoAspects } from '~/content/photos';
+import { collectionOf, photoAspects } from '~/content/photos';
 import * as S from './CollectionModal.styled';
 
 // How long the panel takes to fade out, so it is still on screen while it does.
@@ -24,15 +24,22 @@ const aspectOf = (photo) => {
  * One project, as a pop-up over the Work page: its photos stacked down a panel
  * at one shared width, each with the row beneath it carrying its caption and
  * its number. Opens scrolled to whichever photo was clicked.
+ *
+ * `jpg` names the photo to open on, and wins when given — it is looked up in
+ * the same collectionOf() list the Work grid is built from, so it cannot drift
+ * onto a neighbour. `photoIndex` is for callers that only have a position (the
+ * reel's targetPhotoIndex, an index into project.photos).
  */
-function CollectionModal({ project, photoIndex = 0, onClose }) {
+function CollectionModal({ project, jpg = null, photoIndex = 0, onClose }) {
   const [shown, setShown] = useState(false);
   const scrollRef = useRef(null);
   const headRef = useRef(null);
   const blocksRef = useRef([]);
   const closingRef = useRef(false);
 
-  const photos = project?.photos ?? [];
+  const photos = collectionOf(project);
+  const found = jpg ? photos.findIndex((photo) => photo.jpg === jpg) : -1;
+  const startIndex = found >= 0 ? found : photoIndex;
 
   // Fade out first, then let the parent drop us.
   const requestClose = useCallback(() => {
@@ -53,11 +60,11 @@ function CollectionModal({ project, photoIndex = 0, onClose }) {
   // does not need redoing as the files arrive.
   useLayoutEffect(() => {
     const scroll = scrollRef.current;
-    const block = blocksRef.current[photoIndex];
+    const block = blocksRef.current[startIndex];
     if (!scroll || !block) return;
     const row = headRef.current?.offsetHeight ?? 0;
     scroll.scrollTop = Math.max(0, block.offsetTop - row);
-  }, [photoIndex]);
+  }, [startIndex]);
 
   // The page underneath is a long scrolling grid — hold it still, and pay back
   // the width of the scrollbar so it does not jump sideways as it goes.
@@ -163,7 +170,7 @@ function CollectionModal({ project, photoIndex = 0, onClose }) {
                       alt={photo.alt || `${project.title} ${index + 1}`}
                       draggable={false}
                       decoding="async"
-                      loading={Math.abs(index - photoIndex) > 1 ? 'lazy' : undefined}
+                      loading={Math.abs(index - startIndex) > 1 ? 'lazy' : undefined}
                       onLoad={onPhotoLoad(photo)}
                     />
                   </picture>

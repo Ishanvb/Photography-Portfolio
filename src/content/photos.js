@@ -1,6 +1,24 @@
 import { resized, THUMB_WIDTH } from '~/content/imageUrl';
 
 /**
+ * A project's collection: every photo the Work page shows for it, in the order
+ * the collection pop-up stacks them. The project's own photos first, then its
+ * hero if that is a separate file — appended, not prepended, so the reel's
+ * `targetPhotoIndex` (an index into project.photos) still lands on the same
+ * photo.
+ *
+ * The Work grid and CollectionModal must both build from this. When they built
+ * their lists separately the grid showed the hero but the pop-up did not, so a
+ * click on the hero opened the collection on photo 01 instead.
+ */
+export const collectionOf = (project) => {
+  const photos = project?.photos ?? [];
+  const hero = project?.hero;
+  if (!hero?.jpg || photos.some((photo) => photo.jpg === hero.jpg)) return photos;
+  return [...photos, { jpg: hero.jpg, webp: hero.webp ?? null, alt: project.title, caption: '' }];
+};
+
+/**
  * Every photo the site owns, in the order the opening transition consumes
  * them: the reel first — those are the tiles already on screen when the
  * gallery opens, so they are the ones that visibly shrink into the circle —

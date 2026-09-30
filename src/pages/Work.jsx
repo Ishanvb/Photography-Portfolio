@@ -6,6 +6,7 @@ import Header from '~/components/Header';
 import { ContactStage } from '~/components/Footer';
 import OptimizedImage from '~/components/OptimizedImage';
 import CollectionModal from '~/components/CollectionModal';
+import { collectionOf } from '~/content/photos';
 import * as S from '~/pages/Work.styled';
 
 /**
@@ -109,26 +110,24 @@ function Work() {
   // Store initial mobile state for typing text (doesn't change on resize)
   const initialMobileRef = useRef(typeof window !== 'undefined' && window.innerWidth <= 768);
 
-  // Every photo in every project, in project order, plus each project's hero.
-  // Reel tiles and project covers are left out on purpose: they are re-exports
-  // of these same shots under other filenames (the cover is the reel's crop of
-  // the hero), so pulling them in shows several photos twice.
+  // Every photo in every project's collection (its photos plus its hero), in
+  // project order. Reel tiles and project covers are left out on purpose: they
+  // are re-exports of these same shots under other filenames (the cover is the
+  // reel's crop of the hero), so pulling them in shows several photos twice.
+  //
+  // A tile opens its collection by file, not by position: the pop-up looks the
+  // jpg up in the same collectionOf() list, so the photo clicked is always the
+  // photo shown.
   const photos = useMemo(
     () =>
       projects.flatMap((project) =>
-        [
-          ...(project.photos ?? []).map((photo, index) => ({ photo, index })),
-          // The hero is not in the project's own list, so a click on it opens
-          // the collection at the top.
-          { photo: project.hero, index: 0 },
-        ]
-          .filter(({ photo }) => photo?.jpg)
-          .map(({ photo, index }, position) => ({
+        collectionOf(project)
+          .filter((photo) => photo.jpg)
+          .map((photo, position) => ({
             jpg: photo.jpg,
             webp: photo.webp ?? null,
             alt: photo.alt ?? `${project.title} ${position + 1}`,
             slug: project.slug,
-            photoIndex: index,
           }))
       ).filter((photo, i, all) => all.findIndex((p) => p.jpg === photo.jpg) === i),
     [projects]
@@ -324,6 +323,7 @@ function Work() {
       {openPhoto && (
         <CollectionModal
           project={projectsBySlug.get(openPhoto.slug) ?? null}
+          jpg={openPhoto.jpg}
           photoIndex={openPhoto.photoIndex ?? 0}
           onClose={closeCollection}
         />
