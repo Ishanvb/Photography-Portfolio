@@ -1,7 +1,7 @@
-import { useState, useEffect, useLayoutEffect, useRef } from 'react';
+import { useState, useEffect, useLayoutEffect, useMemo, useRef } from 'react';
 import useContent from '~/hooks/useContent';
 import Header from '~/components/Header';
-import Footer from '~/components/Footer';
+import { ContactStage } from '~/components/Footer';
 import OptimizedImage from '~/components/OptimizedImage';
 import ScrambleText from '~/components/ScrambleText';
 import * as S from './About.styled';
@@ -13,24 +13,51 @@ import * as S from './About.styled';
 const stepsFor = (bio, work) => {
   const workStart = bio.length + 2;
   const total = workStart + work.length + 2;
+  const lastHeld = total - 2;
+  // Where a scroll is allowed to come to rest. One gesture carries from one of
+  // these to the next, so a single push plays a whole list in — the lines still
+  // arrive one at a time, because the section walks toward the target rather
+  // than jumping to it (see INFO_STEP_MS). The stops are: the title, the
+  // finished biography, the roll over into Work, and the finished Work list.
+  const stops = [0, bio.length, workStart, lastHeld];
   // The last step scrolling stops on: the finished Work list.
-  return { workStart, total, lastHeld: total - 2 };
+  return { workStart, total, lastHeld, stops };
 };
 
-// The fastest the Information section will move on by one line.
-const INFO_STEP_MS = 220;
+// The fastest the Information section will move on by one line. A line's own
+// reveal runs 0.6s, so this leaves it mostly settled before the next follows.
+const INFO_STEP_MS = 280;
 // A scroll gesture counts as new once the wheel has been quiet this long, or
 // when it pushes harder mid-momentum; a wheel spun without let-up moves on
 // again every GESTURE_REPEAT_MS (momentum only ever fades, so it never does).
-const GESTURE_GAP_MS = 160;
-const GESTURE_REPEAT_MS = 900;
+const GESTURE_GAP_MS = 220;
+const GESTURE_REPEAT_MS = 1100;
+// A harder push part-way through momentum also counts, but it has to be a real
+// one: this long since the last step, and this much bigger than the deltas
+// already arriving.
+const PUSH_AFTER_MS = 320;
+const PUSH_SIZE = 28;
+// Leaving the finished biography for Work is the one easy move: the reader has
+// read it and is waiting to move on.
+const LAST_LINE_EASE = 0.65;
+// The finished Work list is the opposite. It holds the screen for this long
+// before any scroll can release it, so the last lines are actually read rather
+// than flicked past, and the footer that follows arrives as its own moment.
+const RELEASE_DWELL_MS = 900;
+
+// How far a finger has to travel inside the section to count as one step.
+const TOUCH_REACH = 42;
 
 function About() {
   const { about } = useContent();
-  const bioItems = about?.bio ?? [];
-  const workItems = about?.work ?? [];
-  const { workStart: WORK_START, total: INFO_STEPS, lastHeld: LAST_HELD_STEP } =
-    stepsFor(bioItems, workItems);
+  // Memoised so the fallback [] does not make a new array every render, which
+  // would ripple through the stops and rebind every scroll listener.
+  const bioItems = useMemo(() => about?.bio ?? [], [about]);
+  const workItems = useMemo(() => about?.work ?? [], [about]);
+  // Memoised: the stops are an array, and the scroll listeners depend on it —
+  // a fresh one each render would rebind them all every time.
+  const { workStart: WORK_START, total: INFO_STEPS, lastHeld: LAST_HELD_STEP, stops: STOPS } =
+    useMemo(() => stepsFor(bioItems, workItems), [bioItems, workItems]);
 
   const [showContent, setShowContent] = useState(false);
   const [wordStyles, setWordStyles] = useState({});
@@ -48,9 +75,12 @@ function About() {
   const lastInfoMoveRef = useRef(0);
   const photosRef = useRef(null);
 
+
   useEffect(() => {
     setShowContent(true);
   }, []);
+
+
 
   // Photos fade in when scrolled into view
   useEffect(() => {
@@ -154,21 +184,47 @@ function About() {
       window.scrollTo({ top: docTop + step * stepPx + stepPx / 2, behavior: 'instant' });
     };
 
+    const stepNow = () => {
+      const top = rectOf()?.top;
+      return top === undefined ? 0 : Math.floor(-top / stepPx);
+    };
+
+    // Only the finished biography lets go easily; the finished Work list is
+    // held (see reachedEnd below).
+    const leavingFinishedList = () => stepNow() === bioItems.length;
+
+    // When the Work list finished playing, so the hold can be timed from it.
+    let reachedEnd = 0;
+
     // The step a move of `dy` should land on, or null to let the page scroll.
+    // One gesture carries to the next stop, so a push reveals a whole list.
     const targetFor = (dy) => {
       const rect = rectOf();
       if (!rect) return null;
-      const { top, bottom } = rect;
+      const { top } = rect;
       const step = Math.floor(-top / stepPx);
 
       if (dy > 0) {
         if (top - dy > 0) return null;          // still on its way up the screen
-        if (top > 0) return 0;                  // arriving: stop on the title
-        return step < LAST_HELD_STEP ? step + 1 : null;
+        if (top > 0) return STOPS[0];           // arriving: stop on the title
+        // The end of Work holds the screen for a beat before it will release.
+        if (step >= LAST_HELD_STEP) {
+          if (!reachedEnd) reachedEnd = performance.now();
+          return performance.now() - reachedEnd < RELEASE_DWELL_MS ? step : null;
+        }
+        // The first stop past where it is now.
+        return STOPS.find((stop) => stop > step) ?? null;
       }
+      reachedEnd = 0;
       if (top >= 0 || step <= 0) return null;   // at the title: let it go back up
-      if (step > LAST_HELD_STEP) return bottom > 0 ? LAST_HELD_STEP : null;
-      return step - 1;
+      // Past the last stop the stage has let go and is scrolling away, so the
+      // page is left alone in both directions. Catching it here used to yank it
+      // back to the finished list the moment you scrolled up — smooth going
+      // down, a snap coming back. Below that the stage is pinned again, where a
+      // jump between stops moves nothing on screen but the lines themselves.
+      if (step > LAST_HELD_STEP) return null;
+      // Coming back up, the same stops in reverse.
+      return [...STOPS].reverse().find((stop) => stop < step) ?? 0;
     };
 
     let lastEvent = 0;
@@ -186,11 +242,12 @@ function About() {
       const now = performance.now();
       const size = Math.abs(dy);
       const sinceStep = now - lastStep;
+      const ease = leavingFinishedList() ? LAST_LINE_EASE : 1;
       const fresh =
-        now - lastEvent > GESTURE_GAP_MS ||
-        (sinceStep > 250 && size > 20 && size > lastSize * 1.5) ||
+        now - lastEvent > GESTURE_GAP_MS * ease ||
+        (sinceStep > PUSH_AFTER_MS * ease && size > PUSH_SIZE * ease && size > lastSize * 1.5) ||
         // Momentum ends in a trickle of tiny equal deltas; a real wheel's are big.
-        (sinceStep > GESTURE_REPEAT_MS && size > 10 && size >= lastSize);
+        (sinceStep > GESTURE_REPEAT_MS * ease && size > 10 && size >= lastSize);
       lastEvent = now;
       lastSize = size;
       if (!fresh) return;
@@ -215,7 +272,8 @@ function About() {
       const target = targetFor(dy);
       if (target === null) return;
       e.preventDefault();
-      if (!touchStepped && Math.abs(dy) > 30) {
+      const reach = leavingFinishedList() ? TOUCH_REACH * LAST_LINE_EASE : TOUCH_REACH;
+      if (!touchStepped && Math.abs(dy) > reach) {
         touchStepped = true;
         goTo(target);
       }
@@ -247,9 +305,9 @@ function About() {
       window.removeEventListener('touchend', onTouchEnd);
       window.removeEventListener('scroll', onScroll);
     };
-    // LAST_HELD_STEP is derived from the length of the editable lists now, so it
-    // is a dependency rather than a module constant.
-  }, [stepPx, infoDone, LAST_HELD_STEP]);
+    // The stops and the list lengths come from editable content now, so they
+    // are dependencies rather than module constants.
+  }, [stepPx, infoDone, LAST_HELD_STEP, STOPS, bioItems.length]);
 
   // Swapping the tall pinned section for the static one shortens the page by
   // thousands of pixels; shift the scroll by the same amount so whatever is on
@@ -500,7 +558,8 @@ function About() {
         </S.InfoScroll>
       )}
 
-      <Footer scrollReveal />
+      {/* The contact lines close the page: see ContactStage. */}
+      <ContactStage />
     </S.Container>
   );
 }

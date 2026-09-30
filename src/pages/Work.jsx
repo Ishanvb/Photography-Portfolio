@@ -3,7 +3,7 @@ import { useLocation, useNavigate } from 'react-router-dom';
 import useMobileDetect from '~/hooks/useMobileDetect';
 import useContent from '~/hooks/useContent';
 import Header from '~/components/Header';
-import Footer from '~/components/Footer';
+import { ContactStage } from '~/components/Footer';
 import OptimizedImage from '~/components/OptimizedImage';
 import CollectionModal from '~/components/CollectionModal';
 import * as S from '~/pages/Work.styled';
@@ -318,7 +318,7 @@ function Work() {
       <S.Content>
         <S.GalleryGrid>{grid.map(renderSpot)}</S.GalleryGrid>
       </S.Content>
-      <Footer scrollReveal />
+      <ContactStage />
       {openPhoto && (
         <CollectionModal
           project={projectsBySlug.get(openPhoto.slug) ?? null}

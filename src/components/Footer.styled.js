@@ -3,6 +3,8 @@ import styled, { css } from 'styled-components';
 export const FooterWrapper = styled.footer`
   width: 100%;
   margin-top: 200px;
+
+
   padding: 0 ${({ theme }) => theme.spacing(18.75)};
   padding-bottom: 100px;
   box-sizing: border-box;
@@ -33,10 +35,30 @@ export const FooterWrapper = styled.footer`
     padding: 0 ${({ theme }) => theme.spacing(2.5)};
     padding-bottom: 30px;
   }
+
+  /* These two come last on purpose: the base padding and every breakpoint above
+     set padding and margin, so a variant has to be declared after them to win.
+
+     Pinned, this is a whole screen rather than the end of a long page, so it
+     centres in the stage and drops the spacing that separated it from whatever
+     came before. Header-only, it keeps that spacing above and nothing below. */
+  ${({ $pinned }) => $pinned && css`
+    margin: 0;
+    padding-top: 0;
+    padding-bottom: 0;
+    height: 100%;
+    position: relative;
+    justify-content: center;
+  `}
+
+  ${({ $headerOnly }) => $headerOnly && css`
+    padding-bottom: 0;
+  `}
 `;
 
 export const SectionHeader = styled.div`
   width: 100%;
+
   display: flex;
   justify-content: space-between;
   align-items: center;
@@ -184,4 +206,33 @@ export const LineLink = styled.a`
       opacity: 0.5;
     }
   }
+`;
+
+/**
+ * The contact lines as a stage of their own: it pins to the screen, and a step
+ * of scroll past that point brings one more line down. One screen to hold it,
+ * then a step for every line.
+ */
+export const Stage = styled.section`
+  width: 100%;
+  position: relative;
+  --contact-step: max(150px, 22vh);
+  /* A step per line after the first — the first is already down the moment the
+     stage pins. That makes the last line land exactly as the page runs out of
+     scroll, so the final thing you can reach is the block sitting centred,
+     rather than a stretch of nothing and then its top scrolling off. */
+  height: calc(100vh + ${({ $lines = 0 }) => Math.max(0, $lines - 1)} * var(--contact-step));
+  height: calc(100svh + ${({ $lines = 0 }) => Math.max(0, $lines - 1)} * var(--contact-step));
+`;
+
+export const StagePin = styled.div`
+  position: sticky;
+  top: 0;
+  height: 100vh;
+  height: 100svh;
+  width: 100%;
+  display: flex;
+  align-items: center;
+  box-sizing: border-box;
+  overflow: hidden;
 `;

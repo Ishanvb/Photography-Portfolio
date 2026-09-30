@@ -10,9 +10,14 @@ export const Page = styled.div`
   align-items: center;
   justify-content: flex-start;
   padding: 10px 0;
-  padding-bottom: 75px;
+  /* Nothing below the contact stage: it is the last thing on the page and ends
+     with the block centred, so any padding here would let it scroll off. */
+  padding-bottom: 0;
   box-sizing: border-box;
-  overflow-x: hidden;
+  /* clip, not hidden: hidden on one axis computes the other to auto, which
+     makes this a scroll container and stops the contact stage inside it from
+     sticking to the viewport. About's container does the same. */
+  overflow-x: clip;
 `;
 
 export const HeaderRow = styled.div`
