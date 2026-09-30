@@ -389,8 +389,8 @@ const FRAME_GAP = 10;
 // The slightly rounded corners of the photo and its frame.
 const PHOTO_RADIUS = '2px';
 
-// Film grain, as an SVG noise tile. Used both as a texture over the photo and
-// as a mask that eats into the stamp's edge, so the edge prints unevenly.
+// Film grain, as an SVG noise tile: a mask that eats into the stamp's edge,
+// so the edge prints unevenly.
 const noise = (alpha) =>
   `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 0.5  0 0 0 0 0.5  0 0 0 0 0.5  0 0 0 ${alpha}'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E")`;
 
@@ -409,16 +409,20 @@ export const Backing = styled.span`
 /**
  * A soft, low glow of the frame's light bleeding out behind it, like ink
  * leaking into paper. Laid down at the frame's angle, a little below it.
+ *
+ * Drawn as a shadow rather than a blurred block: a blur filter on every tile
+ * is its own offscreen pass, and the page ran noticeably heavier for it.
  */
+const leak = ({ theme }) =>
+  `0 6px 28px 0 color-mix(in srgb, ${theme.colors.text} 10%, transparent)`;
+
 export const InkLeak = styled.span`
   position: absolute;
   inset: -5px;
   border-radius: ${PHOTO_RADIUS};
   z-index: -2;
-  background-color: ${({ theme }) => theme.colors.text};
-  opacity: 0.1;
-  filter: blur(14px);
-  transform: var(--lie) translateY(6px);
+  box-shadow: ${leak};
+  transform: var(--lie);
   pointer-events: none;
 `;
 
@@ -428,20 +432,8 @@ export const InkLeak = styled.span`
  */
 export const PhotoLeak = styled(InkLeak)`
   inset: 0;
-  border-radius: ${PHOTO_RADIUS};
   z-index: -1;
-  transform: translateY(6px);
-`;
-
-/** Grain over the photo. */
-export const Grain = styled.span`
-  position: absolute;
-  inset: 0;
-  border-radius: ${PHOTO_RADIUS};
-  pointer-events: none;
-  background-image: ${noise('1.8 -0.4')};
-  opacity: 0.03;
-  mix-blend-mode: overlay;
+  transform: none;
 `;
 
 /**
@@ -503,7 +495,6 @@ export const PhotoFrame = styled.div`
      good. Giving it the square up front breaks that circle. */
   background-color: ${({ theme }) => theme.colors.black};
 
-  & picture,
   & img {
     display: block;
     width: 100%;

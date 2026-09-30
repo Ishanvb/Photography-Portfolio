@@ -1,4 +1,5 @@
 import { resized, THUMB_WIDTH, webpOf } from '~/content/imageUrl';
+import photoShapes from '~/content/photoShapes.json';
 
 /**
  * A project's collection: every photo the Work page shows for it, in the order
@@ -71,8 +72,22 @@ export const collectPhotos = ({ projects, reel }) => {
   return out;
 };
 
-/** jpg path -> naturalWidth / naturalHeight, for photos the browser has read. */
-export const photoAspects = new Map();
+/**
+ * jpg path -> width / height. Starts out knowing every photo shipped in
+ * public/photos (measured at build time by scripts/photo-shapes.mjs); anything
+ * else is learned as the browser reads it, or from the database's own width
+ * and height (see rememberShapes).
+ */
+export const photoAspects = new Map(Object.entries(photoShapes));
+
+/** Take the shape of every photo whose width and height are already known. */
+export const rememberShapes = (photos) => {
+  photos.forEach((photo) => {
+    if (photo?.jpg && photo.width && photo.height && !photoAspects.has(photo.jpg)) {
+      photoAspects.set(photo.jpg, photo.width / photo.height);
+    }
+  });
+};
 
 /**
  * Learn every photo's shape a few at a time, from the same small copy the

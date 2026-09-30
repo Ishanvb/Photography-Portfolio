@@ -5,7 +5,7 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "build": "vite build",
+    "build": "node scripts/photo-shapes.mjs && vite build",
     "lint": "eslint .",
     "preview": "vite preview",
     "smoke": "node scripts/smoke-api.mjs",

@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo, useRef, useCallback } from 'react';
+import { useState, useEffect, useMemo, useCallback } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import useMobileDetect from '~/hooks/useMobileDetect';
 import useContent from '~/hooks/useContent';
@@ -6,7 +6,7 @@ import Header from '~/components/Header';
 import { ContactStage } from '~/components/Footer';
 import OptimizedImage from '~/components/OptimizedImage';
 import CollectionModal from '~/components/CollectionModal';
-import { collectionOf, photoAspects, preloadPhotos } from '~/content/photos';
+import { collectionOf, photoAspects, preloadPhotos, rememberShapes } from '~/content/photos';
 import * as S from '~/pages/Work.styled';
 
 /**
@@ -42,6 +42,49 @@ const AnimatedCategoryLabel = ({ text }) => (
   </S.AnimatedCategory>
 );
 
+/**
+ * The title types itself out, deletes itself, and settles on "Work". Its own
+ * component, so the forty-odd keystrokes re-render the title and nothing else
+ * — not the whole grid under it.
+ */
+function TypedTitle({ onDone }) {
+  const [text, setText] = useState('');
+  const [done, setDone] = useState(false);
+
+  useEffect(() => {
+    // Shorter on a phone (as the page first loads, not on resize).
+    const fullText = window.innerWidth <= 768 ? "Here's my Work." : "Here's some of my Work.";
+    const finalText = 'Work';
+    const steps = [];
+    for (let i = 0; i <= fullText.length; i++) steps.push([fullText.slice(0, i), 50]);
+    steps[steps.length - 1][1] = 1000;
+    for (let i = fullText.length; i >= 0; i--) steps.push([fullText.slice(0, i), 30]);
+    steps[steps.length - 1][1] = 200;
+    for (let i = 0; i <= finalText.length; i++) steps.push([finalText.slice(0, i), 80]);
+    steps[steps.length - 1][1] = 0;
+
+    let timer;
+    const next = (k) => {
+      if (k === steps.length) {
+        setDone(true);
+        onDone();
+        return;
+      }
+      setText(steps[k][0]);
+      timer = setTimeout(() => next(k + 1), steps[k][1]);
+    };
+    next(0);
+    return () => clearTimeout(timer);
+  }, [onDone]);
+
+  return (
+    <S.PageTitle>
+      {text}
+      {!done && <S.Cursor>|</S.Cursor>}
+    </S.PageTitle>
+  );
+}
+
 const MIN_RUN = 5;          // photos between one blank spot and the next, fewest
 const MAX_RUN = 10;         // and most
 const CIRCLE_CHANCE = 0.92; // share of blank spots that carry dots; a bare gap is rare
@@ -70,7 +113,8 @@ const UNKNOWN_ASPECT = 3 / 2; // a photo whose shape has not arrived yet
 // The gap below a spot, as a share of a column's width — close enough to
 // keep the columns' ends level.
 const SPOT_EXTRA = 0.1;
-// How long to hold the grid back for photo shapes before laying it out anyway.
+// How long to hold the grid back for a photo shape nobody knew in advance,
+// before laying it out anyway.
 const SHAPE_WAIT = 1500;
 
 /**
@@ -138,14 +182,11 @@ function Work() {
   const location = useLocation();
   const navigate = useNavigate();
   const isMobile = useMobileDetect();
-  const [displayText, setDisplayText] = useState('');
   const [isTypingComplete, setIsTypingComplete] = useState(false);
+  const finishTyping = useCallback(() => setIsTypingComplete(true), []);
 
   // Drawn once per visit, so the blank spots do not move around under a rerender.
   const [layoutSeed] = useState(() => Math.floor(Math.random() * 2 ** 31));
-
-  // Store initial mobile state for typing text (doesn't change on resize)
-  const initialMobileRef = useRef(typeof window !== 'undefined' && window.innerWidth <= 768);
 
   // Every photo in every project's collection (its photos plus its hero), in
   // project order. Reel tiles and project covers are left out on purpose: they
@@ -155,20 +196,19 @@ function Work() {
   // A tile opens its collection by file, not by position: the pop-up looks the
   // jpg up in the same collectionOf() list, so the photo clicked is always the
   // photo shown.
-  const photos = useMemo(
-    () =>
-      projects.flatMap((project) =>
-        collectionOf(project)
-          .filter((photo) => photo.jpg)
-          .map((photo, position) => ({
-            jpg: photo.jpg,
-            webp: photo.webp ?? null,
-            alt: photo.alt ?? `${project.title} ${position + 1}`,
-            slug: project.slug,
-          }))
-      ).filter((photo, i, all) => all.findIndex((p) => p.jpg === photo.jpg) === i),
-    [projects]
-  );
+  const photos = useMemo(() => {
+    rememberShapes(projects.flatMap(collectionOf));
+    return projects.flatMap((project) =>
+      collectionOf(project)
+        .filter((photo) => photo.jpg)
+        .map((photo, position) => ({
+          jpg: photo.jpg,
+          webp: photo.webp ?? null,
+          alt: photo.alt ?? `${project.title} ${position + 1}`,
+          slug: project.slug,
+        }))
+    ).filter((photo, i, all) => all.findIndex((p) => p.jpg === photo.jpg) === i);
+  }, [projects]);
 
   const grid = useMemo(() => buildGrid(photos, layoutSeed), [photos, layoutSeed]);
 
@@ -181,19 +221,29 @@ function Work() {
     return () => window.removeEventListener('resize', onResize);
   }, []);
 
-  // Which column a spot lands in depends on the heights above it, so the
-  // photos' shapes are learned (from their small copies — usually already done
-  // by the home page) before the grid is dealt. Bumped as each one arrives.
+  // Which column a spot lands in depends on the heights above it, so the grid
+  // is dealt from every photo's shape. Nearly always they are all known up
+  // front (built into the site, or stored with the upload); anything that is
+  // not is measured from its small copy, holding the grid back a moment at
+  // most. Bumped as each one arrives.
   const [shapesVersion, setShapesVersion] = useState(0);
   const [shapesWaited, setShapesWaited] = useState(false);
   const shapesKnown = photos.every((photo) => photoAspects.has(photo.jpg));
 
+  // Shapes tend to land in bursts, so they are gathered up and the grid is
+  // re-dealt at most once a frame rather than once a photo.
   useEffect(() => {
-    let live = true;
-    preloadPhotos(photos, () => { if (live) setShapesVersion((v) => v + 1); });
+    let frame = 0;
+    preloadPhotos(photos, () => {
+      if (!frame) frame = requestAnimationFrame(() => {
+        frame = 0;
+        setShapesVersion((v) => v + 1);
+      });
+    });
     const timer = setTimeout(() => setShapesWaited(true), SHAPE_WAIT);
     return () => {
-      live = false;
+      cancelAnimationFrame(frame);
+      frame = -1; // anything still arriving after this is ignored
       clearTimeout(timer);
     };
   }, [photos]);
@@ -249,104 +299,64 @@ function Work() {
     return () => clearTimeout(timer);
   }, [isTypingComplete]);
 
-  useEffect(() => {
-    // Use shorter text on mobile (based on initial load, not resize)
-    const fullText = initialMobileRef.current ? "Here's my Work." : "Here's some of my Work.";
-    const finalText = "Work";
-    let currentIndex = 0;
-    let isDeleting = false;
-    let deleteIndex = fullText.length;
 
-    const typeText = () => {
-      if (!isDeleting && currentIndex <= fullText.length) {
-        setDisplayText(fullText.substring(0, currentIndex));
-        currentIndex++;
-        if (currentIndex > fullText.length) {
-          setTimeout(() => {
-            isDeleting = true;
-            typeText();
-          }, 1000);
-        } else {
-          setTimeout(typeText, 50);
-        }
-      } else if (isDeleting && deleteIndex >= 0) {
-        setDisplayText(fullText.substring(0, deleteIndex));
-        deleteIndex--;
-        if (deleteIndex < 0) {
-          setTimeout(() => {
-            let finalIndex = 0;
-            const typeFinal = () => {
-              if (finalIndex <= finalText.length) {
-                setDisplayText(finalText.substring(0, finalIndex));
-                finalIndex++;
-                if (finalIndex > finalText.length) {
-                  setIsTypingComplete(true);
-                } else {
-                  setTimeout(typeFinal, 80);
-                }
-              }
-            };
-            typeFinal();
-          }, 200);
-        } else {
-          setTimeout(typeText, 30);
-        }
+  // The grid only changes when the layout does, so opening the projects list
+  // or a collection does not re-render every tile under it.
+  const gallery = useMemo(() => {
+    const renderSpot = ({ spot, index, aspect }) => {
+      if (spot.kind === 'photo' && spot.photo) {
+        return (
+          <S.PhotoSpot key={index} $index={index}>
+            <S.PhotoFrame
+              as="button"
+              type="button"
+              onClick={() => setOpenPhoto(spot.photo)}
+              aria-label={`Open the ${projectsBySlug.get(spot.photo.slug)?.title ?? ''} collection`}
+              data-cursor="open"
+              data-cursor-variant="merge"
+              style={{
+                '--lie': `translate(${spot.lie.dx}px, ${spot.lie.dy}px) rotate(${spot.lie.tilt}deg)`,
+              }}
+            >
+              <S.InkLeak aria-hidden="true" />
+              <S.Backing aria-hidden="true" />
+              <OptimizedImage
+                src={spot.photo.jpg}
+                webpSrc={spot.photo.webp}
+                alt={spot.photo.alt}
+                maxWidth={1080}
+                sizes="(max-width: 480px) 100vw, (max-width: 768px) 50vw, 25vw"
+                style={{ aspectRatio: `auto ${aspect}` }}
+                onLoad={(event) => { event.currentTarget.dataset.loaded = 'true'; }}
+              />
+              <S.StampEdge aria-hidden="true" />
+              <S.PhotoLeak aria-hidden="true" />
+            </S.PhotoFrame>
+          </S.PhotoSpot>
+        );
       }
+
+      return (
+        <S.EmptySpot key={index} $index={index}>
+          {spot.circles && (
+            <S.Circles>
+              {LAYOUTS[spot.circles - 1].map(([cx, cy], i) => (
+                <S.Circle
+                  key={i}
+                  $solo={spot.circles === 1}
+                  style={{ left: `${cx * 100}%`, top: `${cy * 100}%` }}
+                />
+              ))}
+            </S.Circles>
+          )}
+        </S.EmptySpot>
+      );
     };
 
-    typeText();
-  }, []); // Run only once on mount
-
-  const renderSpot = ({ spot, index, aspect }) => {
-    if (spot.kind === 'photo' && spot.photo) {
-      return (
-        <S.PhotoSpot key={index} $index={index}>
-          <S.PhotoFrame
-            as="button"
-            type="button"
-            onClick={() => setOpenPhoto(spot.photo)}
-            aria-label={`Open the ${projectsBySlug.get(spot.photo.slug)?.title ?? ''} collection`}
-            data-cursor="open"
-            data-cursor-variant="merge"
-            style={{
-              '--lie': `translate(${spot.lie.dx}px, ${spot.lie.dy}px) rotate(${spot.lie.tilt}deg)`,
-            }}
-          >
-            <S.InkLeak aria-hidden="true" />
-            <S.Backing aria-hidden="true" />
-            <OptimizedImage
-              src={spot.photo.jpg}
-              webpSrc={spot.photo.webp}
-              alt={spot.photo.alt}
-              maxWidth={1080}
-              sizes="(max-width: 480px) 100vw, (max-width: 768px) 50vw, 25vw"
-              style={{ aspectRatio: `auto ${aspect}` }}
-              onLoad={(event) => { event.currentTarget.dataset.loaded = 'true'; }}
-            />
-            <S.Grain aria-hidden="true" />
-            <S.StampEdge aria-hidden="true" />
-            <S.PhotoLeak aria-hidden="true" />
-          </S.PhotoFrame>
-        </S.PhotoSpot>
-      );
-    }
-
-    return (
-      <S.EmptySpot key={index} $index={index}>
-        {spot.circles && (
-          <S.Circles>
-            {LAYOUTS[spot.circles - 1].map(([cx, cy], i) => (
-              <S.Circle
-                key={i}
-                $solo={spot.circles === 1}
-                style={{ left: `${cx * 100}%`, top: `${cy * 100}%` }}
-              />
-            ))}
-          </S.Circles>
-        )}
-      </S.EmptySpot>
-    );
-  };
+    return columns.map((column, i) => (
+      <S.GalleryColumn key={i}>{column.map(renderSpot)}</S.GalleryColumn>
+    ));
+  }, [columns, projectsBySlug]);
 
   return (
     <S.Page>
@@ -390,19 +400,12 @@ function Work() {
         </S.CategoryDropdown>
 
         <S.TitleFrame>
-          <S.PageTitle>
-            {displayText}
-            {!isTypingComplete && <S.Cursor>|</S.Cursor>}
-          </S.PageTitle>
+          <TypedTitle onDone={finishTyping} />
         </S.TitleFrame>
       </S.HeaderRow>
 
       <S.Content>
-        <S.GalleryGrid>
-          {columns.map((column, i) => (
-            <S.GalleryColumn key={i}>{column.map(renderSpot)}</S.GalleryColumn>
-          ))}
-        </S.GalleryGrid>
+        <S.GalleryGrid>{gallery}</S.GalleryGrid>
       </S.Content>
       <ContactStage />
       {openPhoto && (

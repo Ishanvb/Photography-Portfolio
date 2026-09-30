@@ -11,9 +11,6 @@ const uiSlice = createSlice({
     isMobile: typeof window !== 'undefined' ? window.innerWidth <= 768 : false,
   },
   reducers: {
-    setLoading(state, action) {
-      state.isLoading = action.payload;
-    },
     setContentReady(state, action) {
       state.contentReady = action.payload;
     },
@@ -26,5 +23,5 @@ const uiSlice = createSlice({
   },
 });
 
-export const { setLoading, setContentReady, setMobile, markLoaded } = uiSlice.actions;
+export const { setContentReady, setMobile, markLoaded } = uiSlice.actions;
 export default uiSlice.reducer;
