@@ -50,6 +50,15 @@ export default function CustomCursor() {
 
     let targetX = 0;
     let targetY = 0;
+    // Where the cursor is drawn. It closes on the pointer with a time constant
+    // of a few milliseconds: short enough that there is no visible lag or
+    // coasting, long enough that it still moves on frames where no new mouse
+    // position arrived — which is most of them on a 120Hz screen, and what made
+    // an unsmoothed cursor step along at half the display's rate.
+    let x = null;
+    let y = null;
+    let lastFrame = 0;
+    const FOLLOW_MS = 6;
     let animationId;
     let isAnimating = false;
     let idleTimer = null;
@@ -260,7 +269,7 @@ export default function CustomCursor() {
       }
     };
 
-    const animate = () => {
+    const animate = (now) => {
       let finalX = targetX;
       let finalY = targetY;
 
@@ -286,11 +295,14 @@ export default function CustomCursor() {
         finalY = targetY + (magnetTarget.centerY - targetY) * adjustedStrength;
       }
 
-      // No easing anywhere: the cursor goes exactly where the pointer (or a
-      // magnet) puts it, and stops the moment the pointer stops — no drift,
-      // no momentum.
-      const x = finalX;
-      const y = finalY;
+      // Frame-rate independent: the same feel at 60Hz or 120Hz.
+      const dt = lastFrame ? Math.min(now - lastFrame, 100) : 1000;
+      lastFrame = now;
+      const follow = 1 - Math.exp(-dt / FOLLOW_MS);
+      x = x === null ? finalX : x + (finalX - x) * follow;
+      y = y === null ? finalY : y + (finalY - y) * follow;
+      if (Math.abs(finalX - x) < 0.1) x = finalX;
+      if (Math.abs(finalY - y) < 0.1) y = finalY;
       // Moved on the compositor: left/top would re-run layout every frame.
       cursor.style.transform = `translate3d(${x}px, ${y}px, 0) translate(-50%, -50%)`;
       if (isAnimating) {
@@ -599,6 +611,15 @@ export default function CustomCursor() {
 
     // Initial binding
     document.addEventListener('mousemove', handleMouseMove);
+    // Chrome reports the pointer as soon as the hardware does, rather than
+    // once per frame. Only the position is read here; everything else stays on
+    // mousemove.
+    const handleRawMove = (e) => {
+      targetX = e.clientX;
+      targetY = e.clientY;
+    };
+    const hasRawUpdate = 'onpointerrawupdate' in window;
+    if (hasRawUpdate) document.addEventListener('pointerrawupdate', handleRawMove);
     document.addEventListener('mouseout', handleDocumentLeave);
     document.addEventListener('click', handleMagneticClick);
     document.addEventListener('mousedown', handleMouseDown);
@@ -663,6 +684,7 @@ export default function CustomCursor() {
 
     return () => {
       document.removeEventListener('mousemove', handleMouseMove);
+      if (hasRawUpdate) document.removeEventListener('pointerrawupdate', handleRawMove);
       document.removeEventListener('mouseout', handleDocumentLeave);
       document.removeEventListener('click', handleMagneticClick);
       document.removeEventListener('mousedown', handleMouseDown);
