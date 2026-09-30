@@ -17,8 +17,8 @@ export const collectPhotos = ({ projects, reel }) => {
   reel.forEach((item) =>
     push(item, {
       title: item.title,
-      subtitle: item.caption,
-      project: projects.find((p) => p.slug === item.targetSlug)?.title ?? item.caption,
+      subtitle: item.title,
+      project: projects.find((p) => p.slug === item.targetSlug)?.title ?? item.title,
       slug: item.targetSlug ?? null,
       photoIndex: item.targetPhotoIndex ?? null,
       fromReel: true

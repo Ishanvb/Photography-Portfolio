@@ -40,8 +40,8 @@ const AnimatedCategoryLabel = ({ text }) => (
   </S.AnimatedCategory>
 );
 
-const MIN_RUN = 2;          // photos between one blank spot and the next, fewest
-const MAX_RUN = 5;          // and most
+const MIN_RUN = 5;          // photos between one blank spot and the next, fewest
+const MAX_RUN = 10;         // and most
 const CIRCLE_CHANCE = 0.92; // share of blank spots that carry dots; a bare gap is rare
 
 /**

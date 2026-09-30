@@ -8,6 +8,7 @@ import derive from '../_lib/routes/derive.js';
 import projects from '../_lib/routes/projects.js';
 import photos from '../_lib/routes/photos.js';
 import reel from '../_lib/routes/reel.js';
+import about from '../_lib/routes/about.js';
 
 const ROUTES = {
   devices,
@@ -16,6 +17,7 @@ const ROUTES = {
   projects,
   photos,
   reel,
+  about,
 };
 
 export default async function handler(req, res) {

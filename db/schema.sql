@@ -60,6 +60,8 @@ create table if not exists reel_items (
   url_jpg            text not null,
   url_webp           text,
   title              text not null default '',
+  -- No longer shown: the reel's captions were removed from the site. Kept so
+  -- the text written into them is not lost.
   caption            text not null default '',
   target_slug        text,        -- project slug to navigate to on click
   target_photo_index int,         -- index within that project's gallery
@@ -69,6 +71,26 @@ create table if not exists reel_items (
 );
 
 create index if not exists reel_order_idx on reel_items(sort_order);
+
+-- The About page: one paragraph in two halves (the opening sentence is
+-- highlighted, the rest is dimmed), plus two ordered lists beside it.
+create table if not exists about (
+  id         int primary key,
+  intro      text not null default '',
+  body       text not null default '',
+  updated_at timestamptz not null default now(),
+  constraint about_single_row check (id = 1)
+);
+
+create table if not exists about_lines (
+  id         uuid primary key default gen_random_uuid(),
+  kind       text not null check (kind in ('bio','work')),
+  text       text not null default '',
+  sort_order int not null default 0,
+  created_at timestamptz not null default now()
+);
+
+create index if not exists about_lines_kind_idx on about_lines(kind, sort_order);
 
 -- ------------------------------------------------------------------ auth ---
 
@@ -95,5 +117,7 @@ create table if not exists admin_invites (
 alter table projects           enable row level security;
 alter table photos             enable row level security;
 alter table reel_items         enable row level security;
+alter table about              enable row level security;
+alter table about_lines        enable row level security;
 alter table admin_credentials  enable row level security;
 alter table admin_invites      enable row level security;

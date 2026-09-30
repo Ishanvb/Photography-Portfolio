@@ -26,8 +26,16 @@ export default withErrors(async (req, res) => {
   const reel = unwrap(
     await db
       .from('reel_items')
-      .select('url_jpg, url_webp, title, caption, target_slug, target_photo_index, is_narrow')
+      .select('url_jpg, url_webp, title, target_slug, target_photo_index, is_narrow')
       .order('sort_order', { ascending: true })
+  );
+
+  // The About page: one row of copy, and the two ordered lists beside it.
+  const aboutRow = unwrap(
+    await db.from('about').select('intro, body').eq('id', 1).maybeSingle()
+  );
+  const aboutLines = unwrap(
+    await db.from('about_lines').select('kind, text, sort_order').order('sort_order', { ascending: true })
   );
 
   const body = {
@@ -50,11 +58,16 @@ export default withErrors(async (req, res) => {
           height: ph.height,
         })),
     })),
+    about: {
+      intro: aboutRow?.intro ?? '',
+      body: aboutRow?.body ?? '',
+      bio: aboutLines.filter((l) => l.kind === 'bio').map((l) => l.text),
+      work: aboutLines.filter((l) => l.kind === 'work').map((l) => l.text),
+    },
     reel: reel.map((r) => ({
       jpg: r.url_jpg,
       webp: r.url_webp,
       title: r.title,
-      caption: r.caption,
       targetSlug: r.target_slug,
       targetPhotoIndex: r.target_photo_index,
       isNarrow: r.is_narrow,

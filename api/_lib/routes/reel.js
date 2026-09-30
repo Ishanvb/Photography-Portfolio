@@ -6,7 +6,6 @@ const COLUMNS = {
   jpg: 'url_jpg',
   webp: 'url_webp',
   title: 'title',
-  caption: 'caption',
   targetSlug: 'target_slug',
   targetPhotoIndex: 'target_photo_index',
   isNarrow: 'is_narrow',

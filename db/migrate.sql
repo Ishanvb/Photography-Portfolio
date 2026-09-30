@@ -62,6 +62,8 @@ create table if not exists reel_items (
   url_jpg            text not null,
   url_webp           text,
   title              text not null default '',
+  -- No longer shown: the reel's captions were removed from the site. Kept so
+  -- the text written into them is not lost.
   caption            text not null default '',
   target_slug        text,        -- project slug to navigate to on click
   target_photo_index int,         -- index within that project's gallery
@@ -71,6 +73,26 @@ create table if not exists reel_items (
 );
 
 create index if not exists reel_order_idx on reel_items(sort_order);
+
+-- The About page: one paragraph in two halves (the opening sentence is
+-- highlighted, the rest is dimmed), plus two ordered lists beside it.
+create table if not exists about (
+  id         int primary key,
+  intro      text not null default '',
+  body       text not null default '',
+  updated_at timestamptz not null default now(),
+  constraint about_single_row check (id = 1)
+);
+
+create table if not exists about_lines (
+  id         uuid primary key default gen_random_uuid(),
+  kind       text not null check (kind in ('bio','work')),
+  text       text not null default '',
+  sort_order int not null default 0,
+  created_at timestamptz not null default now()
+);
+
+create index if not exists about_lines_kind_idx on about_lines(kind, sort_order);
 
 -- ------------------------------------------------------------------ auth ---
 
@@ -97,6 +119,8 @@ create table if not exists admin_invites (
 alter table projects           enable row level security;
 alter table photos             enable row level security;
 alter table reel_items         enable row level security;
+alter table about              enable row level security;
+alter table about_lines        enable row level security;
 alter table admin_credentials  enable row level security;
 alter table admin_invites      enable row level security;
 
@@ -300,3 +324,37 @@ select '/photos/reelphotos/mari2.jpg', '/photos/reelphotos/mari2.webp', 'Viva la
 where not exists (select 1 from reel_items where sort_order = 7);
 
 commit;
+
+-- ----------------------------------------------------------- about seed ---
+-- Only fills an empty table, so re-running never overwrites edited copy.
+insert into about (id, intro, body)
+values (1, 'I''m a third-year Business Administration student concentrating in Marketing with a minor in Photography and Videography at Cal Poly San Luis Obispo.', ' During my time at school, I''ve been working as a videographer for Cal Poly Athletics, filming coverage for all Division I ESPN livestreams as well as getting footage for social media and pregame edits. Through courses for my minor, my association in my school''s fashion club, and personal interest, I have worked with and photographed many different subjects and activities, using a variety of skills and techniques.')
+on conflict (id) do nothing;
+
+insert into about_lines (kind, text, sort_order)
+select 'bio', 'Hometown : Austin, TX', 0
+where not exists (select 1 from about_lines where kind = 'bio' and sort_order = 0);
+insert into about_lines (kind, text, sort_order)
+select 'bio', 'School : Cal Poly San Luis Obispo', 1
+where not exists (select 1 from about_lines where kind = 'bio' and sort_order = 1);
+insert into about_lines (kind, text, sort_order)
+select 'bio', 'Year : 3rd', 2
+where not exists (select 1 from about_lines where kind = 'bio' and sort_order = 2);
+insert into about_lines (kind, text, sort_order)
+select 'bio', 'Major : Business', 3
+where not exists (select 1 from about_lines where kind = 'bio' and sort_order = 3);
+insert into about_lines (kind, text, sort_order)
+select 'bio', 'Minor : Photography and Videography', 4
+where not exists (select 1 from about_lines where kind = 'bio' and sort_order = 4);
+insert into about_lines (kind, text, sort_order)
+select 'bio', 'Favorite Camera : Nikon D3500', 5
+where not exists (select 1 from about_lines where kind = 'bio' and sort_order = 5);
+insert into about_lines (kind, text, sort_order)
+select 'work', 'Cal Poly FITS', 0
+where not exists (select 1 from about_lines where kind = 'work' and sort_order = 0);
+insert into about_lines (kind, text, sort_order)
+select 'work', 'MeerMutter Label', 1
+where not exists (select 1 from about_lines where kind = 'work' and sort_order = 1);
+insert into about_lines (kind, text, sort_order)
+select 'work', 'ART 122', 2
+where not exists (select 1 from about_lines where kind = 'work' and sort_order = 2);

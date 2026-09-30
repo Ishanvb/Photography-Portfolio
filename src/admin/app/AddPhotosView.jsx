@@ -43,7 +43,7 @@ function AddPhotosView({ projects, onChanged }) {
     setError(null);
     try {
       if (isReel) {
-        await api.addReelItem({ jpg: result.jpg, webp: result.webp, title: '', caption: '' });
+        await api.addReelItem({ jpg: result.jpg, webp: result.webp, title: '' });
       } else {
         const project = await ensureProject();
         if (!project) throw new Error('Pick a project first');

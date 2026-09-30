@@ -1,28 +1,21 @@
 import { useState, useEffect, useLayoutEffect, useRef } from 'react';
+import useContent from '~/hooks/useContent';
 import Header from '~/components/Header';
 import Footer from '~/components/Footer';
 import OptimizedImage from '~/components/OptimizedImage';
 import ScrambleText from '~/components/ScrambleText';
 import * as S from './About.styled';
 
-const BIO_ITEMS = [
-  'Hometown : Austin, TX',
-  'School : Cal Poly San Luis Obispo',
-  'Year : 3rd',
-  'Major : Business',
-  'Minor : Photography and Videography',
-  'Favorite Camera : Nikon D3500',
-];
-
-const WORK_ITEMS = ['Cal Poly FITS', 'MeerMutter Label', 'ART 122'];
-
 // Step 0 is the title alone; each step after that adds a line. Once the
 // biography is complete it holds for a step, then rolls into "Work"; the work
 // lines follow and hold likewise, with a last step before the stage lets go.
-const WORK_START = BIO_ITEMS.length + 2;
-const INFO_STEPS = WORK_START + WORK_ITEMS.length + 2;
-// The last step scrolling stops on: the finished Work list.
-const LAST_HELD_STEP = INFO_STEPS - 2;
+// The lists are editable, so how many steps there are depends on their length.
+const stepsFor = (bio, work) => {
+  const workStart = bio.length + 2;
+  const total = workStart + work.length + 2;
+  // The last step scrolling stops on: the finished Work list.
+  return { workStart, total, lastHeld: total - 2 };
+};
 
 // The fastest the Information section will move on by one line.
 const INFO_STEP_MS = 220;
@@ -33,6 +26,12 @@ const GESTURE_GAP_MS = 160;
 const GESTURE_REPEAT_MS = 900;
 
 function About() {
+  const { about } = useContent();
+  const bioItems = about?.bio ?? [];
+  const workItems = about?.work ?? [];
+  const { workStart: WORK_START, total: INFO_STEPS, lastHeld: LAST_HELD_STEP } =
+    stepsFor(bioItems, workItems);
+
   const [showContent, setShowContent] = useState(false);
   const [wordStyles, setWordStyles] = useState({});
   const [photosVisible, setPhotosVisible] = useState(false);
@@ -248,7 +247,9 @@ function About() {
       window.removeEventListener('touchend', onTouchEnd);
       window.removeEventListener('scroll', onScroll);
     };
-  }, [stepPx, infoDone]);
+    // LAST_HELD_STEP is derived from the length of the editable lists now, so it
+    // is a dependency rather than a module constant.
+  }, [stepPx, infoDone, LAST_HELD_STEP]);
 
   // Swapping the tall pinned section for the static one shortens the page by
   // thousands of pixels; shift the scroll by the same amount so whatever is on
@@ -344,8 +345,8 @@ function About() {
     return () => clearTimeout(timer);
   }, [showContent]);
 
-  const firstSentence = "I'm a third-year Business Administration student concentrating in Marketing with a minor in Photography and Videography at Cal Poly San Luis Obispo.";
-  const restOfText = " During my time at school, I've been working as a videographer for Cal Poly Athletics, filming coverage for all Division I ESPN livestreams as well as getting footage for social media and pregame edits. Through courses for my minor, my association in my school's fashion club, and personal interest, I have worked with and photographed many different subjects and activities, using a variety of skills and techniques.";
+  const firstSentence = about?.intro ?? '';
+  const restOfText = about?.body ?? '';
 
   // Split text into words for blur reveal
   const renderBlurText = (text, isHighlight, startIndex) => {
@@ -435,7 +436,7 @@ function About() {
           <S.InfoSection ref={infoScrollRef}>
             <S.BioRow>
               <S.BioList>
-                {BIO_ITEMS.map((item) => (
+                {bioItems.map((item) => (
                   <S.BioListItem key={item}>{item}</S.BioListItem>
                 ))}
               </S.BioList>
@@ -445,7 +446,7 @@ function About() {
             <S.WorkRow>
               <S.WorkTitle>Work</S.WorkTitle>
               <S.WorkList>
-                {WORK_ITEMS.map((item) => (
+                {workItems.map((item) => (
                   <S.WorkListItem key={item}>{item}</S.WorkListItem>
                 ))}
               </S.WorkList>
@@ -475,11 +476,11 @@ function About() {
 
               <S.InfoLists>
                 <S.InfoList>
-                  {BIO_ITEMS.map((item, index) => (
+                  {bioItems.map((item, index) => (
                     <S.InfoLineMask key={item}>
                       <S.InfoLine
                         $isVisible={index < bioShown}
-                        $delay={onWork ? (BIO_ITEMS.length - 1 - index) * 40 : 0}
+                        $delay={onWork ? (bioItems.length - 1 - index) * 40 : 0}
                       >
                         {item}
                       </S.InfoLine>
@@ -487,7 +488,7 @@ function About() {
                   ))}
                 </S.InfoList>
                 <S.InfoList>
-                  {WORK_ITEMS.map((item, index) => (
+                  {workItems.map((item, index) => (
                     <S.InfoLineMask key={item}>
                       <S.InfoLine $isVisible={index < workShown}>{item}</S.InfoLine>
                     </S.InfoLineMask>

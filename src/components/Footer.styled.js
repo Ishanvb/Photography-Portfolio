@@ -161,6 +161,9 @@ export const LineLeft = styled.span`
 
 export const LineRight = styled.span`
   ${footerLineFontStyles}
+  /* The negative letter-spacing also trails the last glyph, pulling the box
+     in past it; give that back so LineMask doesn't clip the final letter. */
+  padding-right: ${({ theme }) => theme.typography.letterSpacing.tight.replace('-', '')};
 `;
 
 export const LineLink = styled.a`

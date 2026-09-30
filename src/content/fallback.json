@@ -372,7 +372,6 @@
       "jpg": "/photos/reelphotos/mari1.jpg",
       "webp": "/photos/reelphotos/mari1.webp",
       "title": "Heaven's Playground",
-      "caption": "Fashion-Project",
       "targetSlug": "fashion-project",
       "targetPhotoIndex": 5,
       "isNarrow": false
@@ -381,7 +380,6 @@
       "jpg": "/photos/reelphotos/mari8.jpg",
       "webp": "/photos/reelphotos/mari8.webp",
       "title": "Breath of Winter",
-      "caption": "Portrait-Project",
       "targetSlug": "portrait-project",
       "targetPhotoIndex": 1,
       "isNarrow": false
@@ -390,7 +388,6 @@
       "jpg": "/photos/reelphotos/mari3.jpg",
       "webp": "/photos/reelphotos/mari3.webp",
       "title": "Rest Stop",
-      "caption": "Portrait-Project",
       "targetSlug": "portrait-project",
       "targetPhotoIndex": 0,
       "isNarrow": false
@@ -399,7 +396,6 @@
       "jpg": "/photos/reelphotos/mari4.jpg",
       "webp": "/photos/reelphotos/mari4.webp",
       "title": "Headin' South",
-      "caption": "Fashion-Project",
       "targetSlug": "fashion-project",
       "targetPhotoIndex": 7,
       "isNarrow": false
@@ -408,7 +404,6 @@
       "jpg": "/photos/reelphotos/mari5.jpg",
       "webp": "/photos/reelphotos/mari5.webp",
       "title": "Nature's Architect",
-      "caption": "Urban-Geometry-Project",
       "targetSlug": "urbangeometry-project",
       "targetPhotoIndex": null,
       "isNarrow": false
@@ -417,7 +412,6 @@
       "jpg": "/photos/reelphotos/mari6.jpg",
       "webp": "/photos/reelphotos/mari6.webp",
       "title": "Misty Blues",
-      "caption": "Portrait-Project",
       "targetSlug": "portrait-project",
       "targetPhotoIndex": null,
       "isNarrow": false
@@ -426,7 +420,6 @@
       "jpg": "/photos/reelphotos/mari7.jpg",
       "webp": "/photos/reelphotos/mari7.webp",
       "title": "Viva las Vegas",
-      "caption": "Fashion-Project",
       "targetSlug": "fashion-project",
       "targetPhotoIndex": null,
       "isNarrow": false
@@ -435,10 +428,26 @@
       "jpg": "/photos/reelphotos/mari2.jpg",
       "webp": "/photos/reelphotos/mari2.webp",
       "title": "Viva las Vegas",
-      "caption": "Fashion-Project",
       "targetSlug": "fashion-project",
       "targetPhotoIndex": 2,
       "isNarrow": true
     }
-  ]
+  ],
+  "about": {
+    "intro": "I'm a third-year Business Administration student concentrating in Marketing with a minor in Photography and Videography at Cal Poly San Luis Obispo.",
+    "body": " During my time at school, I've been working as a videographer for Cal Poly Athletics, filming coverage for all Division I ESPN livestreams as well as getting footage for social media and pregame edits. Through courses for my minor, my association in my school's fashion club, and personal interest, I have worked with and photographed many different subjects and activities, using a variety of skills and techniques.",
+    "bio": [
+      "Hometown : Austin, TX",
+      "School : Cal Poly San Luis Obispo",
+      "Year : 3rd",
+      "Major : Business",
+      "Minor : Photography and Videography",
+      "Favorite Camera : Nikon D3500"
+    ],
+    "work": [
+      "Cal Poly FITS",
+      "MeerMutter Label",
+      "ART 122"
+    ]
+  }
 }

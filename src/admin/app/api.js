@@ -27,6 +27,13 @@ export const api = {
   reorderReel: (order) => call('reel', { method: 'PATCH', body: { order } }),
   deleteReelItem: (id) => call('reel', { method: 'DELETE', body: { id } }),
 
+  getAbout: () => call('about', { method: 'GET' }),
+  saveAboutText: (body) => call('about', { method: 'PATCH', body }),
+  addAboutLine: (kind) => call('about', { body: { kind, text: '' } }),
+  updateAboutLine: (id, text) => call('about', { method: 'PATCH', body: { id, text } }),
+  reorderAboutLines: (kind, order) => call('about', { method: 'PATCH', body: { kind, order } }),
+  deleteAboutLine: (id) => call('about', { method: 'DELETE', body: { id } }),
+
   createInvite: (label) => call('devices', { body: { label } }),
   removeDevice: (id) => call('devices', { method: 'DELETE', body: { id } }),
 

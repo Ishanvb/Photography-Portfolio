@@ -198,3 +198,37 @@ select '/photos/reelphotos/mari2.jpg', '/photos/reelphotos/mari2.webp', 'Viva la
 where not exists (select 1 from reel_items where sort_order = 7);
 
 commit;
+
+-- ----------------------------------------------------------- about seed ---
+-- Only fills an empty table, so re-running never overwrites edited copy.
+insert into about (id, intro, body)
+values (1, 'I''m a third-year Business Administration student concentrating in Marketing with a minor in Photography and Videography at Cal Poly San Luis Obispo.', ' During my time at school, I''ve been working as a videographer for Cal Poly Athletics, filming coverage for all Division I ESPN livestreams as well as getting footage for social media and pregame edits. Through courses for my minor, my association in my school''s fashion club, and personal interest, I have worked with and photographed many different subjects and activities, using a variety of skills and techniques.')
+on conflict (id) do nothing;
+
+insert into about_lines (kind, text, sort_order)
+select 'bio', 'Hometown : Austin, TX', 0
+where not exists (select 1 from about_lines where kind = 'bio' and sort_order = 0);
+insert into about_lines (kind, text, sort_order)
+select 'bio', 'School : Cal Poly San Luis Obispo', 1
+where not exists (select 1 from about_lines where kind = 'bio' and sort_order = 1);
+insert into about_lines (kind, text, sort_order)
+select 'bio', 'Year : 3rd', 2
+where not exists (select 1 from about_lines where kind = 'bio' and sort_order = 2);
+insert into about_lines (kind, text, sort_order)
+select 'bio', 'Major : Business', 3
+where not exists (select 1 from about_lines where kind = 'bio' and sort_order = 3);
+insert into about_lines (kind, text, sort_order)
+select 'bio', 'Minor : Photography and Videography', 4
+where not exists (select 1 from about_lines where kind = 'bio' and sort_order = 4);
+insert into about_lines (kind, text, sort_order)
+select 'bio', 'Favorite Camera : Nikon D3500', 5
+where not exists (select 1 from about_lines where kind = 'bio' and sort_order = 5);
+insert into about_lines (kind, text, sort_order)
+select 'work', 'Cal Poly FITS', 0
+where not exists (select 1 from about_lines where kind = 'work' and sort_order = 0);
+insert into about_lines (kind, text, sort_order)
+select 'work', 'MeerMutter Label', 1
+where not exists (select 1 from about_lines where kind = 'work' and sort_order = 1);
+insert into about_lines (kind, text, sort_order)
+select 'work', 'ART 122', 2
+where not exists (select 1 from about_lines where kind = 'work' and sort_order = 2);

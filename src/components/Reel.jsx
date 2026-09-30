@@ -262,10 +262,6 @@ const Reel = forwardRef(function Reel(
                 style={{ width: '100%', height: '100%', objectFit: 'cover' }}
               />
             </S.ImageContainer>
-            <S.Caption>
-              <S.CaptionTitle>{img.title}</S.CaptionTitle>
-              <S.CaptionDirection>{img.caption}</S.CaptionDirection>
-            </S.Caption>
           </S.Frame>
         ))}
       </S.Track>

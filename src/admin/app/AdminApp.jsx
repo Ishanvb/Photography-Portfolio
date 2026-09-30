@@ -4,6 +4,7 @@ import { api } from './api';
 import AddPhotosView from './AddPhotosView';
 import ProjectsView from './ProjectsView';
 import ReelView from './ReelView';
+import AboutView from './AboutView';
 import DevicesView from './DevicesView';
 import * as S from './AdminApp.styled';
 
@@ -11,6 +12,7 @@ const TABS = [
   { id: 'add', label: 'Add photos' },
   { id: 'projects', label: 'Projects' },
   { id: 'reel', label: 'Home reel' },
+  { id: 'about', label: 'About' },
   { id: 'devices', label: 'Devices' },
 ];
 
@@ -84,6 +86,7 @@ function AdminApp() {
         {tab === 'add' && <AddPhotosView projects={state.projects} onChanged={refresh} />}
         {tab === 'projects' && <ProjectsView projects={state.projects} onChanged={refresh} />}
         {tab === 'reel' && <ReelView projects={state.projects} reel={state.reel} onChanged={refresh} />}
+        {tab === 'about' && <AboutView />}
         {tab === 'devices' && <DevicesView devices={state.devices} onChanged={refresh} />}
       </S.Main>
     </S.Shell>

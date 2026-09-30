@@ -70,17 +70,10 @@ function ReelView({ projects, reel, onChanged }) {
 
               <div style={{ flex: 1, minWidth: 220 }}>
                 <S.Field>
-                  <span>Caption title</span>
+                  <span>Title, used as the photo's description for screen readers</span>
                   <S.Input
                     defaultValue={item.title}
                     onBlur={(e) => e.target.value !== item.title && patch(item.id, { title: e.target.value })}
-                  />
-                </S.Field>
-                <S.Field>
-                  <span>Caption subtitle</span>
-                  <S.Input
-                    defaultValue={item.caption}
-                    onBlur={(e) => e.target.value !== item.caption && patch(item.id, { caption: e.target.value })}
                   />
                 </S.Field>
                 <S.Field>
