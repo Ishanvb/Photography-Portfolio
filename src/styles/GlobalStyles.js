@@ -52,6 +52,19 @@ const GlobalStyles = createGlobalStyle`
     animation-duration: 0.6s;
     animation-timing-function: ease-in-out;
   }
+
+  /* The home reel sits out of the cross-fade. The fade works from a still of
+     the page as it was, so the photos froze for its length and then jumped on;
+     instead only the live reel is shown, moving the whole way through, while
+     the page's colours fade around it. */
+  ::view-transition-old(home-reel) {
+    display: none;
+  }
+
+  ::view-transition-group(home-reel),
+  ::view-transition-new(home-reel) {
+    animation: none;
+  }
 `;
 
 export default GlobalStyles;

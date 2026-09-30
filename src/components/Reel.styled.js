@@ -19,17 +19,39 @@ export const Container = styled.div`
 `;
 
 export const Track = styled.div`
+  /* Kept out of the day/night cross-fade (see GlobalStyles). */
+  view-transition-name: home-reel;
   display: flex;
-  gap: ${({ theme }) => theme.spacing(4)};
+  /* A phone scrolls this by touch; on desktop it stays put and the belt inside
+     it moves (see Reel.jsx). */
   overflow-x: auto;
   scrollbar-width: none;
   -webkit-overflow-scrolling: touch;
-  will-change: scroll-position;
   contain: layout paint;
+  /* Hidden until the auto-scroll has begun, then faded in already moving. */
+  opacity: ${({ $waiting }) => ($waiting ? 0 : 1)};
+  transition: opacity 0.4s ease-out;
 
   &::-webkit-scrollbar {
     display: none;
   }
+`;
+
+/**
+ * Carries the belt through the fast start. The ramp and the steady loop each
+ * need an element of their own to run on the compositor (see Reel.jsx).
+ */
+export const Carriage = styled.div`
+  flex-shrink: 0;
+  will-change: transform;
+`;
+
+/** The photos in a row. Moved by transform on desktop, on its own GPU layer. */
+export const Belt = styled.div`
+  display: flex;
+  flex-shrink: 0;
+  gap: ${({ theme }) => theme.spacing(4)};
+  will-change: transform;
 
   ${({ theme }) => theme.media.sm} {
     gap: ${({ theme }) => theme.spacing(2)};
