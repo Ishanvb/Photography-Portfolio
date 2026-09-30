@@ -150,28 +150,16 @@ export function ContactHeader() {
 
 export const CONTACT_LINE_COUNT = footerLines.length;
 
-// The stage's own height decides how much scroll brings the next line down, so
-// there is one source of truth: --contact-step in the stylesheet. Recomputing it
-// here instead would drift — CSS resolves 22vh unrounded and a rounded copy left
-// the runway a few pixels short of the last line.
-// However fast the page is scrolled, the lines still arrive in order.
-const LINE_MS = 150;
+// How far the stage has to have risen before the lines drop — a fraction of the
+// screen, so they are down well before the page runs out of scroll.
+const REVEAL_AT = 0.55;
 
-/**
- * The contact lines as the last stage of a page.
- *
- * The header keeps the place it has always had, above. Below it the lines take
- * a screen of their own: the stage pins, and every step of scroll past that
- * point brings one more line down — and takes it back up again on the way back.
- * A flick cannot skip any: the count walks toward whatever the scroll asked for
- * one line at a time.
- */
 export function ContactStage() {
   const stageRef = useRef(null);
-  const [target, setTarget] = useState(0);
-  const [shown, setShown] = useState(0);
-  const lastMove = useRef(0);
+  const [revealed, setRevealed] = useState(false);
 
+  // The whole set comes down as one, the moment the stage has risen far enough
+  // into the screen — there is no line-by-line walk any more.
   useEffect(() => {
     const el = stageRef.current;
     if (!el) return;
@@ -179,17 +167,8 @@ export function ContactStage() {
 
     const measure = () => {
       frame = 0;
-      const { top, height } = el.getBoundingClientRect();
-      // Everything past the pinned screen is the runway, shared out between the
-      // lines that have to arrive after the first.
-      const runway = height - window.innerHeight;
-      const step = runway / Math.max(1, CONTACT_LINE_COUNT - 1);
-      if (step <= 0) return;
-      // A pixel of tolerance: the document height rounds to whole pixels, so the
-      // real bottom of the page can sit a fraction short of the full runway and
-      // the last line would never come down.
-      const reached = top > 0 ? 0 : Math.floor((-top + 1) / step) + 1;
-      setTarget(Math.max(0, Math.min(CONTACT_LINE_COUNT, reached)));
+      const { top } = el.getBoundingClientRect();
+      setRevealed(top <= window.innerHeight * REVEAL_AT);
     };
 
     const onScroll = () => {
@@ -206,22 +185,12 @@ export function ContactStage() {
     };
   }, []);
 
-  useEffect(() => {
-    if (shown === target) return;
-    const wait = Math.max(0, LINE_MS - (performance.now() - lastMove.current));
-    const timer = setTimeout(() => {
-      lastMove.current = performance.now();
-      setShown((n) => n + Math.sign(target - n));
-    }, wait);
-    return () => clearTimeout(timer);
-  }, [shown, target]);
-
   return (
     <>
       <ContactHeader />
-      <S.Stage ref={stageRef} $lines={CONTACT_LINE_COUNT}>
+      <S.Stage ref={stageRef}>
         <S.StagePin>
-          <ContactLines shown={shown} />
+          <ContactLines shown={revealed ? CONTACT_LINE_COUNT : 0} />
         </S.StagePin>
       </S.Stage>
     </>

@@ -209,20 +209,15 @@ export const LineLink = styled.a`
 `;
 
 /**
- * The contact lines as a stage of their own: it pins to the screen, and a step
- * of scroll past that point brings one more line down. One screen to hold it,
- * then a step for every line.
+ * The contact lines as a stage of their own: one screen, and the last thing on
+ * the page. There is no runway past it — scrolling to the bottom leaves the
+ * block sitting centred rather than carrying on past it.
  */
 export const Stage = styled.section`
   width: 100%;
   position: relative;
-  --contact-step: max(150px, 22vh);
-  /* A step per line after the first — the first is already down the moment the
-     stage pins. That makes the last line land exactly as the page runs out of
-     scroll, so the final thing you can reach is the block sitting centred,
-     rather than a stretch of nothing and then its top scrolling off. */
-  height: calc(100vh + ${({ $lines = 0 }) => Math.max(0, $lines - 1)} * var(--contact-step));
-  height: calc(100svh + ${({ $lines = 0 }) => Math.max(0, $lines - 1)} * var(--contact-step));
+  height: 100vh;
+  height: 100svh;
 `;
 
 export const StagePin = styled.div`
