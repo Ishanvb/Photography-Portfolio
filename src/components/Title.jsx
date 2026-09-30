@@ -30,7 +30,11 @@ function Title({ startAnimation = true, gallery = false, project = '' }) {
   // never gets it back.
   const takenOverRef = useRef(false);
   const projectRef = useRef(project);
-  const firstRunRef = useRef(true);
+  // The gallery state the title last showed. The change runs only when that
+  // actually flips — not on mount, and not when React's development mode runs
+  // the effect a second time (which used to roll the title straight to the
+  // name locally, so the opening type-out never showed there).
+  const shownGalleryRef = useRef(gallery);
 
   useEffect(() => {
     projectRef.current = project;
@@ -77,10 +81,8 @@ function Title({ startAnimation = true, gallery = false, project = '' }) {
 
   useEffect(() => {
     // The opening type-out owns the title until the gallery is first opened.
-    if (firstRunRef.current) {
-      firstRunRef.current = false;
-      return;
-    }
+    if (gallery === shownGalleryRef.current) return;
+    shownGalleryRef.current = gallery;
 
     const nameStart = gallery ? WORD.length : null;
     let target = gallery ? `${WORD}${projectRef.current}` : NAME;
