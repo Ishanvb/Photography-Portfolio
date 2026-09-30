@@ -1,26 +1,27 @@
 import { memo } from 'react';
-import { fallBackToOriginal, resized, resizedSrcSet } from '~/content/imageUrl';
+import { fallBackToOriginal, resized, resizedSrcSet, webpOf } from '~/content/imageUrl';
 
 /**
- * OptimizedImage - Renders images with WebP (ICC color preserved) and JPEG fallback
- * WebP created with -sharp_yuv and -metadata icc for accurate colors
+ * OptimizedImage - Renders a photo from its WebP (ICC colour preserved). No
+ * JPEG is ever downloaded: `src` is the photo's .jpg path, which only names it.
  *
  * `webpSrc` is passed explicitly for content coming from the manifest, where the
- * two URLs are stored side by side. When it is absent (legacy /photos/... paths
- * still referenced directly in the source) the original derive-by-extension
- * behaviour applies, so existing call sites keep working untouched.
+ * two URLs are stored side by side. When it is absent (/photos/... paths
+ * referenced directly in the source) the WebP beside the .jpg is used.
  *
  * `maxWidth` is for photos shown well below their full size: the browser picks
  * from resized copies up to that width (see content/imageUrl.js) instead of
  * downloading the 2400px original. Pass `sizes` with it so it can choose.
  */
 const OptimizedImage = memo(({ src, webpSrc, alt, className, loading = 'lazy', sizes, width, height, maxWidth, onError, ...props }) => {
+  const webp = webpOf({ jpg: src, webp: webpSrc });
+
   if (maxWidth) {
-    const fallBack = fallBackToOriginal(webpSrc ?? src);
+    const fallBack = fallBackToOriginal(webp);
     return (
       <img
-        src={resized(src, maxWidth)}
-        srcSet={resizedSrcSet(src, maxWidth)}
+        src={resized(webp, maxWidth)}
+        srcSet={resizedSrcSet(webp, maxWidth)}
         sizes={sizes}
         alt={alt}
         className={className}
@@ -37,24 +38,19 @@ const OptimizedImage = memo(({ src, webpSrc, alt, className, loading = 'lazy', s
     );
   }
 
-  const resolvedWebp = webpSrc ?? src?.replace(/\.(jpg|jpeg)$/i, '.webp');
-
   return (
-    <picture>
-      {resolvedWebp && <source srcSet={resolvedWebp} type="image/webp" />}
-      <img
-        src={src}
-        alt={alt}
-        className={className}
-        loading={loading}
-        decoding="async"
-        sizes={sizes}
-        width={width}
-        height={height}
-        onError={onError}
-        {...props}
-      />
-    </picture>
+    <img
+      src={webp}
+      alt={alt}
+      className={className}
+      loading={loading}
+      decoding="async"
+      sizes={sizes}
+      width={width}
+      height={height}
+      onError={onError}
+      {...props}
+    />
   );
 });
 

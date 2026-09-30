@@ -11,6 +11,14 @@
  * `vite dev` has no optimiser, so there the original is returned unchanged.
  */
 
+/**
+ * The file the site actually shows for a photo: always its WebP. The .jpg path
+ * stays the photo's identity (it is what the grid and the pop-up match on),
+ * but no JPEG is downloaded anywhere. Every photo has a WebP beside it.
+ */
+export const webpOf = (photo) =>
+  photo?.webp ?? photo?.jpg?.replace(/\.jpe?g$/i, '.webp') ?? null;
+
 // Must match `images.sizes` in vercel.json — any other width is rejected.
 export const WIDTHS = [96, 640, 1080];
 

@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { photoAspects, preloadPhotos } from '~/content/photos';
-import { fallBackToOriginal, resized, THUMB_WIDTH } from '~/content/imageUrl';
+import { fallBackToOriginal, resized, THUMB_WIDTH, webpOf } from '~/content/imageUrl';
 import * as S from './GalleryView.styled';
 
 /* =========================
@@ -144,7 +144,6 @@ function GalleryView({ active, photos, onCentreChange }) {
           aspect: photoAspects.get(photo.jpg) ?? 1.5,
           frame: null,
           frameImg: null,
-          frameSource: null,
           requested: false,
           // last written styles, so a frame only touches what actually changed
           wroteFrame: '',
@@ -160,7 +159,6 @@ function GalleryView({ active, photos, onCentreChange }) {
           item.wroteFrame = '';
         };
         item.setFrameImg = (el) => { item.frameImg = el; };
-        item.setFrameSource = (el) => { item.frameSource = el; };
         return item;
       }),
     [photos]
@@ -212,11 +210,10 @@ function GalleryView({ active, photos, onCentreChange }) {
    * square on the belt showing it at the same small copy — one download each.
    */
   const requestImage = useCallback((item) => {
-    const { jpg, webp } = item.photo;
-    if (webp && item.frameSource) item.frameSource.srcset = webp;
-    if (item.frameImg) item.frameImg.src = jpg;
+    const webp = webpOf(item.photo);
+    if (item.frameImg) item.frameImg.src = webp;
     // The belt's squares are at most 22px: a small copy, not the full photo.
-    const thumb = resized(jpg, THUMB_WIDTH);
+    const thumb = resized(webp, THUMB_WIDTH);
     slotsRef.current.forEach((slot) => {
       if (slot.item === item && slot.img) slot.img.src = thumb;
     });
@@ -618,16 +615,13 @@ function GalleryView({ active, photos, onCentreChange }) {
       <S.CentreBand ref={centreRef}>
         {items.map((item) => (
           <S.Frame key={item.photo.jpg} ref={item.setFrame}>
-            <picture>
-              <source ref={item.setFrameSource} type="image/webp" />
-              <S.Photo
-                ref={item.setFrameImg}
-                alt={item.photo.subtitle ?? item.photo.title ?? ''}
-                draggable={false}
-                decoding="async"
-                onLoad={onLoad(item)}
-              />
-            </picture>
+            <S.Photo
+              ref={item.setFrameImg}
+              alt={item.photo.subtitle ?? item.photo.title ?? ''}
+              draggable={false}
+              decoding="async"
+              onLoad={onLoad(item)}
+            />
           </S.Frame>
         ))}
       </S.CentreBand>
@@ -649,7 +643,7 @@ function GalleryView({ active, photos, onCentreChange }) {
               draggable={false}
               decoding="async"
               onLoad={onLoad(slot.item)}
-              onError={fallBackToOriginal(slot.item.photo.jpg)}
+              onError={fallBackToOriginal(webpOf(slot.item.photo))}
             />
           </S.Square>
         ))}

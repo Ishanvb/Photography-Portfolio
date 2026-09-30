@@ -62,12 +62,6 @@ export const Frame = styled.div`
   background-color: ${({ theme }) => theme.colors.textFaint};
   will-change: transform, opacity;
   backface-visibility: hidden;
-
-  & > picture {
-    display: block;
-    width: 100%;
-    height: 100%;
-  }
 `;
 
 export const Photo = styled.img`

@@ -10,6 +10,7 @@ import Reel from '~/components/Reel';
 import ScrollReel from '~/components/ScrollReel';
 import GalleryView from '~/components/GalleryView';
 import { collectPhotos, preloadPhotos } from '~/content/photos';
+import { webpOf } from '~/content/imageUrl';
 import LoadingScreen from '~/components/LoadingScreen';
 import * as S from './Home.styled';
 
@@ -51,7 +52,7 @@ function Home() {
     }
 
     // Preload exactly what the reel is about to render, in order.
-    const imagesToPreload = reel.map((item) => item.webp ?? item.jpg).filter(Boolean);
+    const imagesToPreload = reel.map(webpOf).filter(Boolean);
 
     const onImagesLoaded = () => {
       sessionStorage.setItem(hasLoadedKey, 'true');

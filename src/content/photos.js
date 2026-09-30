@@ -1,4 +1,4 @@
-import { resized, THUMB_WIDTH } from '~/content/imageUrl';
+import { resized, THUMB_WIDTH, webpOf } from '~/content/imageUrl';
 
 /**
  * A project's collection: every photo the Work page shows for it, in the order
@@ -101,9 +101,9 @@ export const preloadPhotos = (photos, onMeasured, lanes = 3) => {
     img.onerror = () => {
       // Optimiser unavailable: measure the original instead.
       img.onerror = next;
-      img.src = photo.webp ?? photo.jpg;
+      img.src = webpOf(photo);
     };
-    img.src = resized(photo.jpg, THUMB_WIDTH);
+    img.src = resized(webpOf(photo), THUMB_WIDTH);
   };
 
   for (let lane = 0; lane < lanes; lane += 1) next();

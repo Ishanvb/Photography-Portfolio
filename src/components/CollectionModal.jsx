@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { ThemeProvider, useTheme } from 'styled-components';
 import { collectionOf, photoAspects } from '~/content/photos';
+import { webpOf } from '~/content/imageUrl';
 import darkTheme, { lightTheme } from '~/styles/theme';
 import * as S from './CollectionModal.styled';
 
@@ -169,17 +170,14 @@ function CollectionModal({ project, jpg = null, photoIndex = 0, onClose }) {
                       allowFullScreen
                     />
                   ) : (
-                    <picture>
-                      {photo.webp && <source srcSet={photo.webp} type="image/webp" />}
-                      <S.Photo
-                        src={photo.jpg}
-                        alt={photo.alt || `${project.title} ${index + 1}`}
-                        draggable={false}
-                        decoding="async"
-                        loading={Math.abs(index - startIndex) > 1 ? 'lazy' : undefined}
-                        onLoad={onPhotoLoad(photo)}
-                      />
-                    </picture>
+                    <S.Photo
+                      src={webpOf(photo)}
+                      alt={photo.alt || `${project.title} ${index + 1}`}
+                      draggable={false}
+                      decoding="async"
+                      loading={Math.abs(index - startIndex) > 1 ? 'lazy' : undefined}
+                      onLoad={onPhotoLoad(photo)}
+                    />
                   )}
                 </S.Shot>
 
