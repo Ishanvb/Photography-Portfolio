@@ -48,8 +48,6 @@ export default function CustomCursor() {
     const aboutMeIcon = aboutMeIconRef.current;
     const iconContainer = iconContainerRef.current;
 
-    let x = 0;
-    let y = 0;
     let targetX = 0;
     let targetY = 0;
     let animationId;
@@ -288,10 +286,13 @@ export default function CustomCursor() {
         finalY = targetY + (magnetTarget.centerY - targetY) * adjustedStrength;
       }
 
-      x += (finalX - x) * 0.15;
-      y += (finalY - y) * 0.15;
-      cursor.style.left = `${x}px`;
-      cursor.style.top = `${y}px`;
+      // No easing anywhere: the cursor goes exactly where the pointer (or a
+      // magnet) puts it, and stops the moment the pointer stops — no drift,
+      // no momentum.
+      const x = finalX;
+      const y = finalY;
+      // Moved on the compositor: left/top would re-run layout every frame.
+      cursor.style.transform = `translate3d(${x}px, ${y}px, 0) translate(-50%, -50%)`;
       if (isAnimating) {
         animationId = requestAnimationFrame(animate);
       }

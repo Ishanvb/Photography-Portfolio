@@ -27,7 +27,9 @@ export const CursorWrapper = styled.div`
   align-items: center;
   justify-content: center;
 
+  /* Positioned from CustomCursor.jsx; this is only the resting value. */
   transform: translate(-50%, -50%);
+  will-change: transform;
   transition:
     width ${({ theme }) => theme.transitions.spring},
     height ${({ theme }) => theme.transitions.spring},
