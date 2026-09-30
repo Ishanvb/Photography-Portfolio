@@ -148,6 +148,7 @@ export const Caption = styled.span`
 export const Label = styled.span`
   display: flex;
   align-items: center;
+  gap: 4px; /* a little air between "collection" and the highlighted name */
   flex-shrink: 0;
 `;
 
@@ -157,12 +158,13 @@ export const LabelWord = styled.span`
   color: ${({ theme }) => theme.colors.text};
 `;
 
-// Set the way the home title is in gallery view: the block starts right where
-// "collection" ends and hugs the name's own letters, with no padding either side.
+// Set the way the home title is in gallery view, but with a sliver of padding
+// so the block sits just clear of the name's letters. Label's gap sets it off
+// from "collection".
 export const LabelValue = styled.span`
   ${highlighted}
-  padding-left: 0;
-  padding-right: 0;
+  padding-left: 3px;
+  padding-right: 3px;
 `;
 
 /** The photo's number, flush with the photo's right edge. */
