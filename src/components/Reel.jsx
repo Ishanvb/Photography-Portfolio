@@ -54,7 +54,6 @@ const Reel = forwardRef(function Reel(
   );
   const cycleCount = reel.length;
   const reelRef = useRef(null);
-  const animationRef = useRef(null);
   const scrollPosRef = useRef(0);
   const cycleLengthRef = useRef(0);
   const startTimeRef = useRef(null);
@@ -63,29 +62,55 @@ const Reel = forwardRef(function Reel(
   const normalSpeed = 1;
   const transitionDuration = 3000;
 
+  // Wheel scrolling: how long the strip takes to catch up with the wheel, and
+  // how long after the last wheel event auto-scroll picks up again.
+  const WHEEL_FOLLOW_MS = 90;
+  const WHEEL_RESUME_MS = 1500;
+
   /* =========================
-     Init cycle length
+     Cycle length
   ========================= */
 
-  useEffect(() => {
-    const reel = reelRef.current;
-    if (!reel) return;
-
-    requestAnimationFrame(() => {
-      const frames = reel.children;
+  /**
+   * The distance from the first photo to the first photo of the next copy of
+   * the list — read straight off the layout, so it is exact to the subpixel.
+   * Summing rounded widths plus an assumed gap drifted, and the strip visibly
+   * jumped each time it wrapped.
+   */
+  const measureCycle = () => {
+    const track = reelRef.current;
+    if (!track) return;
+    const frames = track.children;
+    if (cycleCount > 0 && frames.length > cycleCount) {
+      cycleLengthRef.current =
+        frames[cycleCount].getBoundingClientRect().left - frames[0].getBoundingClientRect().left;
+    } else {
       const gap = getResponsiveGap();
       let length = 0;
-
       for (let i = 0; i < cycleCount && i < frames.length; i++) {
         length += frames[i].offsetWidth + gap;
       }
-
       cycleLengthRef.current = length;
-      reel.scrollLeft = 0;
+    }
+  };
+
+  useEffect(() => {
+    const track = reelRef.current;
+    if (!track) return;
+
+    requestAnimationFrame(() => {
+      measureCycle();
+      track.scrollLeft = 0;
       scrollPosRef.current = 0;
     });
+
+    // The photos are sized off the viewport, so a resize changes the cycle.
+    const observer = new ResizeObserver(() => measureCycle());
+    observer.observe(track);
+    return () => observer.disconnect();
     // Keyed on the photos themselves, not just their count: fresher content can
     // arrive after the first render (see content/index.js) with different widths.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [reel, cycleCount]);
 
   /* =========================
@@ -98,109 +123,113 @@ const Reel = forwardRef(function Reel(
   }));
 
   /* =========================
-     Desktop Auto Scroll
+     Desktop: auto-scroll and wheel, one loop
   ========================= */
 
+  // Read from the loop, which is never torn down just because the reel was
+  // paused or a wheel scroll began — restarting it through React is what made
+  // each hand-over hitch.
+  const startRef = useRef(startAnimation);
+  const heldRef = useRef(isManualScrolling);
   useEffect(() => {
-    // Don't start until animation is triggered, and only on desktop
-    if (!startAnimation || isManualScrolling || isMobile()) return;
-
-    const reel = reelRef.current;
-    if (!reel) return;
-
-    // Only initialize once when animation first begins
-    if (startTimeRef.current === null) {
-      // Recalculate cycle length from actual DOM to ensure accuracy
-      // (the mount-time calculation may be stale if delayed by loading screen)
-      const frames = reel.children;
-      const gap = getResponsiveGap();
-      let length = 0;
-      for (let i = 0; i < cycleCount && i < frames.length; i++) {
-        length += frames[i].offsetWidth + gap;
-      }
-      cycleLengthRef.current = length;
-
-      // Reset to clean starting position
-      scrollPosRef.current = 0;
-      reel.scrollLeft = 0;
-
-      startTimeRef.current = Date.now();
-    }
-
-    const animate = () => {
-      const elapsed = Date.now() - startTimeRef.current;
-      const progress = Math.min(elapsed / transitionDuration, 1);
-      const eased = 1 - Math.pow(1 - progress, 2);
-
-      const speed =
-        elapsed < transitionDuration
-          ? initialSpeed - (initialSpeed - normalSpeed) * eased
-          : normalSpeed;
-
-      scrollPosRef.current += speed;
-
-      const cycle = cycleLengthRef.current;
-      if (scrollPosRef.current >= cycle) {
-        scrollPosRef.current = scrollPosRef.current % cycle;
-      }
-
-      reel.scrollLeft = scrollPosRef.current;
-
-      const cycleProgress = cycle > 0 ? (scrollPosRef.current % cycle) / cycle : 0;
-      onScrollUpdate?.(cycleProgress, cycle);
-
-      animationRef.current = requestAnimationFrame(animate);
-    };
-
-    animationRef.current = requestAnimationFrame(animate);
-
-    return () => cancelAnimationFrame(animationRef.current);
-  }, [startAnimation, isManualScrolling, onScrollUpdate, cycleCount]);
-
-  /* =========================
-     Desktop Wheel Scroll
-  ========================= */
+    startRef.current = startAnimation;
+  }, [startAnimation]);
+  useEffect(() => {
+    heldRef.current = isManualScrolling;
+  }, [isManualScrolling]);
 
   useEffect(() => {
     if (isMobile()) return;
+    const track = reelRef.current;
+    if (!track) return;
 
-    const reel = reelRef.current;
-    if (!reel) return;
+    let raf = 0;
+    let last = 0;
+    let wheeling = false;  // the wheel owns the strip until it has been still a while
+    let wheelTarget = 0;   // where the wheel has asked the strip to be
+    let resumeTimer = 0;
 
-    let wheelTimeout = null;
+    const frame = (now) => {
+      const dt = last ? Math.min(now - last, 50) : 16;
+      last = now;
+      const cycle = cycleLengthRef.current;
+      let pos = scrollPosRef.current;
+
+      if (wheeling) {
+        // Eased toward the wheel, frame-rate independent: trackpads deliver
+        // deltas in uneven bursts, and applying each one directly made the
+        // strip lurch between them.
+        pos += (wheelTarget - pos) * (1 - Math.exp(-dt / WHEEL_FOLLOW_MS));
+        if (Math.abs(wheelTarget - pos) < 0.1) pos = wheelTarget;
+      } else if (startRef.current && !heldRef.current) {
+        // Only initialize once when animation first begins
+        if (startTimeRef.current === null) {
+          measureCycle();
+          pos = 0;
+          startTimeRef.current = Date.now();
+        }
+        const elapsed = Date.now() - startTimeRef.current;
+        const progress = Math.min(elapsed / transitionDuration, 1);
+        const eased = 1 - Math.pow(1 - progress, 2);
+        pos +=
+          elapsed < transitionDuration
+            ? initialSpeed - (initialSpeed - normalSpeed) * eased
+            : normalSpeed;
+      }
+
+      // Wrap by whole cycles, moving the wheel's target with the strip so the
+      // two stay in the same frame of reference.
+      if (cycle > 0) {
+        if (pos >= cycle) {
+          pos -= cycle;
+          wheelTarget -= cycle;
+        } else if (pos < 0) {
+          pos += cycle;
+          wheelTarget += cycle;
+        }
+      }
+
+      if (pos !== scrollPosRef.current) {
+        scrollPosRef.current = pos;
+        track.scrollLeft = pos;
+        onScrollUpdate?.(cycle > 0 ? pos / cycle : 0, cycle);
+      }
+
+      raf = requestAnimationFrame(frame);
+    };
+    raf = requestAnimationFrame(frame);
 
     const handleWheel = (e) => {
       e.preventDefault();
+      // Summed, not whichever axis is non-zero: in a slightly diagonal swipe
+      // the small sideways delta used to win and the strip caught and stalled.
+      const unit = e.deltaMode === 1 ? 16 : e.deltaMode === 2 ? track.clientWidth : 1;
+      const delta = (e.deltaX + e.deltaY) * unit;
+      if (!delta) return;
 
-      // Update scroll position based on wheel delta
-      scrollPosRef.current += e.deltaX || e.deltaY;
-
-      const cycle = cycleLengthRef.current;
-      if (scrollPosRef.current < 0) {
-        scrollPosRef.current = cycle + (scrollPosRef.current % cycle);
-      } else if (scrollPosRef.current >= cycle) {
-        scrollPosRef.current = scrollPosRef.current % cycle;
+      if (!wheeling) {
+        wheeling = true;
+        wheelTarget = scrollPosRef.current;
+        onWheelScroll?.(true, null);
       }
+      wheelTarget += delta;
 
-      reel.scrollLeft = scrollPosRef.current;
-
-      const cycleProgress = cycle > 0 ? (scrollPosRef.current % cycle) / cycle : 0;
-      onWheelScroll?.(true, cycleProgress);
-
-      // Clear previous timeout and set new one to resume auto-scroll
-      clearTimeout(wheelTimeout);
-      wheelTimeout = setTimeout(() => {
+      clearTimeout(resumeTimer);
+      resumeTimer = setTimeout(() => {
+        wheeling = false;
         onWheelScroll?.(false, null);
-      }, 1500);
+      }, WHEEL_RESUME_MS);
     };
 
-    reel.addEventListener('wheel', handleWheel, { passive: false });
+    track.addEventListener('wheel', handleWheel, { passive: false });
 
     return () => {
-      reel.removeEventListener('wheel', handleWheel);
-      clearTimeout(wheelTimeout);
+      cancelAnimationFrame(raf);
+      clearTimeout(resumeTimer);
+      track.removeEventListener('wheel', handleWheel);
     };
-  }, [onWheelScroll]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [onScrollUpdate, onWheelScroll]);
 
   /* =========================
      Mobile Touch/Drag Only (No Auto Scroll)
