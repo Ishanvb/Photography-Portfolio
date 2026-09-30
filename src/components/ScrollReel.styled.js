@@ -18,6 +18,10 @@ export const Container = styled.div`
 
 export const Rectangle = styled.div`
   position: absolute;
+  /* Moved with a transform from the frame loop: setting left would force
+     layout on every frame, a transform does not. */
+  left: 0;
+  will-change: transform;
   width: 46px;
   height: 22px;
   background-color: ${({ theme }) => theme.colors.transparent};
@@ -66,7 +70,6 @@ export const Line = styled.div`
   height: 22px;
   border-left: 1px solid ${({ theme }) => theme.colors.text};
   z-index: 1;
-  transition: opacity 0.1s ease;
 
   ${({ theme }) => theme.media.sm} {
     height: 14px;

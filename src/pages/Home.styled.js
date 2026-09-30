@@ -42,6 +42,11 @@ export const ReelWrapper = styled.div`
   min-height: 0;
   padding: 0;
 
+  /* The gallery button rises out of here to sit level with the title. */
+  ${({ $galleryOpen }) => $galleryOpen && css`
+    overflow: visible;
+  `}
+
   ${({ theme }) => theme.media.sm} {
     gap: ${({ theme }) => theme.spacing(1)};
   }
@@ -84,6 +89,8 @@ export const SelectedWorksText = styled.button`
   text-align: left;
   background-color: ${({ theme }) => theme.colors.text};
   padding: 4px 10px;
+  transform: translateY(${({ $lift }) => -($lift ?? 0)}px);
+  transition: transform 0.5s cubic-bezier(0.77, 0, 0.175, 1);
 
   &::after {
     content: '';

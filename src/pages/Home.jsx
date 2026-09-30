@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect, useCallback, useMemo } from 'react';
+import { useState, useRef, useEffect, useLayoutEffect, useCallback, useMemo } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
 import { markLoaded, setContentReady } from '~/store/uiSlice';
 import useContent from '~/hooks/useContent';
@@ -35,6 +35,10 @@ function Home() {
   const reelRef = useRef(null);
   const scrollReelRef = useRef(null);
   const preloadedRef = useRef(false);
+  const galleryLabelRef = useRef(null);
+  // How far the gallery button rises in gallery view to sit level with the
+  // bottom of the title.
+  const [galleryLift, setGalleryLift] = useState(0);
 
   // Preload all key images on initial site load
   useEffect(() => {
@@ -99,6 +103,29 @@ function Home() {
     const timer = setTimeout(() => setGalleryMounted(false), GALLERY_EXIT_MS);
     return () => clearTimeout(timer);
   }, [galleryOpen, galleryMounted]);
+
+  // In gallery view the button lines its bottom up with the title's — the
+  // bottom of the highlight behind the collection name.
+  useLayoutEffect(() => {
+    if (!galleryOpen) {
+      setGalleryLift(0);
+      return;
+    }
+    const measure = () => {
+      const label = galleryLabelRef.current;
+      const line = document.querySelector('[data-title-anchor] h1');
+      if (!label || !line) return;
+      // The first letter cell: its box is the line's, not the font's.
+      const cell = line.querySelector(':scope > span > span') ?? line;
+      const fontSize = parseFloat(getComputedStyle(line).fontSize);
+      const titleBottom = cell.getBoundingClientRect().bottom - fontSize * 0.17;
+      // The wrapper is never moved, so it still marks the button's resting place.
+      setGalleryLift(Math.max(0, label.getBoundingClientRect().bottom - titleBottom));
+    };
+    measure();
+    window.addEventListener('resize', measure);
+    return () => window.removeEventListener('resize', measure);
+  }, [galleryOpen]);
 
   // Escape leaves the gallery.
   useEffect(() => {
@@ -166,9 +193,9 @@ function Home() {
             project={galleryProject}
           />
         </S.TitleLayer>
-        <S.ReelWrapper>
+        <S.ReelWrapper $galleryOpen={galleryOpen || galleryMounted}>
           {/* Gallery toggle - desktop only */}
-          <S.SelectedWorksLabel>
+          <S.SelectedWorksLabel ref={galleryLabelRef}>
             <S.SelectedWorksText
               type="button"
               onClick={toggleGallery}
@@ -176,6 +203,7 @@ function Home() {
               aria-label={galleryOpen ? 'Close the gallery' : 'Open the gallery'}
               $isVisible={instructionVisible}
               $active={galleryOpen}
+              $lift={galleryLift}
               data-cursor={galleryOpen ? '* VIEW ALL' : 'GALLERY VIEW'}
               data-cursor-variant="merge"
             >

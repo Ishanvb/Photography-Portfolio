@@ -59,16 +59,20 @@ const ScrollReel = forwardRef(function ScrollReel({ onManualScroll, isFixed = fa
   }, [containerWidth, lineSpacing]);
 
   // Imperative DOM update — bypasses React rendering entirely at 60fps
+  // Runs every frame from the reel's own loop, so it does as little as it can:
+  // the block moves on the compositor, and a line is only written when its
+  // opacity has actually changed enough to see.
+  const wroteRef = useRef([]);
   const updateVisuals = useCallback((position) => {
     rectPositionRef.current = position;
     if (rectangleRef.current) {
-      rectangleRef.current.style.left = `${position}px`;
-      rectangleRef.current.style.transition = 'none';
+      rectangleRef.current.style.transform = `translate3d(${position.toFixed(2)}px, 0, 0)`;
     }
     const container = linesContainerRef.current;
     if (!container) return;
     const lines = container.children;
     const rectWidth = rectangleWidth;
+    const wrote = wroteRef.current;
     for (let i = 0; i < lines.length && i < linePositions.length; i++) {
       const lineLeft = linePositions[i];
       const isUnderRectangle = lineLeft >= position && lineLeft < position + rectWidth;
@@ -84,7 +88,10 @@ const ScrollReel = forwardRef(function ScrollReel({ onManualScroll, isFixed = fa
         const fadeProgress = Math.min(distanceFromCenter / maxFadeDistance, 1);
         opacity = maxOpacity - (fadeProgress * (maxOpacity - minOpacity));
       }
-      lines[i].style.opacity = opacity;
+      const next = opacity.toFixed(3);
+      if (wrote[i] === next) continue;
+      wrote[i] = next;
+      lines[i].style.opacity = next;
     }
   }, [linePositions, rectangleWidth]);
 
@@ -99,6 +106,7 @@ const ScrollReel = forwardRef(function ScrollReel({ onManualScroll, isFixed = fa
 
   // Set initial line opacities on mount / dimension change
   useEffect(() => {
+    wroteRef.current = [];
     updateVisuals(rectPositionRef.current);
   }, [updateVisuals]);
 
