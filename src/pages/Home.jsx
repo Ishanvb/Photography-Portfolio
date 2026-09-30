@@ -5,6 +5,7 @@ import useContent from '~/hooks/useContent';
 import { setManualScrolling } from '~/store/scrollSlice';
 import Header from '~/components/Header';
 import Title from '~/components/Title';
+import { HIGHLIGHT_BOTTOM_EM } from '~/components/Title.styled';
 import Reel from '~/components/Reel';
 import ScrollReel from '~/components/ScrollReel';
 import GalleryView from '~/components/GalleryView';
@@ -118,7 +119,7 @@ function Home() {
       // The first letter cell: its box is the line's, not the font's.
       const cell = line.querySelector(':scope > span > span') ?? line;
       const fontSize = parseFloat(getComputedStyle(line).fontSize);
-      const titleBottom = cell.getBoundingClientRect().bottom - fontSize * 0.17;
+      const titleBottom = cell.getBoundingClientRect().bottom - fontSize * HIGHLIGHT_BOTTOM_EM;
       // The wrapper is never moved, so it still marks the button's resting place.
       setGalleryLift(Math.max(0, label.getBoundingClientRect().bottom - titleBottom));
     };

@@ -111,6 +111,16 @@ export const CellGlyph = styled.span`
 `;
 
 /**
+ * Where the highlight behind the collection name stands, in ems from the top
+ * and bottom of a letter's box (which is one line, 1.2em, tall). The top sits
+ * just above the capitals; the bottom reaches below the box so the tails of
+ * g, j, p, q and y sit inside the block rather than hanging out of it.
+ * Home.jsx lines the gallery button up with the same bottom edge.
+ */
+export const HIGHLIGHT_TOP_EM = 0.13;
+export const HIGHLIGHT_BOTTOM_EM = -0.14;
+
+/**
  * The collection's name. Two copies of the same letters sit on top of each
  * other — white underneath, black on the highlight above — and the top one is
  * clipped in from the left, so the highlight and the ink arrive together.
@@ -152,8 +162,8 @@ export const NameCover = styled.span`
     position: absolute;
     left: 0;
     right: 0;
-    top: 0.13em;
-    bottom: 0.17em;
+    top: ${HIGHLIGHT_TOP_EM}em;
+    bottom: ${HIGHLIGHT_BOTTOM_EM}em;
     background-color: ${({ theme }) => theme.colors.text};
   }
 `;

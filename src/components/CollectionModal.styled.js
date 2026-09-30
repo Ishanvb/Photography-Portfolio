@@ -157,8 +157,12 @@ export const LabelWord = styled.span`
   color: ${({ theme }) => theme.colors.text};
 `;
 
+// Set the way the home title is in gallery view: the block starts right where
+// "collection" ends and hugs the name's own letters, with no padding either side.
 export const LabelValue = styled.span`
   ${highlighted}
+  padding-left: 0;
+  padding-right: 0;
 `;
 
 /** The photo's number, flush with the photo's right edge. */
