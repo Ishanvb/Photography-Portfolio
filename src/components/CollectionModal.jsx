@@ -1,5 +1,7 @@
 import { useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react';
+import { ThemeProvider, useTheme } from 'styled-components';
 import { collectionOf, photoAspects } from '~/content/photos';
+import darkTheme, { lightTheme } from '~/styles/theme';
 import * as S from './CollectionModal.styled';
 
 // How long the panel takes to fade out, so it is still on screen while it does.
@@ -32,6 +34,9 @@ const aspectOf = (photo) => {
  */
 function CollectionModal({ project, jpg = null, photoIndex = 0, onClose }) {
   const [shown, setShown] = useState(false);
+  // The panel wears the page's opposite theme: off-white with near-black text
+  // at night, and the other way round by day.
+  const panelTheme = useTheme().colorScheme === 'light' ? darkTheme : lightTheme;
   const scrollRef = useRef(null);
   const headRef = useRef(null);
   const blocksRef = useRef([]);
@@ -127,64 +132,66 @@ function CollectionModal({ project, jpg = null, photoIndex = 0, onClose }) {
 
   return (
     <S.Backdrop $shown={shown} onClick={onBackdropClick}>
-      <S.Panel
-        $shown={shown}
-        role="dialog"
-        aria-modal="true"
-        aria-label={`${project.title} collection`}
-      >
-        {/* Focusable so the arrow keys scroll the collection — the gallery
-            behind it has given up the keyboard for as long as this is open. */}
-        <S.Scroll ref={scrollRef} tabIndex={0}>
-          {/* Every block is the same width, so the head row lines up with the
-              photos the same way each caption row does. */}
-          <S.Block ref={headRef}>
-            <S.Row>
-              <S.Label>
-                <S.LabelWord>collection</S.LabelWord>
-                <S.LabelValue>{project.title}</S.LabelValue>
-              </S.Label>
-              <S.DateText>{project.dateLabel?.trim() || 'present'}</S.DateText>
-            </S.Row>
-          </S.Block>
-
-          {photos.map((photo, index) => (
-            <S.Block
-              key={photo.jpg ?? photo.youtubeId ?? index}
-              ref={(el) => { blocksRef.current[index] = el; }}
-            >
-              <S.Shot data-shot style={{ '--ar': String(aspectOf(photo)) }}>
-                {photo.youtubeId ? (
-                  <S.Video
-                    src={`https://www.youtube-nocookie.com/embed/${photo.youtubeId}`}
-                    title={photo.alt || `${project.title} ${index + 1}`}
-                    loading="lazy"
-                    allow="accelerometer; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                    allowFullScreen
-                  />
-                ) : (
-                  <picture>
-                    {photo.webp && <source srcSet={photo.webp} type="image/webp" />}
-                    <S.Photo
-                      src={photo.jpg}
-                      alt={photo.alt || `${project.title} ${index + 1}`}
-                      draggable={false}
-                      decoding="async"
-                      loading={Math.abs(index - startIndex) > 1 ? 'lazy' : undefined}
-                      onLoad={onPhotoLoad(photo)}
-                    />
-                  </picture>
-                )}
-              </S.Shot>
-
+      <ThemeProvider theme={panelTheme}>
+        <S.Panel
+          $shown={shown}
+          role="dialog"
+          aria-modal="true"
+          aria-label={`${project.title} collection`}
+        >
+          {/* Focusable so the arrow keys scroll the collection — the gallery
+              behind it has given up the keyboard for as long as this is open. */}
+          <S.Scroll ref={scrollRef} tabIndex={0}>
+            {/* Every block is the same width, so the head row lines up with the
+                photos the same way each caption row does. */}
+            <S.Block ref={headRef}>
               <S.Row>
-                <S.Caption>{photo.caption?.trim() || photo.alt || ''}</S.Caption>
-                <S.Number>{String(index + 1).padStart(2, '0')}</S.Number>
+                <S.Label>
+                  <S.LabelWord>collection</S.LabelWord>
+                  <S.LabelValue>{project.title}</S.LabelValue>
+                </S.Label>
+                <S.DateText>{project.dateLabel?.trim() || 'present'}</S.DateText>
               </S.Row>
             </S.Block>
-          ))}
-        </S.Scroll>
-      </S.Panel>
+
+            {photos.map((photo, index) => (
+              <S.Block
+                key={photo.jpg ?? photo.youtubeId ?? index}
+                ref={(el) => { blocksRef.current[index] = el; }}
+              >
+                <S.Shot data-shot style={{ '--ar': String(aspectOf(photo)) }}>
+                  {photo.youtubeId ? (
+                    <S.Video
+                      src={`https://www.youtube-nocookie.com/embed/${photo.youtubeId}`}
+                      title={photo.alt || `${project.title} ${index + 1}`}
+                      loading="lazy"
+                      allow="accelerometer; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                      allowFullScreen
+                    />
+                  ) : (
+                    <picture>
+                      {photo.webp && <source srcSet={photo.webp} type="image/webp" />}
+                      <S.Photo
+                        src={photo.jpg}
+                        alt={photo.alt || `${project.title} ${index + 1}`}
+                        draggable={false}
+                        decoding="async"
+                        loading={Math.abs(index - startIndex) > 1 ? 'lazy' : undefined}
+                        onLoad={onPhotoLoad(photo)}
+                      />
+                    </picture>
+                  )}
+                </S.Shot>
+
+                <S.Row>
+                  <S.Caption>{photo.caption?.trim() || photo.alt || ''}</S.Caption>
+                  <S.Number>{String(index + 1).padStart(2, '0')}</S.Number>
+                </S.Row>
+              </S.Block>
+            ))}
+          </S.Scroll>
+        </S.Panel>
+      </ThemeProvider>
     </S.Backdrop>
   );
 }

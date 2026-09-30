@@ -42,7 +42,11 @@ export const Panel = styled.div`
   height: 92vh;
   border-radius: 2px;
   overflow: hidden;
-  background-color: ${({ theme }) => theme.colors.black};
+  /* The panel wears the page's opposite theme (see CollectionModal.jsx), and
+     lets a little of the page through: its off-white on the dark page a touch
+     more than its near-black on the light page. */
+  background-color: ${({ theme }) =>
+    `color-mix(in srgb, ${theme.colors.background} ${theme.colorScheme === 'light' ? 80 : 90}%, transparent)`};
   transform: ${({ $shown }) => ($shown ? 'scale(1)' : 'scale(0.985)')};
   opacity: ${({ $shown }) => ($shown ? 1 : 0)};
   transition:
