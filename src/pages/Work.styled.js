@@ -325,29 +325,51 @@ export const Content = styled.div`
 `;
 
 /* ========== Photo Grid ==========
-   An imaginary four column grid: one column is exactly the width of one
-   landscape photo, and a portrait photo keeps that same width and simply runs
-   taller. Every spot is either a framed photo, an empty black space, or an
-   empty black space with placeholder text in the middle of it. Horizontal and
-   vertical spacing are the same value, so the grid breathes evenly.
+   Four equal columns (two on a tablet, one on a phone), each its own stack —
+   no rows, so a portrait photo just runs taller and the spot below it starts
+   one gap further down. Work.jsx deals the spots into the columns. Horizontal
+   and vertical spacing are the same value, so the grid breathes evenly.
 */
 
-export const GalleryGrid = styled.div`
-  display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  align-items: start;
+const gridGap = css`
   gap: ${({ theme }) => theme.spacing(5)};
-  width: 100%;
 
   ${({ theme }) => theme.media.sm} {
-    grid-template-columns: repeat(2, 1fr);
     gap: ${({ theme }) => theme.spacing(3)};
   }
 
   ${({ theme }) => theme.media.xs} {
-    grid-template-columns: 1fr;
     gap: ${({ theme }) => theme.spacing(2)};
   }
+`;
+
+// The thin, faint rule over the grid.
+const faintLine = ({ theme }) =>
+  `1px solid color-mix(in srgb, ${theme.colors.text} 15%, transparent)`;
+
+export const GalleryGrid = styled.div`
+  display: flex;
+  align-items: flex-start;
+  width: 100%;
+  border-top: ${faintLine};
+  padding-top: ${({ theme }) => theme.spacing(5)};
+  ${gridGap}
+
+  ${({ theme }) => theme.media.sm} {
+    padding-top: ${({ theme }) => theme.spacing(3)};
+  }
+
+  ${({ theme }) => theme.media.xs} {
+    padding-top: ${({ theme }) => theme.spacing(2)};
+  }
+`;
+
+export const GalleryColumn = styled.div`
+  display: flex;
+  flex-direction: column;
+  flex: 1 1 0;
+  min-width: 0;
+  ${gridGap}
 `;
 
 // A blank spot has no photo to size it, so it takes the shape of a horizontal
@@ -363,6 +385,82 @@ const spot = css`
 
 // How far the frame stands off the photo — the ring that fills in.
 const FRAME_GAP = 10;
+
+// The slightly rounded corners of the photo and its frame.
+const PHOTO_RADIUS = '2px';
+
+// Film grain, as an SVG noise tile. Used both as a texture over the photo and
+// as a mask that eats into the stamp's edge, so the edge prints unevenly.
+const noise = (alpha) =>
+  `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 0.5  0 0 0 0 0.5  0 0 0 0 0.5  0 0 0 ${alpha}'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E")`;
+
+/**
+ * The black the photo holds its place with until the file lands. Its own
+ * element rather than the frame's background, so it sits above the stamp card
+ * behind the photo instead of under it.
+ */
+export const Backing = styled.span`
+  position: absolute;
+  inset: 0;
+  border-radius: ${PHOTO_RADIUS};
+  background-color: ${({ theme }) => theme.colors.black};
+`;
+
+/**
+ * A soft, low glow of the frame's light bleeding out behind it, like ink
+ * leaking into paper. Laid down at the frame's angle, a little below it.
+ */
+export const InkLeak = styled.span`
+  position: absolute;
+  inset: -5px;
+  border-radius: ${PHOTO_RADIUS};
+  z-index: -2;
+  background-color: ${({ theme }) => theme.colors.text};
+  opacity: 0.1;
+  filter: blur(14px);
+  transform: var(--lie) translateY(6px);
+  pointer-events: none;
+`;
+
+/**
+ * The same soft leak for the photo itself: straight, like the photo, and cast
+ * onto the frame beneath it rather than behind it.
+ */
+export const PhotoLeak = styled(InkLeak)`
+  inset: 0;
+  border-radius: ${PHOTO_RADIUS};
+  z-index: -1;
+  transform: translateY(6px);
+`;
+
+/** Grain over the photo. */
+export const Grain = styled.span`
+  position: absolute;
+  inset: 0;
+  border-radius: ${PHOTO_RADIUS};
+  pointer-events: none;
+  background-image: ${noise('1.8 -0.4')};
+  opacity: 0.03;
+  mix-blend-mode: overlay;
+`;
+
+/**
+ * The stamp's frame: a solid light card behind the photo, standing just proud
+ * of it, laid down at its own slight angle (`--lie`, set inline from Work.jsx)
+ * so it peeks out unevenly while the photo stays straight. A little grain is
+ * eaten out of it so it reads as ink rather than a flat fill.
+ */
+export const StampEdge = styled.span`
+  position: absolute;
+  inset: -5px;
+  border-radius: ${PHOTO_RADIUS};
+  z-index: -1;
+  background-color: color-mix(in srgb, ${({ theme }) => theme.colors.text} 80%, transparent);
+  transform: var(--lie);
+  pointer-events: none;
+  -webkit-mask-image: ${noise('0.35 0.8')};
+  mask-image: ${noise('0.35 0.8')};
+`;
 
 export const PhotoSpot = styled.figure`
   display: flex;
@@ -413,15 +511,15 @@ export const PhotoFrame = styled.div`
     position: relative;
   }
 
+  /* The photo's real shape is set inline from Work.jsx, so its box is already
+     the right size before the file lands. */
   & img {
-    aspect-ratio: 1;
-    border-radius: 0;
+    border-radius: ${PHOTO_RADIUS};
     opacity: 0;
     transition: opacity 0.5s ease-out;
   }
 
   & img[data-loaded='true'] {
-    aspect-ratio: auto;
     opacity: 1;
   }
 
@@ -465,27 +563,15 @@ export const PhotoFrame = styled.div`
     outline: none;
   }
 
+  /* Its own stacking context, so the stamp frame can sit behind the photo
+     without dropping behind the page. */
+  isolation: isolate;
+
   ${({ theme }) => theme.media.touch} {
     &::before,
     &::after {
       display: none;
     }
-  }
-`;
-
-// The number sits under the bottom left corner of the photo it belongs to.
-export const PhotoCaption = styled.figcaption`
-  font-family: ${({ theme }) => theme.typography.fontFamily.primary};
-  font-weight: ${({ theme }) => theme.typography.fontWeight.regular};
-  font-size: ${({ theme }) => theme.typography.fontSize.sm};
-  letter-spacing: ${({ theme }) => theme.typography.letterSpacing.wide};
-  color: ${({ theme }) => theme.colors.white};
-  margin-top: 8px;
-  text-align: left;
-
-  ${({ theme }) => theme.media.xs} {
-    font-size: ${({ theme }) => theme.typography.fontSize.xs};
-    margin-top: 6px;
   }
 `;
 
@@ -509,6 +595,20 @@ export const Circles = styled.div`
   height: 52px;
   transform: translate(-50%, -50%);
   pointer-events: none;
+
+  /* A faint disc round the cluster — big enough to hold the lone circle too. */
+  &::before {
+    content: '';
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    width: 180%;
+    height: 180%;
+    border-radius: 50%;
+    background-color: ${({ theme }) => theme.colors.text};
+    opacity: 0.05;
+    transform: translate(-50%, -50%);
+  }
 
   ${({ theme }) => theme.media.sm} {
     width: 36px;

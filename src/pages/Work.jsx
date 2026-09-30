@@ -6,7 +6,7 @@ import Header from '~/components/Header';
 import { ContactStage } from '~/components/Footer';
 import OptimizedImage from '~/components/OptimizedImage';
 import CollectionModal from '~/components/CollectionModal';
-import { collectionOf } from '~/content/photos';
+import { collectionOf, photoAspects, preloadPhotos } from '~/content/photos';
 import * as S from '~/pages/Work.styled';
 
 /**
@@ -16,10 +16,11 @@ import * as S from '~/pages/Work.styled';
  * one landscape photo, and a vertical photo keeps that same width and simply
  * runs taller — every photo shows its own shape, nothing is cropped.
  *
- * The grid is laid out in rows. A row is as tall as the tallest thing in it, so
- * a vertical photo sets the bottom of its row, and the next row starts one gap
- * below that. The gap is the same value everywhere: between rows, between
- * columns, and down each side of the page.
+ * The columns are not tied together in rows: each one is a stack, and every
+ * spot drops into whichever column is shortest so far, one gap below the spot
+ * above it. So a vertical photo never leaves a hole beside it — the columns
+ * just run down at their own pace. The gap is the same value everywhere:
+ * between spots, between columns, and down each side of the page.
  *
  * Every photo in the site gets a spot, in order. Blank spots are dealt out
  * between them at random — never two in a row, and always outnumbered by the
@@ -61,12 +62,48 @@ const LAYOUTS = [
   [[0.33, 0.21], [0.67, 0.21], [0.16, 0.5], [0.84, 0.5], [0.33, 0.79], [0.67, 0.79]]
 ];
 
+// Columns across, by screen width — matches the breakpoints in Work.styled.js.
+const columnsFor = (width) => (width <= 480 ? 1 : width <= 768 ? 2 : 4);
+
+const EMPTY_ASPECT = 3 / 2;   // a blank spot is the shape of a horizontal photo
+const UNKNOWN_ASPECT = 3 / 2; // a photo whose shape has not arrived yet
+// The gap below a spot, as a share of a column's width — close enough to
+// keep the columns' ends level.
+const SPOT_EXTRA = 0.1;
+// How long to hold the grid back for photo shapes before laying it out anyway.
+const SHAPE_WAIT = 1500;
+
+/**
+ * Deal the spots into columns: each one goes to whichever column is shortest
+ * so far, so the columns stay level without being tied into rows. Heights are
+ * in units of a column's width, from each photo's real shape.
+ */
+const packColumns = (spots, count, aspectOf) => {
+  const columns = Array.from({ length: count }, () => ({ height: 0, spots: [] }));
+  spots.forEach((spot, index) => {
+    const aspect = spot.kind === 'photo' ? aspectOf(spot.photo.jpg) : EMPTY_ASPECT;
+    const shortest = columns.reduce((best, column) => (column.height < best.height - 1e-6 ? column : best));
+    shortest.spots.push({ spot, index, aspect });
+    shortest.height += 1 / aspect + SPOT_EXTRA;
+  });
+  return columns.map((column) => column.spots);
+};
+
 /** Small seeded PRNG, so a page's layout stays put until it is reloaded. */
 const randomFrom = (seed) => () => {
   seed = (seed + 0x6d2b79f5) | 0;
   let t = Math.imul(seed ^ (seed >>> 15), 1 | seed);
   t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t;
   return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+};
+
+/**
+ * How a photo's frame lies behind it, like a stamp put down by hand: each sits
+ * a touch off square, never far. The photo itself stays straight.
+ */
+const stampLie = (rand) => {
+  const spread = (max) => (rand() * 2 - 1) * max;
+  return { tilt: spread(0.7), dx: spread(2), dy: spread(2) };
 };
 
 /** Lay every photo out, dealing blank spots in between at random. */
@@ -79,7 +116,7 @@ const buildGrid = (photos, seed) => {
   let since = 0;
 
   photos.forEach((photo, i) => {
-    spots.push({ kind: 'photo', photo, number: i + 1 });
+    spots.push({ kind: 'photo', photo, lie: stampLie(rand) });
     since += 1;
 
     // Never trail the grid with a blank spot.
@@ -135,6 +172,42 @@ function Work() {
 
   const grid = useMemo(() => buildGrid(photos, layoutSeed), [photos, layoutSeed]);
 
+  const [columnCount, setColumnCount] = useState(() =>
+    columnsFor(typeof window === 'undefined' ? 1440 : window.innerWidth)
+  );
+  useEffect(() => {
+    const onResize = () => setColumnCount(columnsFor(window.innerWidth));
+    window.addEventListener('resize', onResize);
+    return () => window.removeEventListener('resize', onResize);
+  }, []);
+
+  // Which column a spot lands in depends on the heights above it, so the
+  // photos' shapes are learned (from their small copies — usually already done
+  // by the home page) before the grid is dealt. Bumped as each one arrives.
+  const [shapesVersion, setShapesVersion] = useState(0);
+  const [shapesWaited, setShapesWaited] = useState(false);
+  const shapesKnown = photos.every((photo) => photoAspects.has(photo.jpg));
+
+  useEffect(() => {
+    let live = true;
+    preloadPhotos(photos, () => { if (live) setShapesVersion((v) => v + 1); });
+    const timer = setTimeout(() => setShapesWaited(true), SHAPE_WAIT);
+    return () => {
+      live = false;
+      clearTimeout(timer);
+    };
+  }, [photos]);
+
+  const aspectOf = useCallback((jpg) => photoAspects.get(jpg) ?? UNKNOWN_ASPECT, []);
+  const layoutReady = shapesKnown || shapesWaited;
+
+  const columns = useMemo(
+    () => (layoutReady ? packColumns(grid, columnCount, aspectOf) : []),
+    // shapesVersion: re-deal as late shapes arrive.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [grid, columnCount, aspectOf, layoutReady, shapesVersion]
+  );
+
   // A photo already in cache can finish before React has attached its onLoad,
   // and would then sit at zero opacity behind its placeholder for good. Mark
   // anything that arrived early, once, straight after the grid is laid out.
@@ -142,7 +215,7 @@ function Work() {
     document.querySelectorAll('figure img').forEach((img) => {
       if (img.complete && img.naturalWidth) img.dataset.loaded = 'true';
     });
-  }, [grid]);
+  }, [columns]);
 
   const projectsBySlug = useMemo(
     () => new Map(projects.map((project) => [project.slug, project])),
@@ -224,7 +297,7 @@ function Work() {
     typeText();
   }, []); // Run only once on mount
 
-  const renderSpot = (spot, index) => {
+  const renderSpot = ({ spot, index, aspect }) => {
     if (spot.kind === 'photo' && spot.photo) {
       return (
         <S.PhotoSpot key={index} $index={index}>
@@ -235,17 +308,25 @@ function Work() {
             aria-label={`Open the ${projectsBySlug.get(spot.photo.slug)?.title ?? ''} collection`}
             data-cursor="open"
             data-cursor-variant="merge"
+            style={{
+              '--lie': `translate(${spot.lie.dx}px, ${spot.lie.dy}px) rotate(${spot.lie.tilt}deg)`,
+            }}
           >
+            <S.InkLeak aria-hidden="true" />
+            <S.Backing aria-hidden="true" />
             <OptimizedImage
               src={spot.photo.jpg}
               webpSrc={spot.photo.webp}
               alt={spot.photo.alt}
               maxWidth={1080}
               sizes="(max-width: 480px) 100vw, (max-width: 768px) 50vw, 25vw"
+              style={{ aspectRatio: `auto ${aspect}` }}
               onLoad={(event) => { event.currentTarget.dataset.loaded = 'true'; }}
             />
+            <S.Grain aria-hidden="true" />
+            <S.StampEdge aria-hidden="true" />
+            <S.PhotoLeak aria-hidden="true" />
           </S.PhotoFrame>
-          <S.PhotoCaption>{String(spot.number).padStart(2, '0')}</S.PhotoCaption>
         </S.PhotoSpot>
       );
     }
@@ -317,7 +398,11 @@ function Work() {
       </S.HeaderRow>
 
       <S.Content>
-        <S.GalleryGrid>{grid.map(renderSpot)}</S.GalleryGrid>
+        <S.GalleryGrid>
+          {columns.map((column, i) => (
+            <S.GalleryColumn key={i}>{column.map(renderSpot)}</S.GalleryColumn>
+          ))}
+        </S.GalleryGrid>
       </S.Content>
       <ContactStage />
       {openPhoto && (
