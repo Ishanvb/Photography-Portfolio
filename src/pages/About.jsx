@@ -60,7 +60,6 @@ function About() {
     useMemo(() => stepsFor(bioItems, workItems), [bioItems, workItems]);
 
   const [showContent, setShowContent] = useState(false);
-  const [wordStyles, setWordStyles] = useState({});
   const [photosVisible, setPhotosVisible] = useState(false);
   // Where the scroll says the section is, and where it is actually showing.
   // The second follows the first one step at a time (see below).
@@ -319,9 +318,15 @@ function About() {
     if (shift) window.scrollTo({ top: window.scrollY + shift, behavior: 'instant' });
   }, [infoDone]);
 
-  // Blur reveal effect on open - line by line from top to bottom
+  // Blur reveal effect on open - line by line from top to bottom.
+  //
+  // Written straight onto the word spans, not through React state: a state
+  // update per frame re-rendered the whole page ~60 times over the reveal.
+  // The spans carry no style prop, so a re-render never undoes these writes.
   useEffect(() => {
     if (!showContent) return;
+
+    let animationFrame = 0;
 
     // Wait for DOM to be ready
     const timer = setTimeout(() => {
@@ -336,11 +341,16 @@ function About() {
       let minTop = Infinity;
       let maxTop = 0;
 
-      words.forEach((word, index) => {
+      words.forEach((word) => {
         const wordTop = word.offsetTop - containerTop;
         minTop = Math.min(minTop, wordTop);
         maxTop = Math.max(maxTop, wordTop);
-        wordPositions.push({ index, top: wordTop });
+        wordPositions.push({
+          el: word,
+          top: wordTop,
+          settledOpacity: word.dataset.highlight === 'true' ? '1' : '0.6',
+          wrote: ''
+        });
       });
 
       const totalHeight = maxTop - minTop || 1;
@@ -348,7 +358,6 @@ function About() {
       const animationDuration = 800; // Total animation time in ms
 
       let startTime = null;
-      let animationFrame;
 
       const animate = (timestamp) => {
         if (!startTime) startTime = timestamp;
@@ -356,88 +365,65 @@ function About() {
         // Add extra progress to ensure all text is fully revealed at the end
         const progress = Math.min(1 + gradientHeight, elapsed / animationDuration);
 
-        const newWordStyles = {};
-
-        wordPositions.forEach(({ index, top }) => {
+        wordPositions.forEach((word) => {
           // Normalize position from 0 to 1
-          const normalizedPosition = (top - minTop) / totalHeight;
+          const normalizedPosition = (word.top - minTop) / totalHeight;
 
           // Calculate distance from reveal line
           const distance = normalizedPosition - progress;
 
-          let blurAmount;
-          let state;
-
+          let filter;
+          let opacity;
           if (distance <= 0) {
-            // Fully revealed
-            blurAmount = 0;
-            state = 'revealed';
+            // Fully revealed, settled to its final opacity
+            filter = 'none';
+            opacity = word.settledOpacity;
           } else if (distance < gradientHeight) {
-            // In gradient zone - smooth transition
-            const gradientProgress = distance / gradientHeight;
-            blurAmount = gradientProgress * 5;
-            state = 'revealing';
+            // In gradient zone - smooth transition, full opacity while revealing
+            filter = `blur(${((distance / gradientHeight) * 5).toFixed(2)}px)`;
+            opacity = '1';
           } else {
-            // Not yet revealed
-            blurAmount = 5;
-            state = 'hidden';
+            return; // Not yet revealed: still the stylesheet's hidden state
           }
 
-          newWordStyles[index] = { blur: blurAmount, state };
+          const next = `${filter}|${opacity}`;
+          if (next === word.wrote) return;
+          word.wrote = next;
+          word.el.style.filter = filter;
+          word.el.style.opacity = opacity;
         });
-
-        setWordStyles(newWordStyles);
 
         if (progress < 1 + gradientHeight) {
           animationFrame = requestAnimationFrame(animate);
+        } else {
+          animationFrame = 0;
         }
       };
 
       animationFrame = requestAnimationFrame(animate);
-
-      return () => {
-        if (animationFrame) cancelAnimationFrame(animationFrame);
-      };
     }, 400); // Initial delay for content fade-in
 
-    return () => clearTimeout(timer);
+    return () => {
+      clearTimeout(timer);
+      if (animationFrame) cancelAnimationFrame(animationFrame);
+    };
   }, [showContent]);
 
   const firstSentence = about?.intro ?? '';
   const restOfText = about?.body ?? '';
 
-  // Split text into words for blur reveal
-  const renderBlurText = (text, isHighlight, startIndex) => {
-    const words = text.split(' ');
-    return words.map((word, i) => {
-      const globalIndex = startIndex + i;
-      const style = wordStyles[globalIndex] ?? { blur: 5, state: 'hidden' };
-
-      // Determine opacity based on state
-      const originalOpacity = isHighlight ? 1 : 0.6;
-      let opacity;
-      if (style.state === 'hidden') {
-        opacity = 0; // Not visible yet
-      } else if (style.state === 'revealing') {
-        opacity = 1; // Full opacity while revealing
-      } else {
-        opacity = originalOpacity; // Settled to final opacity
-      }
-
-      return (
-        <S.BlurWord
-          key={globalIndex}
-          $isHighlight={isHighlight}
-          style={{
-            filter: `blur(${style.blur}px)`,
-            opacity: opacity
-          }}
-        >
-          {word}{' '}
-        </S.BlurWord>
-      );
-    });
-  };
+  // Split text into words for blur reveal. Each starts hidden (see BlurWord);
+  // the effect above reveals them.
+  const renderBlurText = (text, isHighlight, startIndex) =>
+    text.split(' ').map((word, i) => (
+      <S.BlurWord
+        key={startIndex + i}
+        $isHighlight={isHighlight}
+        data-highlight={isHighlight}
+      >
+        {word}{' '}
+      </S.BlurWord>
+    ));
 
   const firstSentenceWords = firstSentence.split(' ').length;
 
@@ -469,13 +455,13 @@ function About() {
         {/* Photos frame */}
         <S.PhotosFrame $isVisible={photosVisible} ref={photosRef}>
           <S.PhotoLarge data-cursor="School" data-cursor-icon="school">
-            <OptimizedImage src="/photos/About/About.jpg" alt="School" />
+            <OptimizedImage src="/photos/About/About.jpg" alt="School" maxWidth={1080} sizes="(max-width: 768px) 100vw, 35vw" />
           </S.PhotoLarge>
           <S.PhotoMedium data-cursor="Fashion" data-cursor-icon="fashion">
-            <OptimizedImage src="/photos/About/About1.jpg" alt="Fashion" />
+            <OptimizedImage src="/photos/About/About1.jpg" alt="Fashion" maxWidth={1080} sizes="(max-width: 768px) 50vw, 30vw" />
           </S.PhotoMedium>
           <S.PhotoSmall data-cursor="Me!" data-cursor-icon="me">
-            <img src="/photos/About/AboutMe.jpg" alt="Me" />
+            <OptimizedImage src="/photos/About/AboutMe.jpg" alt="Me" maxWidth={1080} sizes="(max-width: 768px) 50vw, 25vw" />
           </S.PhotoSmall>
         </S.PhotosFrame>
 

@@ -1,7 +1,26 @@
 {
+  "images": {
+    "sizes": [
+      96,
+      640,
+      1080
+    ],
+    "formats": [
+      "image/avif",
+      "image/webp"
+    ],
+    "minimumCacheTTL": 2678400,
+    "remotePatterns": [
+      {
+        "protocol": "https",
+        "hostname": "*.supabase.co",
+        "pathname": "/storage/v1/object/public/**"
+      }
+    ]
+  },
   "rewrites": [
     {
-      "source": "/((?!api|admin-assets|photos|assets|favicon|apple-touch|robots|sitemap).*)",
+      "source": "/((?!api|_vercel|admin-assets|photos|assets|favicon|apple-touch|robots|sitemap).*)",
       "destination": "/index.html"
     }
   ],

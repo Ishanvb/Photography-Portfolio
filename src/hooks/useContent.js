@@ -1,7 +1,11 @@
-import { use } from 'react';
-import { contentPromise } from '~/content';
+import { use, useSyncExternalStore } from 'react';
+import { contentReady, getContent, subscribe } from '~/content';
 
-/** Suspends until the content manifest is available. Never throws. */
+/**
+ * The content manifest. Suspends briefly on first load (see content/index.js),
+ * then re-renders if fresher data arrives afterwards. Never throws.
+ */
 export default function useContent() {
-  return use(contentPromise);
+  use(contentReady);
+  return useSyncExternalStore(subscribe, getContent);
 }

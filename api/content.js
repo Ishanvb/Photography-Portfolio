@@ -2,16 +2,19 @@ import { json, methodGuard, withErrors } from './_lib/http.js';
 import { db, unwrap } from './_lib/db.js';
 
 // Served through Vercel's CDN. A publish becomes visible within s-maxage;
-// stale-while-revalidate means visitors never wait on the database.
-const CACHE = 'public, s-maxage=60, stale-while-revalidate=600';
+// stale-while-revalidate means visitors never wait on the database. The stale
+// window is a day so a quiet site does not fall out of the cache and make the
+// next visitor sit through a cold function and four database reads.
+const CACHE = 'public, s-maxage=60, stale-while-revalidate=86400';
 
 const img = (jpg, webp) => (jpg ? { jpg, webp: webp ?? null } : null);
 
 export default withErrors(async (req, res) => {
   if (!methodGuard(req, res, ['GET'])) return;
 
-  const projects = unwrap(
-    await db
+  // Four independent reads: run them side by side, not one after another.
+  const [projectsRes, reelRes, aboutRes, linesRes] = await Promise.all([
+    db
       .from('projects')
       .select(`
         slug, title, description, date_label,
@@ -20,23 +23,19 @@ export default withErrors(async (req, res) => {
         photos ( url_jpg, url_webp, youtube_id, alt, caption, width, height, sort_order )
       `)
       .eq('published', true)
-      .order('sort_order', { ascending: true })
-  );
-
-  const reel = unwrap(
-    await db
+      .order('sort_order', { ascending: true }),
+    db
       .from('reel_items')
       .select('url_jpg, url_webp, title, target_slug, target_photo_index, is_narrow')
-      .order('sort_order', { ascending: true })
-  );
-
-  // The About page: one row of copy, and the two ordered lists beside it.
-  const aboutRow = unwrap(
-    await db.from('about').select('intro, body').eq('id', 1).maybeSingle()
-  );
-  const aboutLines = unwrap(
-    await db.from('about_lines').select('kind, text, sort_order').order('sort_order', { ascending: true })
-  );
+      .order('sort_order', { ascending: true }),
+    // The About page: one row of copy, and the two ordered lists beside it.
+    db.from('about').select('intro, body').eq('id', 1).maybeSingle(),
+    db.from('about_lines').select('kind, text, sort_order').order('sort_order', { ascending: true }),
+  ]);
+  const projects = unwrap(projectsRes);
+  const reel = unwrap(reelRes);
+  const aboutRow = unwrap(aboutRes);
+  const aboutLines = unwrap(linesRes);
 
   const body = {
     projects: projects.map((p) => ({

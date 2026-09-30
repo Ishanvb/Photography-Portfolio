@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { photoAspects, preloadPhotos } from '~/content/photos';
+import { fallBackToOriginal, resized, THUMB_WIDTH } from '~/content/imageUrl';
 import * as S from './GalleryView.styled';
 
 /* =========================
@@ -178,7 +179,6 @@ function GalleryView({ active, photos, onCentreChange }) {
         item: items[k % n],
         el: null,
         img: null,
-        source: null,
         wroteTransform: '',
         wroteOp: -1,
         wroteSize: -1,
@@ -190,7 +190,6 @@ function GalleryView({ active, photos, onCentreChange }) {
         slot.wroteTransform = '';
       };
       slot.setImg = (el) => { slot.img = el; };
-      slot.setSource = (el) => { slot.source = el; };
       return slot;
     });
   }, [items, slotCount]);
@@ -209,17 +208,17 @@ function GalleryView({ active, photos, onCentreChange }) {
   }, [onCentreChange]);
 
   /**
-   * Point a photo's <picture>s — the big one in the middle and every square on
-   * the belt showing it — at the same file. The same URL is one download.
+   * Point a photo's big <picture> in the middle at the full file, and every
+   * square on the belt showing it at the same small copy — one download each.
    */
   const requestImage = useCallback((item) => {
     const { jpg, webp } = item.photo;
     if (webp && item.frameSource) item.frameSource.srcset = webp;
     if (item.frameImg) item.frameImg.src = jpg;
+    // The belt's squares are at most 22px: a small copy, not the full photo.
+    const thumb = resized(jpg, THUMB_WIDTH);
     slotsRef.current.forEach((slot) => {
-      if (slot.item !== item) return;
-      if (webp && slot.source) slot.source.srcset = webp;
-      if (slot.img) slot.img.src = jpg;
+      if (slot.item === item && slot.img) slot.img.src = thumb;
     });
     item.requested = true;
     return true;
@@ -644,16 +643,14 @@ function GalleryView({ active, photos, onCentreChange }) {
       >
         {slots.map((slot) => (
           <S.Square key={slot.k} ref={slot.setEl} onClick={() => onSlotClick(slot.k)}>
-            <picture>
-              <source ref={slot.setSource} type="image/webp" />
-              <S.Thumb
-                ref={slot.setImg}
-                alt=""
-                draggable={false}
-                decoding="async"
-                onLoad={onLoad(slot.item)}
-              />
-            </picture>
+            <S.Thumb
+              ref={slot.setImg}
+              alt=""
+              draggable={false}
+              decoding="async"
+              onLoad={onLoad(slot.item)}
+              onError={fallBackToOriginal(slot.item.photo.jpg)}
+            />
           </S.Square>
         ))}
         <S.Marker ref={markerRef} aria-hidden="true" />

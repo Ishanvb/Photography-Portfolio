@@ -1,3 +1,5 @@
+import { resized, THUMB_WIDTH } from '~/content/imageUrl';
+
 /**
  * Every photo the site owns, in the order the opening transition consumes
  * them: the reel first — those are the tiles already on screen when the
@@ -55,8 +57,9 @@ export const collectPhotos = ({ projects, reel }) => {
 export const photoAspects = new Map();
 
 /**
- * Warm the browser cache for a set of photos a few at a time, recording each
- * one's shape as it arrives. The gallery lays tiles out from their real aspect
+ * Learn every photo's shape a few at a time, from the same small copy the
+ * gallery belt shows — so this also fills the belt, without pulling down every
+ * full-size file on the site. The gallery lays tiles out from their real aspect
  * ratios, so knowing them up front keeps the belt from re-flowing under the
  * pointer as images trickle in.
  */
@@ -77,8 +80,12 @@ export const preloadPhotos = (photos, onMeasured, lanes = 3) => {
       }
       next();
     };
-    img.onerror = next;
-    img.src = photo.webp ?? photo.jpg;
+    img.onerror = () => {
+      // Optimiser unavailable: measure the original instead.
+      img.onerror = next;
+      img.src = photo.webp ?? photo.jpg;
+    };
+    img.src = resized(photo.jpg, THUMB_WIDTH);
   };
 
   for (let lane = 0; lane < lanes; lane += 1) next();

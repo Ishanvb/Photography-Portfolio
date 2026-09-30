@@ -241,6 +241,8 @@ function Work() {
               src={spot.photo.jpg}
               webpSrc={spot.photo.webp}
               alt={spot.photo.alt}
+              maxWidth={1080}
+              sizes="(max-width: 480px) 100vw, (max-width: 768px) 50vw, 25vw"
               onLoad={(event) => { event.currentTarget.dataset.loaded = 'true'; }}
             />
           </S.PhotoFrame>

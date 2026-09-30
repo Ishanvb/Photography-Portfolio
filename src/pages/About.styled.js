@@ -135,10 +135,14 @@ export const BodyText = styled.div`
   }
 `;
 
+// Starts hidden; About.jsx reveals each word by writing its style directly.
+// No will-change: on every word it kept a compositor layer per word alive for
+// as long as the page was open.
 export const BlurWord = styled.span`
   display: inline;
+  opacity: 0;
+  filter: blur(5px);
   transition: filter 0.15s ease-out, opacity 0.3s ease-out;
-  will-change: filter, opacity;
   color: ${({ theme }) => theme.colors.text};
   font-weight: ${({ $isHighlight, theme }) => $isHighlight
     ? theme.typography.fontWeight.semibold

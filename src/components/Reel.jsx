@@ -84,7 +84,9 @@ const Reel = forwardRef(function Reel(
       reel.scrollLeft = 0;
       scrollPosRef.current = 0;
     });
-  }, [cycleCount]);
+    // Keyed on the photos themselves, not just their count: fresher content can
+    // arrive after the first render (see content/index.js) with different widths.
+  }, [reel, cycleCount]);
 
   /* =========================
      Imperative API

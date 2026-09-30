@@ -121,12 +121,6 @@ export const Square = styled.div`
   opacity: 0;
   will-change: transform, opacity;
   backface-visibility: hidden;
-
-  & > picture {
-    display: block;
-    width: 100%;
-    height: 100%;
-  }
 `;
 
 export const Thumb = styled.img`
