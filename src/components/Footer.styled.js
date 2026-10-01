@@ -1,5 +1,11 @@
 import styled, { css } from 'styled-components';
 
+/* The contact block's proportions, taken from the design at 1728x907: 150px
+   either side (8.7% of the width) and an 800px block (88% of the height). */
+const SIDE_GAP = '8.7vw';
+const BLOCK_HEIGHT = 88;
+const WIDTH_CAP = 6.3;
+
 export const FooterWrapper = styled.footer`
   width: 100%;
   margin-top: 200px;
@@ -36,23 +42,27 @@ export const FooterWrapper = styled.footer`
     padding-bottom: 30px;
   }
 
-  /* These two come last on purpose: the base padding and every breakpoint above
-     set padding and margin, so a variant has to be declared after them to win.
+  /* The breakpoints above are emitted as media rules after this block, so
+     declaring a variant last is not enough to beat them: each variant doubles
+     its class (&&) so it wins at every width.
 
      Pinned, this is a whole screen rather than the end of a long page, so it
      centres in the stage and drops the spacing that separated it from whatever
      came before. Header-only, it keeps that spacing above and nothing below. */
   ${({ $pinned }) => $pinned && css`
-    margin: 0;
-    padding-top: 0;
-    padding-bottom: 0;
-    height: 100%;
-    position: relative;
-    justify-content: center;
+    && {
+      margin: 0;
+      padding: 0 ${SIDE_GAP};
+      height: 100%;
+      position: relative;
+      justify-content: center;
+    }
   `}
 
   ${({ $headerOnly }) => $headerOnly && css`
-    padding-bottom: 0;
+    && {
+      padding-bottom: 0;
+    }
   `}
 `;
 
@@ -109,33 +119,31 @@ export const SectionHeaderText = styled.span`
   }
 `;
 
-export const Lines = styled.div`
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-`;
 
+
+/* Nine lines of type plus eight 0.125em gaps make 10em, so a 10em block takes
+   BLOCK_HEIGHT of the screen: on a 1728x907 window that is the 80px type and
+   10px gaps the design was drawn at. The width cap keeps the widest line
+   ("Mail  mparzick@calpoly.edu", about 12.1em) clear of the side gaps. */
 const footerLineFontStyles = css`
   font-family: ${({ theme }) => theme.typography.fontFamily.primary};
   font-weight: ${({ theme }) => theme.typography.fontWeight.medium};
-  font-size: ${({ theme }) => theme.typography.fontSize['8xl']};
+  font-size: min(${BLOCK_HEIGHT / 10}vh, ${WIDTH_CAP}vw);
+  font-size: min(${BLOCK_HEIGHT / 10}svh, ${WIDTH_CAP}vw);
   letter-spacing: ${({ theme }) => theme.typography.letterSpacing.tight};
-
-  ${({ theme }) => theme.media.xl} {
-    font-size: 64px;
-  }
-
-  ${({ theme }) => theme.media.lg} {
-    font-size: 56px;
-  }
-
-  ${({ theme }) => theme.media.sm} {
-    font-size: ${({ theme }) => theme.typography.fontSize['3xl']};
-  }
-
-  ${({ theme }) => theme.media.xs} {
-    font-size: ${({ theme }) => theme.typography.fontSize['2xl']};
-  }
+`;
+/* The block fills the same share of the screen's height on every screen, so
+   the gap above and below it is the same proportion everywhere. Where the width
+   caps the type (a phone held upright), the lines spread out to fill that height
+   instead of shrinking the block. */
+export const Lines = styled.div`
+  ${footerLineFontStyles}
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  gap: 0.125em;
+  height: ${BLOCK_HEIGHT}vh;
+  height: ${BLOCK_HEIGHT}svh;
 `;
 
 export const Line = styled.div`
